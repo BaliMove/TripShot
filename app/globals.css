@@ -16,4 +16,16 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  .keep-all {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
 }
+
+/* Global Font Anti-Aliasing for crisp multi-language text */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+

@@ -99,11 +99,14 @@ export async function POST(req: NextRequest) {
     if (customBgBase64) {
       const fixAddon = rawCustomFixPrompt ? ` User fix request: ${rawCustomFixPrompt.trim()}.` : "";
       if (enhanceStyle === "vibrant") {
-        prompt = `A photorealistic travel photo of the traveler(s) wearing sophisticated resort wear that naturally matches their style and gender, seamlessly integrated into the provided custom background photo. Automatically enhance the background lighting into a luxury 5-star resort sunny aesthetic with vibrant colors, cinematic lighting, 8k travel photo, preserving exact face features with id_weight: 0.80.${fixAddon} ${NO_TEXT_INSTRUCTION}`;
+        prompt = `A photorealistic travel portrait seamlessly integrating ALL person(s) / people from Image 1 (preserve exact number of people and facial identities from Image 1 whether solo or group of 2, 3+ people) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface (do not cut off feet floating in air). Wearing sophisticated resort wear matching their style, automatically enhance background lighting into a luxury 5-star resort sunny aesthetic with vibrant colors, cinematic lighting, 8k photo quality, preserving exact facial identity of all individuals from Image 1 with id_weight: 0.90.${fixAddon} ${NO_TEXT_INSTRUCTION}`;
       } else {
-        prompt = `A photorealistic travel photo of the traveler(s) wearing sophisticated resort wear that naturally matches their style and gender, naturally integrated into the provided custom background photo, matching scene lighting and natural color tones, 8k quality, preserving exact face features with id_weight: 0.80.${fixAddon} ${NO_TEXT_INSTRUCTION}`;
+        prompt = `A photorealistic travel portrait naturally integrating ALL person(s) / people from Image 1 (preserve exact number of people and facial identities from Image 1 whether solo or group of 2, 3+ people) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface (do not cut off feet floating in air). Wearing sophisticated resort wear, matching scene lighting and natural color tones, 8k quality, preserving exact facial identity of all individuals from Image 1 with id_weight: 0.90.${fixAddon} ${NO_TEXT_INSTRUCTION}`;
       }
     } else {
+
+
+
       prompt = buildPrompt({
         styleId,
         bgColor,

@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import UploadCard from "./components/UploadCard";
-import { CATEGORIES, STYLES, type CategoryId } from "./lib/styles";
+import { CATEGORIES, STYLES, STYLE_PREVIEWS, type CategoryId } from "./lib/styles";
+
 import { detectUserDeviceAndLang, TRANSLATIONS, type Language } from "./lib/i18n";
 
 export default function Home() {
@@ -49,28 +50,32 @@ export default function Home() {
       </div>
 
       {/* Header / Navbar */}
-      <header className="sticky top-0 z-50 w-full border-b border-slate-200/70 bg-white/85 backdrop-blur-xl shadow-sm transition-all">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <header className="sticky top-0 z-50 w-full border-b border-slate-200/70 bg-white/90 backdrop-blur-xl shadow-sm transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <span className="font-extrabold text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-600 via-indigo-600 to-amber-500 font-outfit hover:opacity-90 transition-opacity">
+            <span className="font-extrabold text-xl sm:text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-600 via-indigo-600 to-amber-500 font-outfit hover:opacity-90 transition-opacity">
               TripShot.world
             </span>
-            <span className="h-2.5 w-2.5 rounded-full bg-sky-500 animate-ping" />
+            <span className="h-2.5 w-2.5 rounded-full bg-sky-500 animate-ping hidden sm:inline-block" />
           </div>
-          <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-600">
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-6 text-xs font-extrabold text-slate-600">
             <a href="#destinations" className="hover:text-sky-600 transition-colors py-1 hover:border-b-2 border-sky-500">{t.navDestinations}</a>
             <a href="#value-prop" className="hover:text-sky-600 transition-colors py-1 hover:border-b-2 border-sky-500">{t.navWhy}</a>
             <a href="#how-it-works" className="hover:text-sky-600 transition-colors py-1 hover:border-b-2 border-sky-500">{t.navHowItWorks}</a>
             <a href="#pricing" className="hover:text-sky-600 transition-colors py-1 hover:border-b-2 border-sky-500">{t.navPricing}</a>
           </nav>
+
           <div>
             <button
               onClick={scrollToUpload}
-              className="bg-slate-900 hover:bg-sky-600 text-white text-xs sm:text-sm font-extrabold px-5 py-2.5 rounded-full transition-all duration-200 shadow-md shadow-slate-950/10 active:scale-95 flex items-center gap-1.5"
+              className="bg-slate-900 hover:bg-sky-600 text-white text-xs sm:text-sm font-extrabold px-5 py-2.5 rounded-full transition-all duration-200 shadow-md active:scale-95 flex items-center gap-1.5 whitespace-nowrap"
             >
               <span>{t.ctaMakeMyPhoto}</span>
             </button>
           </div>
+
         </div>
       </header>
 
@@ -90,17 +95,18 @@ export default function Home() {
         </div>
 
         {/* Main Headline */}
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-slate-900 tracking-tight leading-[1.18] mb-6 max-w-4xl mx-auto text-balance">
-          {t.heroHeadlineLine1}<br className="hidden sm:inline" />
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-500 via-sky-600 to-indigo-600">
+        <h1 className="text-2xl sm:text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-[1.28] sm:leading-[1.2] mb-5 max-w-4xl mx-auto keep-all px-2">
+          {t.heroHeadlineLine1}{" "}
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-500 via-sky-600 to-indigo-600 inline-block">
             {t.heroHeadlineLine2}
           </span>
         </h1>
 
         {/* Subheadline */}
-        <p className="text-base sm:text-lg md:text-xl text-slate-600 max-w-3xl mx-auto font-medium mb-9 leading-relaxed text-balance">
+        <p className="text-xs sm:text-base md:text-lg text-slate-600 max-w-2xl mx-auto font-medium mb-8 leading-relaxed keep-all px-4">
           {t.heroSub}
         </p>
+
 
         {/* Category chips */}
         <div className="flex flex-wrap items-center justify-center gap-2.5 mb-10">
@@ -142,30 +148,46 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {STYLES.filter((s) => s.category === "travel").map((style) => (
-            <div
-              key={style.id}
-              onClick={() => selectStyleAndScroll("travel", style.id)}
-              className="group relative bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-sky-300 transition-all duration-300 cursor-pointer flex flex-col justify-between overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-sky-100 to-amber-100 rounded-bl-full -z-10 group-hover:scale-110 transition-transform" />
-              <div>
-                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-200">
-                  {style.emoji}
+          {STYLES.filter((s) => s.category === "travel").map((style) => {
+            const bgImage = style.imageUrl || STYLE_PREVIEWS[style.id] || STYLE_PREVIEWS.paris;
+            return (
+              <div
+                key={style.id}
+                onClick={() => selectStyleAndScroll("travel", style.id)}
+                className="group bg-white rounded-3xl p-4 border border-slate-200/90 shadow-md hover:shadow-2xl hover:border-sky-400 transition-all duration-300 cursor-pointer flex flex-col justify-between"
+              >
+                <div>
+                  {/* High Quality Photo Banner */}
+                  <div className="w-full h-44 rounded-2xl overflow-hidden relative mb-3.5 shadow-sm bg-slate-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={bgImage}
+                      alt={style.label}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-2.5 left-2.5 bg-slate-950/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-black text-white border border-white/20 shadow-sm flex items-center gap-1.5">
+                      <span>{style.emoji}</span>
+                      <span>{style.label}</span>
+                    </div>
+                  </div>
+
+                  <h3 className="text-base font-extrabold text-slate-900 mb-1 group-hover:text-sky-600 transition-colors">
+                    {style.label}
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-3 line-clamp-2">
+                    {style.description}
+                  </p>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-1 group-hover:text-sky-600 transition-colors">
-                  {style.label}
-                </h3>
-                <p className="text-xs text-slate-500 leading-relaxed mb-4">
-                  {style.description}
-                </p>
+
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-sky-600 group-hover:text-indigo-600">
+                  <span>이 배경 선택하기</span>
+                  <span className="group-hover:translate-x-1 transition-transform">➔</span>
+                </div>
               </div>
-              <div className="inline-flex items-center text-xs font-bold text-sky-600 group-hover:translate-x-1 transition-transform">
-                이 배경 선택하기 →
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+
       </section>
 
       {/* Value Proposition Highlights */}
@@ -177,34 +199,42 @@ export default function Home() {
             <span className="inline-block text-xs font-extrabold uppercase tracking-widest text-sky-400 mb-3">
               SAFE & STUNNING
             </span>
-            <h2 className="text-2xl sm:text-4xl font-black mb-4 leading-snug">
+            <h2 className="text-2xl sm:text-4xl font-black mb-4 leading-snug text-white">
               위험한 촬영은 그만! <br />
               100% 안전하게 만드는 나만의 명소 화보
             </h2>
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-8">
+            <p className="text-slate-200 text-sm sm:text-base leading-relaxed mb-8 font-medium">
               위험천만한 절벽 스윙이나 통제 구역에 들어가는 리스크 없이, AI 기술로 내 인물 특징은 그대로 보존하면서 가장 아름다운 명소의 햇살과 배경을 완벽하게 드레스업해드립니다.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-                <div className="text-2xl mb-1">🛡️</div>
-                <h4 className="font-bold text-sm text-white">100% 안전함</h4>
-                <p className="text-xs text-slate-400 mt-1">위험 지대 방문 필요 없이 안심 제작</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left mt-6">
+              <div className="bg-slate-900/90 backdrop-blur-md rounded-2xl p-5 border border-sky-400/40 shadow-xl flex flex-col justify-between">
+                <div className="text-3xl mb-2">🛡️</div>
+                <div>
+                  <h4 className="font-extrabold text-base text-white tracking-tight">100% 안전함</h4>
+                  <p className="text-xs text-sky-200 font-bold mt-1 leading-snug">위험 지대 방문 필요 없이 안심 제작</p>
+                </div>
               </div>
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-                <div className="text-2xl mb-1">💸</div>
-                <h4 className="font-bold text-sm text-white">여행 경비 0원</h4>
-                <p className="text-xs text-slate-400 mt-1">비행기 표 값 없이 방구석 10초 완성</p>
+              <div className="bg-slate-900/90 backdrop-blur-md rounded-2xl p-5 border border-amber-400/40 shadow-xl flex flex-col justify-between">
+                <div className="text-3xl mb-2">💸</div>
+                <div>
+                  <h4 className="font-extrabold text-base text-white tracking-tight">여행 경비 0원</h4>
+                  <p className="text-xs text-amber-200 font-bold mt-1 leading-snug">비행기 표 값 없이 방구석 10초 완성</p>
+                </div>
               </div>
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-                <div className="text-2xl mb-1">✨</div>
-                <h4 className="font-bold text-sm text-white">얼굴 ID 유지</h4>
-                <p className="text-xs text-slate-400 mt-1">나의 실제 얼굴 특징을 완벽히 유지</p>
+              <div className="bg-slate-900/90 backdrop-blur-md rounded-2xl p-5 border border-indigo-400/40 shadow-xl flex flex-col justify-between">
+                <div className="text-3xl mb-2">✨</div>
+                <div>
+                  <h4 className="font-extrabold text-base text-white tracking-tight">얼굴 ID 유지</h4>
+                  <p className="text-xs text-indigo-200 font-bold mt-1 leading-snug">나의 실제 얼굴 특징을 완벽히 유지</p>
+                </div>
               </div>
             </div>
+
           </div>
         </div>
       </section>
+
 
       {/* How It Works Section */}
       <section id="how-it-works" className="max-w-7xl mx-auto px-6 py-12">
@@ -358,16 +388,17 @@ export default function Home() {
             </button>
           </div>
 
-          {/* 3. Ultimate Plan ($29) */}
+          {/* 3. Ultimate Plan ($39) */}
           <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-300 relative">
             <div>
               <span className="text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full uppercase tracking-wider">
                 Ultimate (스튜디오 VIP)
               </span>
               <div className="mt-4 mb-2 flex items-baseline">
-                <span className="text-4xl font-black text-slate-900">$29</span>
+                <span className="text-4xl font-black text-slate-900">$39</span>
                 <span className="text-slate-500 text-sm font-semibold ml-1.5">/ 월</span>
               </div>
+
               <p className="text-xs text-slate-500 mb-6 leading-relaxed">
                 SNS 프로필, AI 헤드샷, 상업용 마케팅 고화질 소장이 필요한 전문가용.
               </p>

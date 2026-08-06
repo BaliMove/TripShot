@@ -15,6 +15,7 @@ export interface StyleDef {
   label: string;
   description: string;
   emoji: string;
+  imageUrl?: string;
   thrillMeter?: string;
   dangerBadge?: string;
   /** English edit instruction sent to the image model */
@@ -26,6 +27,7 @@ export interface StyleDef {
   /** Styles whose results make sense on a print sheet */
   printable?: boolean;
 }
+
 
 export const TRAVEL_CATEGORIES: StyleCategory[] = [
   {
@@ -86,6 +88,47 @@ export const CATEGORIES: StyleCategory[] = [...TRAVEL_CATEGORIES, ...STUDIO_CATE
 
 export type BgColor = "white" | "blue" | "gray";
 
+export const STYLE_PREVIEWS: Record<string, string> = {
+  trolltunga: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+  devils_pool: "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80",
+  kjeragbolten: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80",
+  huashan_plank: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80",
+  pedra_telegrafo: "https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?auto=format&fit=crop&w=800&q=80",
+  death_road: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80",
+  yasur_volcano: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80",
+  trift_bridge: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+  rooftopping: "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80",
+  jacobs_well: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+  kelingking: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80",
+  devils_tears: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+  bromo: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80",
+  ijen: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+  tumpak_sewu: "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80",
+  jomblang: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80",
+  timang: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+  rinjani: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80",
+  sipiso_piso: "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80",
+  wanagiri: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80",
+  bali_swing: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80",
+  borobudur: "https://images.unsplash.com/photo-1596402184320-417e7178b2cd?auto=format&fit=crop&w=800&q=80",
+  paris: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80",
+  santorini: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=800&q=80",
+  corporate: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=800&q=80",
+  studio: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80",
+  id_photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80",
+  passport: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80",
+  student: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=800&q=80",
+  astronaut: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80",
+  van_gogh: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=800&q=80",
+  yearbook: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
+  sherlock: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=800&q=80",
+  idol: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80",
+  kdrama: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
+  magazine: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80",
+  noir: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80",
+  cartoon: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=800&q=80",
+};
+
 export const BG_COLORS: { id: BgColor; label: string; swatch: string; prompt: string }[] = [
   { id: "white", label: "흰색", swatch: "#ffffff", prompt: "plain pure white background" },
   { id: "blue", label: "연한 파랑", swatch: "#cfe4f7", prompt: "solid soft light blue studio background" },
@@ -101,11 +144,13 @@ export const STYLES: StyleDef[] = [
     label: "노르웨이 트롤퉁가",
     description: "700m 까마득한 절벽 끝에 앉은 아찔한 샷",
     emoji: "🇳🇴",
+    imageUrl: STYLE_PREVIEWS.trolltunga,
     thrillMeter: "THRILL 99%",
     dangerBadge: "100% Safe AI",
     prompt:
       "sitting safely on the edge of Trolltunga cliff Norway, 700m abyss below, dramatic fjord view, cinematic rim light, 8k",
   },
+
   {
     id: "devils_pool",
     category: "extreme",
@@ -620,12 +665,14 @@ export function buildPrompt(opts: {
 
   let base = "";
   if ((styleId === "custom" || styleId === "custom_travel") && customPrompt) {
-    base = `A photorealistic photo of the person naturally integrated into the scene: ${customPrompt.trim()}, cinematic lighting, 8k resolution, highly detailed.`;
+    base = `A photorealistic travel photo naturally integrating ALL person(s) / people from Image 1 (preserve exact group size and facial identities of all people in Image 1) into the scene: ${customPrompt.trim()}, cinematic lighting, 8k resolution, highly detailed.`;
   } else if (["bali_swing", "borobudur", "paris", "santorini"].includes(styleId)) {
     base = getTravelPrompt(styleId);
   } else {
-    base = style ? style.prompt : `Professional travel photo of the person.`;
+    base = style ? `A photorealistic travel photo of person(s) from Image 1 (preserving all individuals and exact number of people): ${style.prompt}` : `Professional photorealistic travel photo preserving all individuals from Image 1.`;
   }
+
+
 
   // Studio background color mapping
   if (bgColor) {

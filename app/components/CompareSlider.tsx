@@ -45,7 +45,7 @@ export default function CompareSlider({
   return (
     <div
       ref={containerRef}
-      className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden shadow-lg select-none cursor-ew-resize touch-none bg-slate-100"
+      className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-xl select-none cursor-ew-resize touch-none bg-slate-900 border border-slate-200"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -75,22 +75,22 @@ export default function CompareSlider({
 
       {/* Divider handle */}
       <div
-        className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_8px_rgba(0,0,0,0.35)] pointer-events-none"
+        className="absolute top-0 bottom-0 w-1 bg-white/90 shadow-[0_0_12px_rgba(0,0,0,0.5)] pointer-events-none z-10"
         style={{ left: `${position}%` }}
       >
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white shadow-lg flex items-center justify-center text-slate-500">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-2xl flex items-center justify-center text-slate-700 border-2 border-slate-100 font-extrabold">
+          <svg className="w-5 h-5 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l-3 3 3 3m8-6l3 3-3 3" />
           </svg>
         </div>
       </div>
 
       {/* Labels */}
-      <span className="absolute top-3 left-3 bg-slate-900/70 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full pointer-events-none">
-        {beforeLabel}
+      <span className="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md text-white text-[11px] font-black px-3 py-1.5 rounded-full pointer-events-none border border-white/20 shadow-md">
+        📷 {beforeLabel}
       </span>
-      <span className="absolute top-3 right-3 bg-indigo-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full pointer-events-none">
-        {afterLabel}
+      <span className="absolute top-3 right-3 bg-gradient-to-r from-sky-600 to-indigo-600 backdrop-blur-md text-white text-[11px] font-black px-3 py-1.5 rounded-full pointer-events-none border border-white/20 shadow-md">
+        ✨ {afterLabel}
       </span>
     </div>
   );

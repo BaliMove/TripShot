@@ -1395,7 +1395,7 @@ export default function UploadCard({
                 </h4>
                 <p className="text-xs text-slate-400 mt-0.5 font-medium">가운데 핸들을 좌우로 움직여 변신 모습을 확인하세요</p>
               </div>
-              <div className="max-w-[320px] mx-auto rounded-3xl overflow-hidden shadow-2xl border-4 border-white ring-4 ring-slate-100">
+              <div className="w-full max-w-sm sm:max-w-md mx-auto rounded-3xl overflow-hidden shadow-2xl border-4 border-white ring-4 ring-slate-100">
                 <CompareSlider
                   beforeSrc={selfieBase64}
                   afterSrc={activeResult.imageUrl}
@@ -1600,7 +1600,7 @@ export default function UploadCard({
               </h4>
               <p className="text-xs text-slate-400 mt-0.5 font-medium">가운데 핸들을 좌우로 움직여 변신 모습을 확인하세요</p>
             </div>
-            <div className="max-w-[320px] mx-auto rounded-3xl overflow-hidden shadow-2xl border-4 border-white ring-4 ring-slate-100">
+            <div className="w-full max-w-sm sm:max-w-md mx-auto rounded-3xl overflow-hidden shadow-2xl border-4 border-white ring-4 ring-slate-100">
               <CompareSlider
                 beforeSrc={selfieBase64}
                 afterSrc={activeResult.imageUrl}

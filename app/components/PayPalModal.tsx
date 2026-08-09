@@ -75,17 +75,28 @@ export default function PayPalModal({
     if (envClientId && envClientId.trim() !== "") {
       setClientId(envClientId.trim());
     } else {
-      setClientId("test");
+      setClientId("AQHZpfD8wC2vx5TKBIkSyKqm4uJBwnfRYhRpAgRX6MOE1zkMR1KGGOS6xsfCqsHrPcrNJ7CoIAjTDAj-");
     }
   }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   return (
     <PayPalScriptProvider options={{ clientId: clientId, currency: "USD" }}>
-      <div className="fixed inset-0 z-[100] flex items-start justify-center p-3 sm:p-4 pt-5 sm:pt-10 bg-slate-900/30 backdrop-blur-sm overflow-y-auto animate-fadeIn">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-hidden min-h-full w-full">
+        <div className="relative w-full max-w-sm sm:max-w-md bg-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-100 text-slate-900 max-h-[92vh] overflow-y-auto">
 
-        <div className="relative w-full max-w-md bg-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-200/90 text-slate-900 my-2 sm:my-auto">
           {/* Close Button */}
           <button
             onClick={onClose}

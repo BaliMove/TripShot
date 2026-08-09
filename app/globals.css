@@ -10,6 +10,8 @@
 body {
   color: var(--foreground);
   background: var(--background);
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 @layer utilities {

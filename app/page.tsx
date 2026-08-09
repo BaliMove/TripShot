@@ -67,14 +67,22 @@ export default function Home() {
             <a href="#pricing" className="hover:text-sky-600 transition-colors py-1 hover:border-b-2 border-sky-500">{t.navPricing}</a>
           </nav>
 
-          <div>
+          <div className="flex items-center gap-2">
             <button
               onClick={scrollToUpload}
-              className="bg-slate-900 hover:bg-sky-600 text-white text-xs sm:text-sm font-extrabold px-5 py-2.5 rounded-full transition-all duration-200 shadow-md active:scale-95 flex items-center gap-1.5 whitespace-nowrap"
+              className="bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 text-white text-[11px] sm:text-xs font-black px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-full transition-all duration-200 shadow-md active:scale-95 flex items-center gap-1 whitespace-nowrap cursor-pointer"
+            >
+              <span>👤 로그인 / 혜택 연동</span>
+            </button>
+
+            <button
+              onClick={scrollToUpload}
+              className="bg-slate-900 hover:bg-sky-600 text-white text-xs sm:text-sm font-extrabold px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-full transition-all duration-200 shadow-md active:scale-95 flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
             >
               <span>{t.ctaMakeMyPhoto}</span>
             </button>
           </div>
+
 
         </div>
       </header>

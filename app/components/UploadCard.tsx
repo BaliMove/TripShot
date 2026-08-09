@@ -16,6 +16,7 @@ import { PRINT_SIZES, generatePhotoSheet, type PrintSize } from "../lib/photoShe
 import { detectUserDeviceAndLang, TRANSLATIONS, type Language } from "../lib/i18n";
 import CompareSlider from "./CompareSlider";
 import PayPalModal, { type PlanType } from "./PayPalModal";
+import AuthModal, { UserProfileData } from "./AuthModal";
 
 
 
@@ -81,11 +82,15 @@ const STYLE_PREVIEWS: Record<string, string> = {
   borobudur: "https://images.unsplash.com/photo-1596402184320-417e7178b2cd?auto=format&fit=crop&w=1200&q=80",
   paris: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1200&q=80",
   santorini: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1200&q=80",
-  corporate: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=1200&q=80",
-  studio: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=80",
-  id_photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=80",
-  passport: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1200&q=80",
-  astronaut: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80",
+  corporate: "/images/corporate_photo.png",
+  studio: "/images/studio_headshot.png",
+  id_photo: "/images/resume_photo.png",
+  passport: "/images/passport_photo.png",
+  student: "/images/employee_id_photo.png",
+  astronaut: "/images/astronaut_photo.png",
+  van_gogh: "/images/van_gogh_photo.png",
+  yearbook: "/images/yearbook_photo.png",
+  sherlock: "/images/sherlock_photo.png",
 };
 
 async function createCompositedPhoto(
@@ -328,6 +333,9 @@ export default function UploadCard({
 
   // Custom Fix Prompt & Target Model State
   const [customFixPrompt, setCustomFixPrompt] = useState("");
+  const customFixInputRef = useRef<HTMLInputElement>(null);
+  const [freeFixCount, setFreeFixCount] = useState<number>(1);
+  const [downloadNotice, setDownloadNotice] = useState<string | null>(null);
   const [editTargetModel, setEditTargetModel] = useState<"flash_lite" | "pro">("pro");
   const [previousImageUrl, setPreviousImageUrl] = useState<string | null>(null);
   const [isFixing, setIsFixing] = useState(false);
@@ -361,9 +369,11 @@ export default function UploadCard({
 
   const handlePayPalSuccess = (plan: PlanType, addedCredits: number) => {
     setShowPayPalModal(false);
+    setIsPayModalOpen(false);
+    setSelectedPlan(plan);
     setPaidCredits((prev) => prev + addedCredits);
     
-    // reset free uses count or add credits
+    // Reset free uses count or add credits
     if (typeof window !== "undefined") {
       const currentUses = parseInt(localStorage.getItem("tripshot_uses") || "0", 10);
       const newUses = Math.max(0, currentUses - addedCredits);
@@ -371,21 +381,42 @@ export default function UploadCard({
       setFreeUses(newUses);
     }
 
-    const planNames = {
-      starter: "⚡ Starter ($9) 결제 완료! 10장 생성 권한이 성공적으로 충전되었습니다! 🎉",
-      pro: "⭐ Pro ($19/월) 결제 완료! 월 30장 생성 & Full HD 무제한 혜택이 적용되었습니다! 🎉",
-      ultimate: "👑 Ultimate ($29/월) 결제 완료! 월 100장 & 4K Ultra HD + 워터마크 완전 제거 적용! 🎉",
+    const alertMsgs = {
+      starter: "⚡ Starter ($9) 결제가 완료되었습니다!\nAI 화보 10회 생성 권한이 성공적으로 충전되었습니다! 🎉",
+      pro: "⭐ Pro ($19/월) 결제가 완료되었습니다!\n월 30회 생성 & Full HD 무제한 혜택이 적용되었습니다! 🎉",
+      ultimate: "👑 Ultimate ($39/월) 결제가 완료되었습니다!\n월 100회 & 4K Ultra HD + 워터마크 완전 제거 혜택이 적용되었습니다! 🎉",
     };
-    setPlanToast(planNames[plan]);
-    setTimeout(() => setPlanToast(null), 6000);
+
+    // 1. Show clear browser alert popup to user
+    alert(alertMsgs[plan] || `🎉 결제 성공! ${addedCredits}회 권한이 충전되었습니다!`);
+
+    // 2. Show persistent top toast notification
+    setPlanToast(alertMsgs[plan] || `🎉 결제 성공! ${addedCredits}회 권한이 충전되었습니다!`);
+    setTimeout(() => setPlanToast(null), 8000);
   };
 
 
-  // Free Usage Limit & BYOK Modal State (Phase 4)
+
+
+  // Free Usage Limit & Auth Sync State
   const [freeUses, setFreeUses] = useState<number>(0);
   const [byokKey, setByokKey] = useState<string>("");
   const [showByokModal, setShowByokModal] = useState<boolean>(false);
   const [isPayModalOpen, setIsPayModalOpen] = useState<boolean>(false);
+
+  // User Profile & Realtime Sync State
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
+
+  const handleAuthSuccess = (user: UserProfileData) => {
+    setUserProfile(user);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("tripshot_user", JSON.stringify(user));
+    }
+    setPlanToast(`🔑 로그인 성공! (${user.displayName}님) 컴퓨터 ↔ 모바일 동기화가 활성화되었습니다!`);
+    setTimeout(() => setPlanToast(null), 6000);
+  };
+
 
 
   // Auto-detected Device & Language State
@@ -719,6 +750,7 @@ export default function UploadCard({
 
       setUsedStyleId(selectedStyleId);
       setProgress(100);
+      setFreeFixCount(1);
       
       // Immediately switch to result view after short 200ms smooth flash
       setTimeout(() => {
@@ -823,6 +855,19 @@ export default function UploadCard({
           lite: data.lite ?? result?.lite,
           pro: data.pro ?? result?.pro,
         });
+
+        // 🎁 1회 생성당 1회 무료 A/S 마법 보정 혜택 (무료 보정 남아있으면 크레딧 차감 0개!)
+        if (!byokKey) {
+          if (freeFixCount > 0) {
+            setFreeFixCount((prev) => prev - 1);
+          } else {
+            const nextUses = freeUses + 1;
+            setFreeUses(nextUses);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("tripshot_uses", nextUses.toString());
+            }
+          }
+        }
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -830,6 +875,49 @@ export default function UploadCard({
     } finally {
       setIsFixing(false);
 
+    }
+  };
+
+  const triggerDownload = async (imageUrl: string, fileName?: string) => {
+    try {
+      const defaultName = `tripshot_${usedStyleId || "photo"}.png`;
+      const nameToSave = fileName || defaultName;
+
+      setDownloadNotice(`✅ 다운로드 완료! ${nameToSave} 사진이 [다운로드] 폴더에 저장되었습니다.`);
+      setTimeout(() => setDownloadNotice(null), 4000);
+
+      // Handle Data URL directly
+      if (imageUrl.startsWith("data:")) {
+        const a = document.createElement("a");
+        a.href = imageUrl;
+        a.download = nameToSave;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        return;
+      }
+
+      // Handle HTTP/HTTPS URLs by converting to Blob for reliable cross-origin downloading
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = nameToSave;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+    } catch (e) {
+      console.warn("Direct blob download failed, fallback to direct open:", e);
+      const a = document.createElement("a");
+      a.href = imageUrl;
+      a.target = "_blank";
+      a.download = `tripshot_${usedStyleId || "photo"}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
   };
 
@@ -865,10 +953,7 @@ export default function UploadCard({
     setIsSheetGenerating(true);
     try {
       const { dataUrl, count } = await generatePhotoSheet(best.imageUrl, size);
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = `proshot_sheet_${size.id}_${count}cut.png`;
-      a.click();
+      await triggerDownload(dataUrl, `tripshot_sheet_${size.id}_${count}cut.png`);
     } catch (err) {
       console.error(err);
       setError("인화용 시트 생성 중 오류가 발생했습니다.");
@@ -1316,6 +1401,12 @@ export default function UploadCard({
           <p className="text-xs text-slate-400 mt-1 font-medium">초고화질 AI 엔진으로 완성된 당신만의 여행 순간입니다</p>
         </div>
 
+        {downloadNotice && (
+          <div className="mb-5 bg-emerald-600 text-white text-xs font-black p-4 rounded-2xl text-center shadow-xl animate-bounce flex items-center justify-center gap-2 border border-emerald-400">
+            <span>{downloadNotice}</span>
+          </div>
+        )}
+
         {activeResult && activeResult.success ? (
           <div className="bg-slate-50/70 rounded-3xl border border-slate-200/80 p-6 flex flex-col items-center shadow-md mb-8">
             <div className="relative w-full aspect-[3/4] max-w-[320px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white ring-8 ring-slate-100/80 mb-6 group">
@@ -1327,20 +1418,29 @@ export default function UploadCard({
               />
             </div>
 
-            <div className="w-full max-w-md flex gap-2.5 mb-2">
-              <a
-                href={activeResult.imageUrl}
-                download="tripshot-photo.png"
-                className="flex-1 text-white text-xs sm:text-sm font-black py-4 px-5 rounded-2xl text-center flex items-center justify-center gap-2 transition-all active:scale-95 shadow-xl shadow-sky-500/20 bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 hover:brightness-110"
+            <div className="w-full max-w-md flex flex-wrap sm:flex-nowrap gap-2.5 mb-2">
+              <button
+                type="button"
+                onClick={() => activeResult.success && triggerDownload(activeResult.imageUrl, `tripshot_${usedStyleId}.png`)}
+                className="flex-1 text-white text-xs sm:text-sm font-black py-4 px-5 rounded-2xl text-center flex items-center justify-center gap-2 transition-all active:scale-95 shadow-xl shadow-sky-500/20 bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 hover:brightness-110 cursor-pointer"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
                 고화질 인생샷 다운로드 ➔
+              </button>
+              <a
+                href={activeResult.imageUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white border border-slate-200/90 hover:border-sky-400 hover:text-sky-600 text-slate-700 text-xs font-extrabold py-4 px-4 rounded-2xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm"
+                title="원본 이미지 크게 보기 및 직접 저장"
+              >
+                <span>👁️ 크게 보기</span>
               </a>
               <button
                 onClick={() => activeResult.success && handleShare(activeResult.imageUrl, usedLabel)}
-                className="bg-white border border-slate-200/90 hover:border-sky-400 hover:text-sky-600 text-slate-700 text-xs font-extrabold py-4 px-5 rounded-2xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm"
+                className="bg-white border border-slate-200/90 hover:border-sky-400 hover:text-sky-600 text-slate-700 text-xs font-extrabold py-4 px-4 rounded-2xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm"
                 title="공유하기"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -1362,51 +1462,72 @@ export default function UploadCard({
         {/* 🪄 AI 마법 수정 한 줄 UI (Consumer) */}
         {activeResult && (
           <div id="magic-edit-section" className="mb-8 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white rounded-3xl border border-slate-800 p-6 sm:p-7 shadow-2xl">
-            <div className="flex items-center gap-2.5 mb-3">
-              <span className="text-lg bg-slate-800 p-1.5 rounded-xl border border-slate-700">🪄</span>
-              <div>
-                <h4 className="text-sm font-black text-white">AI 사진 한 줄 마법 수정</h4>
-                <p className="text-[11px] text-slate-400 font-medium">원하는 요청을 클릭하거나 적어주시면 얼굴을 보존하며 수정합니다</p>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2.5">
+                <span className="text-lg bg-slate-800 p-1.5 rounded-xl border border-slate-700">🪄</span>
+                <div>
+                  <h4 className="text-sm font-black text-white flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <span>AI 사진 한 줄 마법 수정</span>
+                    {freeFixCount > 0 ? (
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-extrabold animate-pulse">
+                        🎁 무료 A/S 보정 혜택 (차감 0원)
+                      </span>
+                    ) : (
+                      <span className="text-[10px] bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded-full font-semibold">
+                        1회당 1크레딧 차감
+                      </span>
+                    )}
+                  </h4>
+                  <p className="text-[11px] text-slate-400 font-medium">원하는 요청을 클릭하거나 적어주시면 얼굴을 보존하며 수정합니다</p>
+                </div>
               </div>
             </div>
 
-            {/* Quick Fix Preset Chips */}
-            <div className="flex flex-wrap gap-2 mb-4">
+            {/* Quick Fix Preset Chips - 사용자 언어 환경에 맞게 자동 전환된 다국어 예시 */}
+            <div className="flex flex-wrap gap-2 mb-3">
               <button
                 type="button"
                 onClick={() => {
-                  setCustomFixPrompt("다른 사람 없이 혼자만 나오게 해줘");
-                  handleCustomFix("다른 사람 없이 혼자만 나오게 해줘");
+                  setCustomFixPrompt(t.chipSoloText || "다른 사람 없이 혼자만 나오게 해줘");
+                  setTimeout(() => customFixInputRef.current?.focus(), 50);
                 }}
-                className="text-xs bg-slate-800/90 hover:bg-sky-600 text-slate-200 hover:text-white border border-slate-700/80 px-3.5 py-2 rounded-xl font-extrabold transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm"
+                className="text-xs bg-slate-800/90 hover:bg-sky-600 text-slate-200 hover:text-white border border-slate-700/80 px-3 py-1.5 rounded-xl font-extrabold transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm cursor-pointer"
+                title="클릭 시 입력창에 텍스트가 삽입됩니다 (추가 수정 가능)"
               >
-                <span>👤 혼자만 나오게</span>
+                <span>👤 {t.chipSoloText || "혼자만 나오게"}</span>
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  setCustomFixPrompt("내 원본 얼굴과 더 똑같이 해줘");
-                  handleCustomFix("내 원본 얼굴과 더 똑같이 해줘");
+                  setCustomFixPrompt(t.chipResemblanceText || "내 원본 얼굴과 더 똑같이 해줘");
+                  setTimeout(() => customFixInputRef.current?.focus(), 50);
                 }}
-                className="text-xs bg-slate-800/90 hover:bg-sky-600 text-slate-200 hover:text-white border border-slate-700/80 px-3.5 py-2 rounded-xl font-extrabold transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm"
+                className="text-xs bg-slate-800/90 hover:bg-sky-600 text-slate-200 hover:text-white border border-slate-700/80 px-3 py-1.5 rounded-xl font-extrabold transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm cursor-pointer"
+                title="클릭 시 입력창에 텍스트가 삽입됩니다 (추가 수정 가능)"
               >
-                <span>👦 내 얼굴 더 똑같이</span>
+                <span>👦 {t.chipResemblanceText || "내 얼굴 더 똑같이"}</span>
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  setCustomFixPrompt("배경을 따뜻한 노을빛으로 바꿔줘");
-                  handleCustomFix("배경을 따뜻한 노을빛으로 바꿔줘");
+                  setCustomFixPrompt(t.chipSunsetText || "배경을 따뜻한 노을빛으로 바꿔줘");
+                  setTimeout(() => customFixInputRef.current?.focus(), 50);
                 }}
-                className="text-xs bg-slate-800/90 hover:bg-sky-600 text-slate-200 hover:text-white border border-slate-700/80 px-3.5 py-2 rounded-xl font-extrabold transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm"
+                className="text-xs bg-slate-800/90 hover:bg-sky-600 text-slate-200 hover:text-white border border-slate-700/80 px-3 py-1.5 rounded-xl font-extrabold transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm cursor-pointer"
+                title="클릭 시 입력창에 텍스트가 삽입됩니다 (추가 수정 가능)"
               >
-                <span>🌅 노을 빛으로 변경</span>
+                <span>🌅 {t.chipSunsetText || "노을 빛으로 변경"}</span>
               </button>
             </div>
+
+            <p className="text-[11px] text-amber-300/90 font-medium mb-3">
+              💡 예시 문구를 누르면 아래 입력창에 채워집니다. 원하는 요청을 자유롭게 덧붙여 적은 후 오른쪽 [수정 반영] 버튼을 눌러주세요!
+            </p>
 
             {/* One-Line Input & Submit Button */}
             <div className="flex items-center gap-2.5">
               <input
+                ref={customFixInputRef}
                 type="text"
                 placeholder="예: 혼자 나오게 해주고, 내 얼굴 더 닮게 해줘..."
                 value={customFixPrompt}
@@ -1414,21 +1535,18 @@ export default function UploadCard({
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleCustomFix();
                 }}
-                className="flex-1 bg-slate-950 border border-slate-700 focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 rounded-2xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none transition-all font-medium"
+                className="flex-1 bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-2xl py-3 px-4 text-xs sm:text-sm font-semibold text-white placeholder-slate-500 focus:outline-none transition-all"
               />
               <button
                 type="button"
                 onClick={() => handleCustomFix()}
                 disabled={isFixing || !customFixPrompt.trim()}
-                className="bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-black py-3 px-5 rounded-2xl transition-all shadow-lg shadow-sky-500/20 flex items-center gap-2 active:scale-95 whitespace-nowrap"
+                className="bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 hover:brightness-110 active:scale-95 text-white font-black text-xs sm:text-sm py-3 px-4 rounded-2xl shadow-lg transition-all shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               >
                 {isFixing ? (
-                  <>
-                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>수정 반영 중...</span>
-                  </>
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <span>✨ 수정 반영하기</span>
+                  <span>🪄 수정 반영하기</span>
                 )}
               </button>
             </div>
@@ -1477,6 +1595,35 @@ export default function UploadCard({
   // ─────────────────────────── 3. Form View ───────────────────────────
   return (
     <div id="upload-section" className="w-full max-w-xl mx-auto bg-white/95 backdrop-blur-md rounded-3xl border border-slate-100 p-6 sm:p-8 shadow-2xl shadow-slate-200/50 scroll-mt-24">
+      {/* PC ↔ Mobile Realtime Account Sync Bar (Simplified & Customer Friendly) */}
+      <div className="mb-4 p-2.5 sm:p-3 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950 border border-sky-400/30 text-white shadow-md flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+          {userProfile ? (
+            <span className="truncate text-sky-300 font-black text-xs sm:text-sm">
+              👤 {userProfile.displayName} ({userProfile.email})
+            </span>
+          ) : (
+            <div className="flex flex-col">
+              <span className="text-white font-extrabold text-xs sm:text-sm truncate">
+                📲 PC ↔ 모바일 이용권 연동
+              </span>
+              <span className="text-[10px] text-slate-400 font-medium">
+                로그인 시 모든 디바이스 동기화
+              </span>
+            </div>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsAuthModalOpen(true)}
+          className="bg-gradient-to-r from-sky-500 to-amber-500 hover:brightness-110 active:scale-95 text-white font-black text-xs py-1.5 px-3 rounded-xl shadow-md whitespace-nowrap shrink-0 cursor-pointer"
+        >
+          {userProfile ? "내 계정" : "🔑 로그인 / 연동"}
+        </button>
+      </div>
+
+
       {/* Plan Simulation Toast Notification */}
       {planToast && (
         <div className="mb-4 p-3.5 rounded-2xl bg-gradient-to-r from-sky-600 via-indigo-600 to-amber-500 text-white text-xs font-black shadow-lg shadow-sky-500/25 flex items-center justify-between animate-bounce">
@@ -1484,6 +1631,7 @@ export default function UploadCard({
           <span className="bg-white/20 px-2 py-0.5 rounded-lg text-[10px]">시뮬레이션</span>
         </div>
       )}
+
 
       {/* Current Active Plan Interactive Bar - Click opens payment modal */}
       <div
@@ -2021,6 +2169,12 @@ export default function UploadCard({
           setIsPayModalOpen(false);
         }}
         onSuccess={handlePayPalSuccess}
+      />
+      {/* Realtime PC ↔ Mobile Sync Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={handleAuthSuccess}
       />
 
       {/* Sticky Mobile Bottom CTA Bar */}

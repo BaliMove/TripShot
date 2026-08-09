@@ -32,6 +32,9 @@ export interface Translation {
   deviceDesktop: string;
   detectedLang: string;
   customPromptPlaceholder: string;
+  chipSoloText: string;
+  chipResemblanceText: string;
+  chipSunsetText: string;
 }
 
 export const TRANSLATIONS: Record<Language, Translation> = {
@@ -67,6 +70,9 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     deviceDesktop: "💻 컴퓨터(데스크톱) 접속",
     detectedLang: "🇰🇷 대한민국 (한국어) 감지됨",
     customPromptPlaceholder: "원하시는 배경이나 분위기를 자유롭게 입력해 주세요 (예: 알프스 산 정상에서 헬기 타고 찍은 사진)",
+    chipSoloText: "다른 사람 없이 혼자만 나오게 해줘",
+    chipResemblanceText: "내 원본 얼굴과 더 똑같이 해줘",
+    chipSunsetText: "배경을 따뜻한 노을빛으로 바꿔줘",
   },
   en: {
     title: "TripShot.world",
@@ -100,6 +106,9 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     deviceDesktop: "💻 Desktop Computer",
     detectedLang: "🇺🇸 English (US) Detected",
     customPromptPlaceholder: "Describe your custom background or style (e.g. Standing on top of Alps mountain with a helicopter)",
+    chipSoloText: "Remove other people, show only me solo",
+    chipResemblanceText: "Make it resemble my original selfie face more closely",
+    chipSunsetText: "Change the background lighting to warm sunset golden hour",
   },
   ja: {
     title: "TripShot.world",
@@ -133,6 +142,9 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     deviceDesktop: "💻 PC接続",
     detectedLang: "🇯🇵 日本 (日本語) 検出",
     customPromptPlaceholder: "ご希望の背景や雰囲気を自由に入力してください（例：アルプス山頂でヘリコプターに乗って撮影）",
+    chipSoloText: "他の人を消して、一人だけ映るようにして",
+    chipResemblanceText: "私の元の顔にもっと似せて修正して",
+    chipSunsetText: "背景を温かい夕焼けの光に変更して",
   },
   zh: {
     title: "TripShot.world",
@@ -166,6 +178,9 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     deviceDesktop: "💻 电脑PC端连接",
     detectedLang: "🇨🇳 中国 (简体中文) 已识别",
     customPromptPlaceholder: "请输入您想要的自定义背景或风格（例如：阿尔卑斯山顶直升机前的合影）",
+    chipSoloText: "移除其他人，只保留我单人",
+    chipResemblanceText: "修改得更像我原图自拍的面部特征",
+    chipSunsetText: "将背景光线调整为温暖的夕阳晚霞",
   },
   id: {
     title: "TripShot.world",
@@ -199,6 +214,9 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     deviceDesktop: "💻 Komputer / Laptop",
     detectedLang: "🇮🇩 Indonesia (Bahasa) Terdeteksi",
     customPromptPlaceholder: "Tuliskan latar belakang kustom Anda (contoh: Di atas helikopter Pegunungan Alpen)",
+    chipSoloText: "Hapus orang lain, tampilkan hanya saya sendiri",
+    chipResemblanceText: "Buat lebih mirip dengan wajah foto asli saya",
+    chipSunsetText: "Ubah latar belakang menjadi nuansa matahari terbenam yang hangat",
   },
 };
 

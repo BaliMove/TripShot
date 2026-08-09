@@ -7,6 +7,7 @@ import {
   TRAVEL_CATEGORIES,
   STUDIO_CATEGORIES,
   STYLES,
+  STYLE_PREVIEWS,
   getStyle,
   type BgColor,
   type CategoryId,
@@ -69,29 +70,7 @@ const getLoadingMessage = (
 
 const FUN_STYLE_IDS = STYLES.filter((s) => s.category === "fun" || s.category === "travel").map((s) => s.id);
 
-const STYLE_PREVIEWS: Record<string, string> = {
-  trolltunga: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80",
-  devils_pool: "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=80",
-  kjeragbolten: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
-  huashan_plank: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=80",
-  pedra_telegrafo: "https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?auto=format&fit=crop&w=1200&q=80",
-  kelingking: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1200&q=80",
-  devils_tears: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
-  bromo: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80",
-  bali_swing: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1200&q=80",
-  borobudur: "https://images.unsplash.com/photo-1596402184320-417e7178b2cd?auto=format&fit=crop&w=1200&q=80",
-  paris: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1200&q=80",
-  santorini: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1200&q=80",
-  corporate: "/images/corporate_photo.png",
-  studio: "/images/studio_headshot.png",
-  id_photo: "/images/resume_photo.png",
-  passport: "/images/passport_photo.png",
-  student: "/images/employee_id_photo.png",
-  astronaut: "/images/astronaut_photo.png",
-  van_gogh: "/images/van_gogh_photo.png",
-  yearbook: "/images/yearbook_photo.png",
-  sherlock: "/images/sherlock_photo.png",
-};
+
 
 async function createCompositedPhoto(
   selfieBase64: string,

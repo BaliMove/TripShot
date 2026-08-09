@@ -110,10 +110,10 @@ async function createCompositedPhoto(
       }
     };
 
-    // Failsafe timer
+    // 1.5s Timeout protection to prevent any stuck loading overlay
     const timer = setTimeout(() => {
-      drawInlineCompositedPhoto(selfieBase64, styleLabel, bgUrl).then(safeResolve).catch(() => safeResolve(selfieBase64));
-    }, 1800);
+      drawInlineCompositedPhoto(selfieBase64, styleLabel).then(safeResolve).catch(() => safeResolve(selfieBase64));
+    }, 1500);
 
     try {
       const canvas = document.createElement("canvas");
@@ -139,80 +139,83 @@ async function createCompositedPhoto(
 
         clearTimeout(timer);
         try {
-          // Clear canvas completely
-          ctx.clearRect(0, 0, 1000, 1000);
-          ctx.globalCompositeOperation = "source-over";
-
-          // 1. Draw User Selfie Photo Full Canvas (1000x1000) (No Circular Mask / No Blur Artifacts)
-          ctx.save();
-          ctx.drawImage(selfieImg, 0, 0, 1000, 1000);
-          ctx.restore();
-
-          // 2. Apply Destination/Studio Atmosphere & Lighting Filter Overlay (Full Canvas Blend)
-          ctx.save();
-          // Draw destination background with soft color-dodge & ambient overlay
-          ctx.globalCompositeOperation = "soft-light";
+          // 1. Background
           ctx.drawImage(bgImg, 0, 0, 1000, 1000);
-          ctx.globalCompositeOperation = "source-over";
 
-          // Cinematic Studio Gradient Balance
-          const toneGrad = ctx.createLinearGradient(0, 0, 0, 1000);
-          toneGrad.addColorStop(0, "rgba(15, 23, 42, 0.1)");
-          toneGrad.addColorStop(0.5, "rgba(0, 0, 0, 0)");
-          toneGrad.addColorStop(1, "rgba(15, 23, 42, 0.65)");
-          ctx.fillStyle = toneGrad;
-          ctx.fillRect(0, 0, 1000, 1000);
-          ctx.restore();
+          // 2. Soft Vignette Gradient
+          const grad = ctx.createLinearGradient(0, 500, 0, 1000);
+          grad.addColorStop(0, "rgba(15, 23, 42, 0)");
+          grad.addColorStop(1, "rgba(15, 23, 42, 0.8)");
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 500, 1000, 500);
 
-          // 3. Elegant Bottom Title & Watermark Overlay
+          // 3. Person Selfie Frame
+          const frameWidth = 440;
+          const frameHeight = 440;
+          const frameX = (1000 - frameWidth) / 2;
+          const frameY = 450;
+
           ctx.save();
-          const bannerGrad = ctx.createLinearGradient(0, 840, 0, 1000);
-          bannerGrad.addColorStop(0, "rgba(15, 23, 42, 0)");
-          bannerGrad.addColorStop(1, "rgba(15, 23, 42, 0.85)");
-          ctx.fillStyle = bannerGrad;
-          ctx.fillRect(0, 840, 1000, 160);
+          ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+          ctx.shadowBlur = 30;
+          ctx.shadowOffsetY = 15;
 
+          ctx.beginPath();
+          if (typeof (ctx as any).roundRect === "function") {
+            (ctx as any).roundRect(frameX, frameY, frameWidth, frameHeight, 48);
+          } else {
+            ctx.rect(frameX, frameY, frameWidth, frameHeight);
+          }
           ctx.fillStyle = "#ffffff";
-          ctx.font = "bold 34px sans-serif";
-          ctx.textAlign = "center";
-          ctx.shadowColor = "rgba(0,0,0,0.8)";
-          ctx.shadowBlur = 10;
-          ctx.fillText(`✈️ ${styleLabel}`, 500, 920);
+          ctx.fill();
 
-          ctx.font = "bold 18px sans-serif";
-          ctx.fillStyle = "rgba(226, 232, 240, 0.85)";
-          ctx.fillText("TripShot.world • AI Travel Portrait Studio", 500, 960);
+          ctx.lineWidth = 8;
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.95)";
+          ctx.stroke();
+          ctx.clip();
+
+          ctx.drawImage(selfieImg, frameX, frameY, frameWidth, frameHeight);
           ctx.restore();
 
-          safeResolve(canvas.toDataURL("image/jpeg", 0.95));
+          // 4. Watermark Title
+          ctx.save();
+          ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+          ctx.font = "bold 26px sans-serif";
+          ctx.textAlign = "center";
+          ctx.shadowColor = "rgba(0,0,0,0.6)";
+          ctx.shadowBlur = 10;
+          ctx.fillText(`✈️ ${styleLabel} • TripShot.world`, 500, 945);
+          ctx.restore();
+
+          safeResolve(canvas.toDataURL("image/jpeg", 0.92));
         } catch (e) {
-          drawInlineCompositedPhoto(selfieBase64, styleLabel, bgUrl).then(safeResolve).catch(() => safeResolve(selfieBase64));
+          drawInlineCompositedPhoto(selfieBase64, styleLabel).then(safeResolve).catch(() => safeResolve(selfieBase64));
         }
       };
 
       bgImg.onload = checkDone;
       bgImg.onerror = () => {
         clearTimeout(timer);
-        drawInlineCompositedPhoto(selfieBase64, styleLabel, bgUrl).then(safeResolve).catch(() => safeResolve(selfieBase64));
+        drawInlineCompositedPhoto(selfieBase64, styleLabel).then(safeResolve).catch(() => safeResolve(selfieBase64));
       };
 
       selfieImg.onload = checkDone;
       selfieImg.onerror = () => {
         clearTimeout(timer);
-        drawInlineCompositedPhoto(selfieBase64, styleLabel, bgUrl).then(safeResolve).catch(() => safeResolve(selfieBase64));
+        drawInlineCompositedPhoto(selfieBase64, styleLabel).then(safeResolve).catch(() => safeResolve(selfieBase64));
       };
 
       bgImg.src = bgUrl;
       selfieImg.src = selfieBase64;
     } catch (err) {
       clearTimeout(timer);
-      drawInlineCompositedPhoto(selfieBase64, styleLabel, bgUrl).then(safeResolve).catch(() => safeResolve(selfieBase64));
+      drawInlineCompositedPhoto(selfieBase64, styleLabel).then(safeResolve).catch(() => safeResolve(selfieBase64));
     }
   });
 }
 
-// 100% Guaranteed Instant Crystal Clear Photo Renderer (No Artifacts)
-async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: string, bgUrl?: string): Promise<string> {
+// 100% Guaranteed Instant Canvas Renderer (No CORS / No network hang)
+async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: string): Promise<string> {
   return new Promise((resolve) => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -221,68 +224,79 @@ async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: strin
     canvas.width = 1000;
     canvas.height = 1000;
 
-    const bgImg = new Image();
+    // 1. Draw Cinematic Sky Gradient Background
+    const bgGrad = ctx.createLinearGradient(0, 0, 1000, 1000);
+    bgGrad.addColorStop(0, "#0f172a");
+    bgGrad.addColorStop(0.4, "#1e1b4b");
+    bgGrad.addColorStop(0.7, "#0369a1");
+    bgGrad.addColorStop(1, "#0284c7");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, 1000, 1000);
+
+    // Decorative Glowing Circles
+    ctx.save();
+    ctx.fillStyle = "rgba(56, 189, 248, 0.25)";
+    ctx.beginPath();
+    ctx.arc(200, 200, 300, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "rgba(251, 146, 60, 0.2)";
+    ctx.beginPath();
+    ctx.arc(800, 300, 250, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // 2. Draw Person Selfie Frame
     const selfieImg = new Image();
-
-    let bgLoaded = false;
-    let selfieLoaded = false;
-
-    const renderComposite = () => {
-      if (!bgLoaded || !selfieLoaded) return;
+    selfieImg.onload = () => {
       try {
-        // 1. Draw User Selfie Photo Full Canvas (1000x1000)
+        const frameWidth = 520;
+        const frameHeight = 520;
+        const frameX = (1000 - frameWidth) / 2;
+        const frameY = 320;
+
         ctx.save();
-        ctx.drawImage(selfieImg, 0, 0, 1000, 1000);
-        ctx.restore();
+        ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+        ctx.shadowBlur = 35;
+        ctx.shadowOffsetY = 18;
 
-        // 2. Soft Atmosphere Blend Filter
-        ctx.save();
-        ctx.globalCompositeOperation = "soft-light";
-        ctx.drawImage(bgImg, 0, 0, 1000, 1000);
-        ctx.globalCompositeOperation = "source-over";
-
-        const bannerGrad = ctx.createLinearGradient(0, 800, 0, 1000);
-        bannerGrad.addColorStop(0, "rgba(15, 23, 42, 0)");
-        bannerGrad.addColorStop(1, "rgba(15, 23, 42, 0.85)");
-        ctx.fillStyle = bannerGrad;
-        ctx.fillRect(0, 800, 1000, 200);
-
+        ctx.beginPath();
+        if (typeof (ctx as any).roundRect === "function") {
+          (ctx as any).roundRect(frameX, frameY, frameWidth, frameHeight, 56);
+        } else {
+          ctx.rect(frameX, frameY, frameWidth, frameHeight);
+        }
         ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 34px sans-serif";
-        ctx.textAlign = "center";
-        ctx.shadowColor = "rgba(0,0,0,0.8)";
-        ctx.shadowBlur = 10;
-        ctx.fillText(`✈️ ${styleLabel}`, 500, 920);
+        ctx.fill();
 
-        ctx.font = "bold 18px sans-serif";
-        ctx.fillStyle = "rgba(226, 232, 240, 0.85)";
-        ctx.fillText("TripShot.world • 100% Safe AI Studio", 500, 960);
+        ctx.lineWidth = 10;
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.95)";
+        ctx.stroke();
+        ctx.clip();
+
+        ctx.drawImage(selfieImg, frameX, frameY, frameWidth, frameHeight);
         ctx.restore();
 
-        resolve(canvas.toDataURL("image/jpeg", 0.95));
+        // 3. Header & Watermark Title
+        ctx.save();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 38px sans-serif";
+        ctx.textAlign = "center";
+        ctx.shadowColor = "rgba(0,0,0,0.6)";
+        ctx.shadowBlur = 12;
+        ctx.fillText(`✈️ ${styleLabel}`, 500, 160);
+
+        ctx.font = "bold 24px sans-serif";
+        ctx.fillStyle = "rgba(226, 232, 240, 0.9)";
+        ctx.fillText("TripShot.world • 100% Safe AI Studio", 500, 920);
+        ctx.restore();
+
+        resolve(canvas.toDataURL("image/jpeg", 0.92));
       } catch (e) {
         resolve(selfieBase64);
       }
     };
-
-    bgImg.onload = () => {
-      bgLoaded = true;
-      renderComposite();
-    };
-    bgImg.onerror = () => {
-      bgLoaded = true;
-      renderComposite();
-    };
-
-    selfieImg.onload = () => {
-      selfieLoaded = true;
-      renderComposite();
-    };
-    selfieImg.onerror = () => {
-      resolve(selfieBase64);
-    };
-
-    bgImg.src = bgUrl || STYLE_PREVIEWS.paris;
+    selfieImg.onerror = () => resolve(selfieBase64);
     selfieImg.src = selfieBase64;
   });
 }

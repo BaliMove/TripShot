@@ -46,23 +46,19 @@ app.post("/api/generate", async (req, res) => {
             });
           }
         }
+        const errText = await falRes.text();
+        console.error("[Cloud Function api] FAL AI API Error:", falRes.status, errText);
+        return res.status(500).json({ error: `FAL AI 백엔드 통신 오류 (${falRes.status}): ${errText}` });
       } catch (falErr) {
-        console.warn("[Cloud Function api] FAL fetch error:", falErr);
+        console.error("[Cloud Function api] FAL fetch exception:", falErr);
+        return res.status(500).json({ error: `AI 서버 통신 예외: ${falErr.message}` });
       }
+    } else {
+      console.error("[Cloud Function api] Missing FAL_KEY or GEMINI_API_KEY environment variable.");
+      return res.status(500).json({ error: "서버 API 키(FAL_KEY / GEMINI_API_KEY)가 Cloud Functions 환경에 설정되지 않았습니다." });
     }
-
-    // Default High-Quality Match Response for valid requests
-    const isMale = gender === "male";
-    const defaultUrl = isMale
-      ? "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1200&q=80"
-      : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1200&q=80";
-
-    return res.json({
-      lite: { success: true, imageUrl: defaultUrl, timeSec: "2.5" },
-      pro: { success: true, imageUrl: defaultUrl, timeSec: "3.6" },
-    });
   } catch (err) {
-    console.error("[Cloud Function api] Error:", err);
+    console.error("[Cloud Function api] Server Error:", err);
     return res.status(500).json({ error: `Cloud Function Server Error: ${err.message}` });
   }
 });

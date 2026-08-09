@@ -654,13 +654,11 @@ export default function UploadCard({
       typeof window !== "undefined" &&
       localStorage.getItem("tripshot_admin") === "true";
 
-    const isBypassLimit = isDevEnv || isAdminQuery || isAdminStorage;
-
-    const maxAllowedFreeUses = 999 + paidCredits;
-    if (freeUses >= maxAllowedFreeUses && !byokKey && !isBypassLimit) {
-      setShowByokModal(true);
-      return;
+    // Always clear free usage limits for 100% smooth beta testing (No payment screen bounces)
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("tripshot_uses");
     }
+    setFreeUses(0);
 
     setIsLoading(true);
     setError(null);

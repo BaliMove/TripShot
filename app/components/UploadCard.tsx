@@ -139,37 +139,25 @@ async function createCompositedPhoto(
 
         clearTimeout(timer);
         try {
-          // 1. Draw Selected Destination / Studio Background Photo Full Canvas (1000x1000)
+          // 1. Draw Full Canvas Background Photo (1000x1000)
           ctx.save();
           ctx.drawImage(bgImg, 0, 0, 1000, 1000);
           ctx.restore();
 
-          // 2. Draw User Selfie Person Centered & Blended Naturally into the Studio/Travel Scene
+          // 2. Draw User Selfie Photo Full Canvas (1000x1000) with Seamless Lighting Tone (No Inner Box / No Shape Border)
           ctx.save();
-          const personWidth = 560;
-          const personHeight = 560;
-          const personX = (1000 - personWidth) / 2;
-          const personY = 240;
+          ctx.drawImage(selfieImg, 0, 0, 1000, 1000);
 
-          // Soft Glow Shadow behind person for depth
-          ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
-          ctx.shadowBlur = 35;
-          ctx.shadowOffsetY = 15;
-
-          ctx.drawImage(selfieImg, personX, personY, personWidth, personHeight);
-          ctx.restore();
-
-          // 3. Apply Soft Ambient Studio & Travel Lighting Tone Gradient
-          ctx.save();
+          // Apply Professional Studio & Travel Lighting Ambient Overlay
           const ambientGrad = ctx.createLinearGradient(0, 0, 0, 1000);
-          ambientGrad.addColorStop(0, "rgba(15, 23, 42, 0.2)");
-          ambientGrad.addColorStop(0.6, "rgba(0, 0, 0, 0)");
-          ambientGrad.addColorStop(1, "rgba(15, 23, 42, 0.75)");
+          ambientGrad.addColorStop(0, "rgba(15, 23, 42, 0.15)");
+          ambientGrad.addColorStop(0.5, "rgba(0, 0, 0, 0)");
+          ambientGrad.addColorStop(1, "rgba(15, 23, 42, 0.5)");
           ctx.fillStyle = ambientGrad;
           ctx.fillRect(0, 0, 1000, 1000);
           ctx.restore();
 
-          // 4. Elegant Bottom Title & Watermark
+          // 3. Elegant Bottom Title & Watermark
           ctx.save();
           const bannerGrad = ctx.createLinearGradient(0, 840, 0, 1000);
           bannerGrad.addColorStop(0, "rgba(15, 23, 42, 0)");
@@ -216,7 +204,7 @@ async function createCompositedPhoto(
   });
 }
 
-// 100% Guaranteed Instant Photo Renderer
+// 100% Guaranteed Instant Photo Renderer (Full 1000x1000 Canvas)
 async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: string, bgUrl?: string): Promise<string> {
   return new Promise((resolve) => {
     const canvas = document.createElement("canvas");
@@ -235,20 +223,21 @@ async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: strin
     const renderComposite = () => {
       if (!bgLoaded || !selfieLoaded) return;
       try {
-        // 1. Draw Background
+        // 1. Draw Background Full Canvas
         ctx.save();
         ctx.drawImage(bgImg, 0, 0, 1000, 1000);
         ctx.restore();
 
-        // 2. Draw Selfie Person Centered
+        // 2. Draw User Selfie Full Canvas
         ctx.save();
-        const personWidth = 560;
-        const personHeight = 560;
-        const personX = (1000 - personWidth) / 2;
-        const personY = 240;
-        ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
-        ctx.shadowBlur = 35;
-        ctx.drawImage(selfieImg, personX, personY, personWidth, personHeight);
+        ctx.drawImage(selfieImg, 0, 0, 1000, 1000);
+
+        const ambientGrad = ctx.createLinearGradient(0, 0, 0, 1000);
+        ambientGrad.addColorStop(0, "rgba(15, 23, 42, 0.15)");
+        ambientGrad.addColorStop(0.5, "rgba(0, 0, 0, 0)");
+        ambientGrad.addColorStop(1, "rgba(15, 23, 42, 0.5)");
+        ctx.fillStyle = ambientGrad;
+        ctx.fillRect(0, 0, 1000, 1000);
         ctx.restore();
 
         // 3. Vignette & Title Overlay

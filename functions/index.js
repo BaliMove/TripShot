@@ -8,19 +8,19 @@ app.use(express.json({ limit: "25mb" }));
 
 // Comprehensive Master Style Prompt Dictionary (Fallback Registry)
 const MASTER_STYLE_PROMPT_MAP = {
-  pedra_telegrafo: "hanging from Pedra do Telégrafo rock Brazil with optical illusion cliff effect, ocean background, golden hour, 8k photorealistic portrait",
-  trolltunga: "sitting safely on the edge of Trolltunga cliff Norway, 700m abyss below, dramatic fjord view, cinematic rim light, 8k photorealistic travel portrait",
-  devils_pool: "at Victoria Falls Devil's Pool Zambia, 108m waterfall cliff edge, mist and rainbow in background, epic travel shot, 8k photorealistic portrait",
-  kjeragbolten: "standing on Kjeragbolten wedged rock in Norway, 1000m cliff gap, breathtaking mountain panorama, 8k photorealistic travel portrait",
-  huashan_plank: "walking on narrow Huashan plank walk cliff edge in China, steep mountain cliff drop, extreme thrill, 8k photorealistic travel portrait",
-  death_road: "standing with a mountain bike at Yungas Death Road Bolivia edge, misty cliff abyss, 8k photorealistic portrait",
-  yasur_volcano: "standing safely near Mt. Yasur erupting volcano in Vanuatu, glowing red lava smoke, 8k photorealistic portrait",
-  trift_bridge: "standing on Trift suspension bridge in Swiss Alps, 100m high valley suspension bridge, 8k photorealistic portrait",
-  rooftopping: "sitting on a skyscraper rooftop ledge in Dubai/NYC at night, urban skyline glow below, 8k photorealistic portrait",
-  jacobs_well: "diving safely into Jacob's Well underwater cave in Texas, clear turquoise water, 8k photorealistic portrait",
-  corporate: "masterpiece studio portrait of a person wearing a sharp formal navy blue business suit jacket, white shirt, elegant modern office glass background, professional corporate headshot, photorealistic 8k",
-  business_suit: "masterpiece studio portrait of a person wearing a sharp formal navy blue business suit jacket, white shirt, elegant modern office glass background, professional corporate headshot, photorealistic 8k",
-  business: "masterpiece studio portrait of a person wearing a sharp formal navy blue business suit jacket, white shirt, elegant modern office glass background, professional corporate headshot, photorealistic 8k",
+  pedra_telegrafo: "front-facing portrait looking at camera, hanging from Pedra do Telégrafo rock Brazil with optical illusion cliff effect, ocean background, golden hour, 8k photorealistic portrait",
+  trolltunga: "front-facing portrait looking at camera, sitting safely on the edge of Trolltunga cliff Norway, 700m abyss below, dramatic fjord view, cinematic rim light, 8k photorealistic travel portrait",
+  devils_pool: "front-facing portrait looking at camera, at Victoria Falls Devil's Pool Zambia, 108m waterfall cliff edge, mist and rainbow in background, epic travel shot, 8k photorealistic portrait",
+  kjeragbolten: "front-facing portrait looking at camera, standing on Kjeragbolten wedged rock in Norway, 1000m cliff gap, breathtaking mountain panorama, 8k photorealistic travel portrait",
+  huashan_plank: "front-facing portrait looking at camera, walking on narrow Huashan plank walk cliff edge in China, steep mountain cliff drop, extreme thrill, 8k photorealistic travel portrait",
+  death_road: "front-facing portrait looking at camera, standing with a mountain bike at Yungas Death Road Bolivia edge, misty cliff abyss, 8k photorealistic portrait",
+  yasur_volcano: "front-facing portrait looking at camera, standing safely near Mt. Yasur erupting volcano in Vanuatu, glowing red lava smoke, 8k photorealistic portrait",
+  trift_bridge: "front-facing portrait looking at camera, standing on Trift suspension bridge in Swiss Alps, 100m high valley suspension bridge, 8k photorealistic portrait",
+  rooftopping: "front-facing portrait looking at camera, sitting on a skyscraper rooftop ledge in Dubai/NYC at night, urban skyline glow below, 8k photorealistic portrait",
+  jacobs_well: "front-facing portrait looking at camera, diving safely into Jacob's Well underwater cave in Texas, clear turquoise water, 8k photorealistic portrait",
+  corporate: "front-facing studio portrait looking at camera, masterpiece wearing a sharp formal navy blue business suit jacket, white shirt, elegant modern office glass background, professional corporate headshot, photorealistic 8k",
+  business_suit: "front-facing studio portrait looking at camera, masterpiece wearing a sharp formal navy blue business suit jacket, white shirt, elegant modern office glass background, professional corporate headshot, photorealistic 8k",
+  business: "front-facing studio portrait looking at camera, masterpiece wearing a sharp formal navy blue business suit jacket, white shirt, elegant modern office glass background, professional corporate headshot, photorealistic 8k",
 };
 
 // Express /api/generate Enterprise 100% Prompt-Matched AI Backend Endpoint
@@ -43,27 +43,25 @@ app.post("/api/generate", async (req, res) => {
 
     const rawKey = (styleId || destination || "corporate").toLowerCase().trim().replace(/[-\s]/g, "_");
     
-    // 1. Primary: Use exact prompt passed from frontend
-    let finalPrompt = stylePrompt || MASTER_STYLE_PROMPT_MAP[rawKey];
+    // 1. Primary: Use exact prompt passed from frontend and enforce front-facing camera gaze
+    let basePrompt = stylePrompt || MASTER_STYLE_PROMPT_MAP[rawKey];
 
-    // 2. Secondary Fallback: Build exact prompt for the location
-    if (!finalPrompt) {
-      if (rawKey.includes("suit") || rawKey.includes("corporate") || rawKey.includes("business")) {
-        finalPrompt = MASTER_STYLE_PROMPT_MAP.corporate;
-      } else {
-        finalPrompt = `masterpiece travel portrait of a person at ${rawKey.replace(/_/g, " ")}, breathtaking scenic background, professional outdoor travel photography, photorealistic 8k`;
-      }
+    if (!basePrompt) {
+      basePrompt = `masterpiece travel portrait of a person at ${rawKey.replace(/_/g, " ")}, breathtaking scenic background, professional outdoor travel photography, photorealistic 8k`;
     }
 
     if (customPrompt && customPrompt.trim()) {
-      finalPrompt = `portrait of a person, ${customPrompt.trim()}, high quality photorealistic 8k`;
+      basePrompt = `portrait of a person, ${customPrompt.trim()}, high quality photorealistic 8k`;
     }
+
+    // Force front-facing view instruction to prevent back-facing back views
+    const finalPrompt = `front-facing portrait looking directly at camera, clear face, ${basePrompt}`;
 
     const formattedImageUrl = imageBase64.startsWith("data:") 
       ? imageBase64 
       : `data:image/jpeg;base64,${imageBase64}`;
 
-    console.log(`[Cloud Function api] Executing 100% Exact Prompt for Key '${rawKey}': "${finalPrompt.substring(0, 80)}..."`);
+    console.log(`[Cloud Function api] Executing 100% Front-Facing Prompt for Key '${rawKey}': "${finalPrompt.substring(0, 85)}..."`);
 
     const fetch = (await import("node-fetch")).default;
 
@@ -109,21 +107,21 @@ app.post("/api/generate", async (req, res) => {
       });
     }
 
-    console.log(`[Cloud Function api] 100% Style-Matched ('${rawKey}') PuLID Image Generated Successfully:`, realAiImageUrl);
+    console.log(`[Cloud Function api] 100% Front-Facing Style-Matched ('${rawKey}') PuLID Image Generated Successfully:`, realAiImageUrl);
 
     return res.json({
       lite: {
         success: true,
         imageUrl: realAiImageUrl,
         timeSec: "2.5",
-        engine: "flux-pulid-exact-matched",
+        engine: "flux-pulid-front-facing",
         styleKey: rawKey
       },
       pro: {
         success: true,
         imageUrl: realAiImageUrl,
         timeSec: "3.6",
-        engine: "flux-pulid-exact-matched",
+        engine: "flux-pulid-front-facing",
         styleKey: rawKey
       }
     });

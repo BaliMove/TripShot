@@ -1,0 +1,17 @@
+[debug] [2026-08-09T10:41:15.802Z] ----------------------------------------------------------------------
+[debug] [2026-08-09T10:41:15.804Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\owner\AppData\Local\npm-cache\_npx\7750544ccf494d8b\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting
+[debug] [2026-08-09T10:41:15.804Z] CLI Version:   15.26.0
+[debug] [2026-08-09T10:41:15.804Z] Platform:      win32
+[debug] [2026-08-09T10:41:15.804Z] Node Version:  v24.14.0
+[debug] [2026-08-09T10:41:15.804Z] Detected Agent: antigravity
+[debug] [2026-08-09T10:41:15.805Z] Time:          Sun Aug 09 2026 17:41:15 GMT+0700 (Western Indonesia Time)
+[debug] [2026-08-09T10:41:15.805Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-09T10:41:16.916Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-09T10:41:16.916Z] > authorizing via signed-in user (idolizat@gmail.com)
+[debug] [2026-08-09T10:41:16.917Z] [iam] checking project tripshot-world for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-08-09T10:41:16.927Z] Checked if tokens are valid: true, expires at: 1786273957910
+[debug] [2026-08-09T10:41:16.928Z] Checked if tokens are valid: true, expires at: 1786273957910
+[debug] [2026-08-09T10:41:16.928Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/tripshot-world:testIamPermissions [none]
+[debug] [2026-08-09T10:41:16.929Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/tripshot-world:testIamPermissions  x-goog-user-project=tripshot-world
+[debug] [2026-08-09T10:41:16.929Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/tripshot-world:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}

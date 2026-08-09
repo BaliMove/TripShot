@@ -110,10 +110,10 @@ async function createCompositedPhoto(
       }
     };
 
-    // 1.5s Timeout protection to prevent any stuck loading overlay
+    // Failsafe timer: Fallback to instant seamless photo renderer
     const timer = setTimeout(() => {
-      drawInlineCompositedPhoto(selfieBase64, styleLabel).then(safeResolve).catch(() => safeResolve(selfieBase64));
-    }, 1500);
+      drawInlineCompositedPhoto(selfieBase64, styleLabel, bgUrl).then(safeResolve).catch(() => safeResolve(selfieBase64));
+    }, 2000);
 
     try {
       const canvas = document.createElement("canvas");
@@ -139,52 +139,63 @@ async function createCompositedPhoto(
 
         clearTimeout(timer);
         try {
-          // 1. Background
+          // 1. Draw Full Screen Background Image (No Box / No Border)
+          ctx.save();
           ctx.drawImage(bgImg, 0, 0, 1000, 1000);
 
-          // 2. Soft Vignette Gradient
-          const grad = ctx.createLinearGradient(0, 500, 0, 1000);
-          grad.addColorStop(0, "rgba(15, 23, 42, 0)");
-          grad.addColorStop(1, "rgba(15, 23, 42, 0.8)");
-          ctx.fillStyle = grad;
-          ctx.fillRect(0, 500, 1000, 500);
-
-          // 3. Person Selfie Frame
-          const frameWidth = 440;
-          const frameHeight = 440;
-          const frameX = (1000 - frameWidth) / 2;
-          const frameY = 450;
-
-          ctx.save();
-          ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
-          ctx.shadowBlur = 30;
-          ctx.shadowOffsetY = 15;
-
-          ctx.beginPath();
-          if (typeof (ctx as any).roundRect === "function") {
-            (ctx as any).roundRect(frameX, frameY, frameWidth, frameHeight, 48);
-          } else {
-            ctx.rect(frameX, frameY, frameWidth, frameHeight);
-          }
-          ctx.fillStyle = "#ffffff";
-          ctx.fill();
-
-          ctx.lineWidth = 8;
-          ctx.strokeStyle = "rgba(255, 255, 255, 0.95)";
-          ctx.stroke();
-          ctx.clip();
-
-          ctx.drawImage(selfieImg, frameX, frameY, frameWidth, frameHeight);
+          // Subtle Ambient Dark Vignette Overlay
+          const ambientGrad = ctx.createLinearGradient(0, 0, 0, 1000);
+          ambientGrad.addColorStop(0, "rgba(15, 23, 42, 0.3)");
+          ambientGrad.addColorStop(0.5, "rgba(0, 0, 0, 0)");
+          ambientGrad.addColorStop(1, "rgba(15, 23, 42, 0.7)");
+          ctx.fillStyle = ambientGrad;
+          ctx.fillRect(0, 0, 1000, 1000);
           ctx.restore();
 
-          // 4. Watermark Title
+          // 2. Draw Person Selfie with Soft Radial Vignette Blend (Seamless Face Integration)
           ctx.save();
-          ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
-          ctx.font = "bold 26px sans-serif";
+          const personWidth = 650;
+          const personHeight = 650;
+          const personX = (1000 - personWidth) / 2;
+          const personY = 180;
+
+          ctx.beginPath();
+          ctx.ellipse(500, 500, 300, 330, 0, 0, Math.PI * 2);
+          ctx.clip();
+
+          ctx.drawImage(selfieImg, personX, personY, personWidth, personHeight);
+          ctx.restore();
+
+          // Soft Glow Edge Blending
+          ctx.save();
+          const glowGrad = ctx.createRadialGradient(500, 500, 220, 500, 500, 330);
+          glowGrad.addColorStop(0, "rgba(255, 255, 255, 0)");
+          glowGrad.addColorStop(0.8, "rgba(255, 255, 255, 0.12)");
+          glowGrad.addColorStop(1, "rgba(255, 255, 255, 0.4)");
+          ctx.fillStyle = glowGrad;
+          ctx.beginPath();
+          ctx.ellipse(500, 500, 300, 330, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+
+          // 3. Elegant Bottom Title Overlay
+          ctx.save();
+          const bannerGrad = ctx.createLinearGradient(0, 840, 0, 1000);
+          bannerGrad.addColorStop(0, "rgba(15, 23, 42, 0)");
+          bannerGrad.addColorStop(1, "rgba(15, 23, 42, 0.85)");
+          ctx.fillStyle = bannerGrad;
+          ctx.fillRect(0, 840, 1000, 160);
+
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 34px sans-serif";
           ctx.textAlign = "center";
-          ctx.shadowColor = "rgba(0,0,0,0.6)";
+          ctx.shadowColor = "rgba(0,0,0,0.8)";
           ctx.shadowBlur = 10;
-          ctx.fillText(`✈️ ${styleLabel} • TripShot.world`, 500, 945);
+          ctx.fillText(`✈️ ${styleLabel}`, 500, 920);
+
+          ctx.font = "bold 18px sans-serif";
+          ctx.fillStyle = "rgba(226, 232, 240, 0.85)";
+          ctx.fillText("TripShot.world • AI Travel Portrait Studio", 500, 960);
           ctx.restore();
 
           safeResolve(canvas.toDataURL("image/jpeg", 0.94));

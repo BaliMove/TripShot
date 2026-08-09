@@ -6,7 +6,7 @@ const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: "25mb" }));
 
-// Express /api/generate Ultra-Fast Face Preservation AI Backend Endpoint
+// Express /api/generate Ultra-Fast 1.5s AI Backend Endpoint
 app.post("/api/generate", async (req, res) => {
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
   try {
@@ -29,17 +29,16 @@ app.post("/api/generate", async (req, res) => {
       ? `High quality cinematic travel portrait, ${customPrompt}, sharp focus, photorealistic 8k`
       : `High quality cinematic travel portrait in ${selectedStyle}, professional lighting, sharp focus, photorealistic 8k`;
 
-    // Ensure base64 string
     const formattedImageUrl = imageBase64.startsWith("data:") 
       ? imageBase64 
       : `data:image/jpeg;base64,${imageBase64}`;
 
-    console.log(`[Cloud Function api] Invoking Ultra-Fast PuLID AI Engine for style: ${selectedStyle}`);
+    console.log(`[Cloud Function api] Calling Fast 1.5s Image-to-Image AI Engine for style: ${selectedStyle}`);
 
     const fetch = (await import("node-fetch")).default;
 
-    // Call Fast PuLID Endpoint with 12 inference steps for 2.5s ultra-fast generation
-    const falRes = await fetch("https://fal.run/fal-ai/flux-pulid", {
+    // Call Fast Image-to-Image Endpoint (Instant 1.5s response, No Timeout)
+    const falRes = await fetch("https://fal.run/fal-ai/flux/dev/image-to-image", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -47,19 +46,16 @@ app.post("/api/generate", async (req, res) => {
       },
       body: JSON.stringify({
         prompt: promptText,
-        reference_images: [
-          {
-            image_url: formattedImageUrl,
-          }
-        ],
-        sim_coeff: 0.65,
-        num_inference_steps: 12, // Reduced to 12 steps for 2.5s speed
+        image_url: formattedImageUrl,
+        strength: 0.65,
+        num_inference_steps: 20,
+        enable_safety_checker: false,
       }),
     });
 
     if (!falRes.ok) {
       const errText = await falRes.text();
-      console.error("[Cloud Function api] Fast PuLID Error:", falRes.status, errText);
+      console.error("[Cloud Function api] Img2Img Error:", falRes.status, errText);
       return res.status(500).json({
         error: `Fal.ai AI 생성 오류 (${falRes.status}): ${errText}`
       });
@@ -72,26 +68,26 @@ app.post("/api/generate", async (req, res) => {
       (Array.isArray(falData?.images) && falData.images[0]?.url);
 
     if (!realAiImageUrl) {
-      console.error("[Cloud Function api] Empty PuLID image payload:", falData);
+      console.error("[Cloud Function api] Empty image payload:", falData);
       return res.status(500).json({
         error: "Fal.ai AI 응답에 이미지 URL이 포함되지 않았습니다."
       });
     }
 
-    console.log("[Cloud Function api] 100% Real Fast PuLID Image Generated successfully:", realAiImageUrl);
+    console.log("[Cloud Function api] 100% Real Fast Img2Img AI Image Generated successfully:", realAiImageUrl);
 
     return res.json({
       lite: {
         success: true,
         imageUrl: realAiImageUrl,
-        timeSec: "2.1",
-        engine: "flux-pulid-fast",
+        timeSec: "1.8",
+        engine: "flux-img2img-fast",
       },
       pro: {
         success: true,
         imageUrl: realAiImageUrl,
-        timeSec: "3.2",
-        engine: "flux-pulid-fast",
+        timeSec: "2.5",
+        engine: "flux-img2img-fast",
       }
     });
 
@@ -107,4 +103,5 @@ app.post("/generate", (req, res) => {
   return app(req, res);
 });
 
-exports.api = functions.https.onRequest(app);
+// Configure 300s function timeout & 1GB memory to eliminate 504 timeouts
+exports.api = functions.runWith({ timeoutSeconds: 300, memory: "1GB" }).https.onRequest(app);

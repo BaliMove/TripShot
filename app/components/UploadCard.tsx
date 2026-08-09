@@ -717,9 +717,12 @@ export default function UploadCard({
       setIsLoading(false);
     }, 35000);
 
-    // 버튼 클릭 시 100% 생성 진행 화면(Loading View)으로 즉시 스무스 스크롤 자동 이동!
+    // 버튼 클릭 시 업로드 작업 카드 상단으로 정확히 스무스 스크롤 이동!
     setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      const el = document.getElementById("upload-card-root");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }, 50);
 
 
@@ -1630,7 +1633,7 @@ export default function UploadCard({
 
   // ─────────────────────────── 3. Form View ───────────────────────────
   return (
-    <div id="upload-section" className="w-full max-w-xl mx-auto bg-white/95 backdrop-blur-md rounded-3xl border border-slate-100 p-6 sm:p-8 shadow-2xl shadow-slate-200/50 scroll-mt-24">
+    <div id="upload-card-root" className="w-full max-w-xl mx-auto bg-white/95 backdrop-blur-md rounded-3xl border border-slate-100 p-6 sm:p-8 shadow-2xl shadow-slate-200/50 scroll-mt-24">
       {/* PC ↔ Mobile Realtime Account Sync Bar (Simplified & Customer Friendly) */}
       <div className="mb-4 p-2.5 sm:p-3 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950 border border-sky-400/30 text-white shadow-md flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">

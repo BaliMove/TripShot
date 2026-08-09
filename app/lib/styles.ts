@@ -150,13 +150,13 @@ export const STYLES: StyleDef[] = [
     prompt:
       "sitting safely on the edge of Trolltunga cliff Norway, 700m abyss below, dramatic fjord view, cinematic rim light, 8k",
   },
-
   {
     id: "devils_pool",
     category: "extreme",
     label: "잠비아 데빌스 풀",
     description: "빅토리아 폭포 108m 낭떠러지 바로 앞 샷",
     emoji: "🌊",
+    imageUrl: STYLE_PREVIEWS.devils_pool,
     thrillMeter: "THRILL 98%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -168,6 +168,7 @@ export const STYLES: StyleDef[] = [
     label: "노르웨이 셰라그볼텐",
     description: "1,000m 공중에 낀 바위 위 아찔한 포즈",
     emoji: "🪨",
+    imageUrl: STYLE_PREVIEWS.kjeragbolten,
     thrillMeter: "THRILL 97%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -179,6 +180,7 @@ export const STYLES: StyleDef[] = [
     label: "중국 화산 장한로",
     description: "깎아지른 절벽 좁은 나무 판자 길 건너기",
     emoji: "🧗",
+    imageUrl: STYLE_PREVIEWS.huashan_plank,
     thrillMeter: "THRILL 96%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -190,6 +192,7 @@ export const STYLES: StyleDef[] = [
     label: "브라질 페드라 두 테드가포",
     description: "절벽에 매달려 있는 유명 착시 아찔 샷",
     emoji: "🇧🇷",
+    imageUrl: STYLE_PREVIEWS.pedra_telegrafo,
     thrillMeter: "THRILL 95%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -201,6 +204,7 @@ export const STYLES: StyleDef[] = [
     label: "볼리비아 융가스 데스로드",
     description: "낭떠러지 산악자전거 도로 끝자락 포즈",
     emoji: "🚴",
+    imageUrl: STYLE_PREVIEWS.death_road,
     thrillMeter: "THRILL 94%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -212,6 +216,7 @@ export const STYLES: StyleDef[] = [
     label: "바누아투 야수르 활화산",
     description: "붉은 용암과 연기가 분출하는 활화산 입구",
     emoji: "🌋",
+    imageUrl: STYLE_PREVIEWS.yasur_volcano,
     thrillMeter: "THRILL 96%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -223,6 +228,7 @@ export const STYLES: StyleDef[] = [
     label: "스위스 트리프트 현수교",
     description: "알프스 산맥 100m 골짜기 위 아찔 현수교",
     emoji: "🇨🇭",
+    imageUrl: STYLE_PREVIEWS.trift_bridge,
     thrillMeter: "THRILL 93%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -234,6 +240,7 @@ export const STYLES: StyleDef[] = [
     label: "마천루 루프탑",
     description: "두바이·뉴욕 초고층 빌딩 난간 아찔 야경",
     emoji: "🏙️",
+    imageUrl: STYLE_PREVIEWS.rooftopping,
     thrillMeter: "THRILL 95%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -245,6 +252,7 @@ export const STYLES: StyleDef[] = [
     label: "미국 자콥스 웰",
     description: "깊은 수중 동굴 수영장 구멍 다이빙 샷",
     emoji: "🤿",
+    imageUrl: STYLE_PREVIEWS.jacobs_well,
     thrillMeter: "THRILL 92%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -258,6 +266,7 @@ export const STYLES: StyleDef[] = [
     label: "누사페니다 클링킹 비치",
     description: "공룡(T-Rex) 모양 200m 벼랑 끝 아찔 샷",
     emoji: "🇮🇩",
+    imageUrl: STYLE_PREVIEWS.kelingking,
     thrillMeter: "THRILL 99%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -269,6 +278,7 @@ export const STYLES: StyleDef[] = [
     label: "누사 렘봉안 데빌스 티어스",
     description: "거대 파도가 몰아치는 절벽 낭떠러지 샷",
     emoji: "🌊",
+    imageUrl: STYLE_PREVIEWS.devils_tears,
     thrillMeter: "THRILL 98%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -280,6 +290,7 @@ export const STYLES: StyleDef[] = [
     label: "동자바 브로모 화산",
     description: "유황 연기가 분출하는 활화산 능선 샷",
     emoji: "🌋",
+    imageUrl: STYLE_PREVIEWS.bromo,
     thrillMeter: "THRILL 97%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -291,6 +302,7 @@ export const STYLES: StyleDef[] = [
     label: "동자바 이젠 화산 블루파이어",
     description: "신비로운 푸른 유황 불꽃과 산성 호수 샷",
     emoji: "💙",
+    imageUrl: STYLE_PREVIEWS.ijen,
     thrillMeter: "THRILL 96%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -302,6 +314,7 @@ export const STYLES: StyleDef[] = [
     label: "동자바 툼팍세우 폭포",
     description: "120m 거대 폭포 병풍 협곡 장관 샷",
     emoji: "💦",
+    imageUrl: STYLE_PREVIEWS.tumpak_sewu,
     thrillMeter: "THRILL 95%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -313,6 +326,7 @@ export const STYLES: StyleDef[] = [
     label: "족자카르타 좀블랑 동굴",
     description: "60m 싱크홀 수직 동굴 천상의 빛 샷",
     emoji: "✨",
+    imageUrl: STYLE_PREVIEWS.jomblang,
     thrillMeter: "THRILL 94%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -324,6 +338,7 @@ export const STYLES: StyleDef[] = [
     label: "족자카르타 티망 비치 곤돌라",
     description: "거센 파도 위 목재 로프 곤돌라 아찔 샷",
     emoji: "🛶",
+    imageUrl: STYLE_PREVIEWS.timang,
     thrillMeter: "THRILL 96%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -335,6 +350,7 @@ export const STYLES: StyleDef[] = [
     label: "롬복 린자니 화산 능선",
     description: "2,700m 분화구 칼데라 호수 칼날 능선",
     emoji: "⛰️",
+    imageUrl: STYLE_PREVIEWS.rinjani,
     thrillMeter: "THRILL 97%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -346,6 +362,7 @@ export const STYLES: StyleDef[] = [
     label: "북수마트라 시피소피소 폭포",
     description: "토바 호수 근처 120m 수직 절벽 폭포 샷",
     emoji: "🏞️",
+    imageUrl: STYLE_PREVIEWS.sipiso_piso,
     thrillMeter: "THRILL 93%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -357,6 +374,7 @@ export const STYLES: StyleDef[] = [
     label: "발리 와나기리 히든힐스",
     description: "호수 절벽 허공 위의 나무 둥지 포토존",
     emoji: "🪺",
+    imageUrl: STYLE_PREVIEWS.wanagiri,
     thrillMeter: "THRILL 92%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -370,6 +388,7 @@ export const STYLES: StyleDef[] = [
     label: "발리 정글 스윙",
     description: "열대 우림 우부드 정글 스윙 인스타 샷",
     emoji: "🌺",
+    imageUrl: STYLE_PREVIEWS.bali_swing,
     prompt:
       "A stunning travel photo sitting on a giant jungle swing in Bali, lush green tropical background, cinematic lighting, 8k",
   },
@@ -379,6 +398,7 @@ export const STYLES: StyleDef[] = [
     label: "보로부두르 사원 일출",
     description: "인도네시아 보로부두르 사원의 신비로운 일출",
     emoji: "🌅",
+    imageUrl: STYLE_PREVIEWS.borobudur,
     prompt:
       "A breathtaking travel portrait standing at Borobudur temple in Indonesia during a magical golden sunrise, ancient stupas, misty background, highly detailed",
   },
@@ -388,6 +408,7 @@ export const STYLES: StyleDef[] = [
     label: "파리 에펠탑 노을",
     description: "로맨틱한 파리 에펠탑 황금빛 노을 배경",
     emoji: "🗼",
+    imageUrl: STYLE_PREVIEWS.paris,
     prompt:
       "A romantic travel portrait in front of Eiffel Tower in Paris, golden hour lighting, cinematic style, 8k",
   },
@@ -397,6 +418,7 @@ export const STYLES: StyleDef[] = [
     label: "산토리니 블루돔",
     description: "그리스 산토리니의 에지해 석양 오션뷰",
     emoji: "🇬🇷",
+    imageUrl: STYLE_PREVIEWS.santorini,
     prompt:
       "A picturesque travel photo standing on white dome balconies in Santorini Greece during sunset, Aegean sea background, 8k",
   },

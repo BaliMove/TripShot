@@ -112,7 +112,7 @@ async function createCompositedPhoto(
 
     const timer = setTimeout(() => {
       drawInlineCompositedPhoto(selfieBase64, styleLabel).then(safeResolve).catch(() => safeResolve(selfieBase64));
-    }, 1500);
+    }, 1800);
 
     try {
       const canvas = document.createElement("canvas");
@@ -125,54 +125,53 @@ async function createCompositedPhoto(
       canvas.width = 1000;
       canvas.height = 1000;
 
+      const bgImg = new Image();
+      bgImg.crossOrigin = "anonymous";
+
       const selfieImg = new Image();
       selfieImg.crossOrigin = "anonymous";
 
-      selfieImg.onload = () => {
+      let loadedCount = 0;
+      const checkDone = () => {
+        loadedCount++;
+        if (loadedCount < 2) return;
+
         clearTimeout(timer);
         try {
-          // 1. Clear Canvas Completely (0% Remaining Artifacts)
           ctx.clearRect(0, 0, 1000, 1000);
           ctx.globalCompositeOperation = "source-over";
 
-          // 2. Draw Premium Studio Backdrop Gradient
+          // 1. Draw Selected Concept Style Background (Suits/Destinations Backdrop 1000x1000)
           ctx.save();
-          const bgGrad = ctx.createLinearGradient(0, 0, 1000, 1000);
-          bgGrad.addColorStop(0, "#1e293b");
-          bgGrad.addColorStop(0.5, "#0f172a");
-          bgGrad.addColorStop(1, "#0369a1");
-          ctx.fillStyle = bgGrad;
-          ctx.fillRect(0, 0, 1000, 1000);
+          ctx.drawImage(bgImg, 0, 0, 1000, 1000);
           ctx.restore();
 
-          // 3. Draw User Selfie Person Photo (Aspect-Ratio Center Cover Crop - No Squeeze / No Screenshot Bars)
+          // 2. Draw User Selfie Person Photo with Soft Portrait Lighting Blend
           ctx.save();
           const imgW = selfieImg.naturalWidth || selfieImg.width || 1000;
           const imgH = selfieImg.naturalHeight || selfieImg.height || 1000;
-          const targetW = 1000;
-          const targetH = 1000;
-
-          // Compute aspect cover crop coordinates
-          const scale = Math.max(targetW / imgW, targetH / imgH);
+          const scale = Math.max(1000 / imgW, 1000 / imgH);
           const drawW = imgW * scale;
           const drawH = imgH * scale;
-          const drawX = (targetW - drawW) / 2;
-          const drawY = (targetH - drawH) / 2;
+          const drawX = (1000 - drawW) / 2;
+          const drawY = (1000 - drawH) / 2;
 
+          ctx.globalCompositeOperation = "soft-light";
           ctx.drawImage(selfieImg, drawX, drawY, drawW, drawH);
+          ctx.globalCompositeOperation = "source-over";
           ctx.restore();
 
-          // 4. Soft Studio Ambient Lighting & Color Balance
+          // 3. Soft Studio Ambient Lighting & Color Balance
           ctx.save();
           const toneGrad = ctx.createLinearGradient(0, 0, 0, 1000);
-          toneGrad.addColorStop(0, "rgba(15, 23, 42, 0.08)");
+          toneGrad.addColorStop(0, "rgba(15, 23, 42, 0.05)");
           toneGrad.addColorStop(0.5, "rgba(0, 0, 0, 0)");
-          toneGrad.addColorStop(1, "rgba(15, 23, 42, 0.65)");
+          toneGrad.addColorStop(1, "rgba(15, 23, 42, 0.6)");
           ctx.fillStyle = toneGrad;
           ctx.fillRect(0, 0, 1000, 1000);
           ctx.restore();
 
-          // 5. Watermark Title & Branding Overlay
+          // 4. Watermark Title & Branding Overlay
           ctx.save();
           const bannerGrad = ctx.createLinearGradient(0, 840, 0, 1000);
           bannerGrad.addColorStop(0, "rgba(15, 23, 42, 0)");
@@ -198,11 +197,19 @@ async function createCompositedPhoto(
         }
       };
 
+      bgImg.onload = checkDone;
+      bgImg.onerror = () => {
+        clearTimeout(timer);
+        drawInlineCompositedPhoto(selfieBase64, styleLabel).then(safeResolve).catch(() => safeResolve(selfieBase64));
+      };
+
+      selfieImg.onload = checkDone;
       selfieImg.onerror = () => {
         clearTimeout(timer);
         drawInlineCompositedPhoto(selfieBase64, styleLabel).then(safeResolve).catch(() => safeResolve(selfieBase64));
       };
 
+      bgImg.src = bgUrl;
       selfieImg.src = selfieBase64;
     } catch (err) {
       clearTimeout(timer);

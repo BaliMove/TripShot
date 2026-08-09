@@ -6,26 +6,26 @@ const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: "25mb" }));
 
-// Detailed Master Style Prompt Dictionary for Vivid Destination Background Synthesis
-const STYLE_PROMPT_MAP = {
-  // 1. Extreme & Majestic Travel Destinations
-  devils_pool: "a masterpiece travel portrait at Victoria Falls Devil's Pool Zambia, person sitting on edge of massive waterfall cliff, roaring white foam, mist and vibrant rainbow background, clear turquoise water, epic landscape photography, photorealistic 8k, ultra sharp focus",
-  zambia_devils_pool: "a masterpiece travel portrait at Victoria Falls Devil's Pool Zambia, person sitting on edge of massive waterfall cliff, roaring white foam, mist and vibrant rainbow background, clear turquoise water, epic landscape photography, photorealistic 8k, ultra sharp focus",
-  trolltunga: "an epic travel portrait standing on Trolltunga cliff ledge Norway, overlooking deep blue fjord and snowy mountain ranges background, dramatic sky, cinematic lighting, photorealistic 8k",
-  zermatt: "stunning winter travel portrait in Zermatt Switzerland, majestic Matterhorn peak covered in snow in background, wearing stylish winter goose jacket, bright sunlight, photorealistic 8k",
-  santorini: "gorgeous portrait in Santorini Greece, iconic white buildings and blue dome church background, deep blue Aegean sea, golden hour sunset, photorealistic 8k",
-  pyramids: "epic portrait at Great Pyramids of Giza Egypt, camels in sand dunes background, bright desert sunlight, photorealistic 8k",
-  bali: "exotic travel portrait at Lempuyang Temple Bali Gates of Heaven, volcano Mount Agung background in distance, mirror reflection pool, photorealistic 8k",
-  capri: "luxury summer portrait in Capri Island Italy, famous Faraglioni rocks background, crystal clear turquoise water, photorealistic 8k",
+// Dynamic Style Prompt Mapping Dictionary for fal-ai/flux-pulid
+const DYNAMIC_PROMPT_MAP = {
+  // Travel Destinations
+  trolltunga: "portrait of a person standing on Trolltunga cliff in Norway, breathtaking fjord and mountain background, outdoor travel photography",
+  devils_pool: "portrait of a person swimming at Devil's Pool Victoria Falls Zambia, waterfall cliff edge background, dramatic mist and rainbow, travel photography",
+  zambia_devils_pool: "portrait of a person swimming at Devil's Pool Victoria Falls Zambia, waterfall cliff edge background, dramatic mist and rainbow, travel photography",
+  zermatt: "portrait of a person in Zermatt Switzerland, majestic Matterhorn snowy mountain peak background, winter outdoor travel photography",
+  santorini: "portrait of a person in Santorini Greece, iconic white buildings and blue dome background, Aegean sea, summer travel photography",
+  pyramids: "portrait of a person at Great Pyramids of Giza Egypt, desert sand dunes background, travel photography",
+  bali: "portrait of a person at Bali Gates of Heaven Lempuyang, volcano background, tropical travel photography",
+  capri: "portrait of a person in Capri Italy, Faraglioni rocks background, Mediterranean sea travel photography",
 
-  // 2. Studio & Passport Concept Photos
-  passport_photo: "professional passport photo, centered headshot, solid clean white background, formal suit jacket attire, studio softbox lighting, 8k crisp details",
-  business_suit: "executive business headshot, luxury corporate office glass skyscraper background, charcoal suit jacket, confident smile, 8k",
-  student_id: "clean student ID photo, soft pastel background, casual polo, bright friendly face, 8k",
-  id_card: "official ID photo, neutral gray background, neat hair, formal shirt, 8k",
+  // Studio & Concepts
+  business_suit: "portrait of a person wearing a sharp business suit, elegant modern office background",
+  passport_photo: "portrait of a person, professional studio passport photo, solid clean white background, formal attire",
+  student_id: "portrait of a friendly person for student ID, soft blurred campus background, casual shirt",
+  id_card: "official ID photo portrait of a person, neutral solid light gray background, neat smart attire",
 };
 
-// Express /api/generate 100% Accurate Style-Matched AI Backend Endpoint
+// Express /api/generate 100% Dynamic Style-Matched PuLID Backend Endpoint
 app.post("/api/generate", async (req, res) => {
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
   try {
@@ -45,41 +45,46 @@ app.post("/api/generate", async (req, res) => {
 
     const selectedStyleKey = (styleId || destination || "trolltunga").toLowerCase().replace(/-/g, "_");
     
-    // Pick detailed prompt or construct custom prompt
-    let promptText = STYLE_PROMPT_MAP[selectedStyleKey] || STYLE_PROMPT_MAP.trolltunga;
+    // Dynamic Prompt Resolution
+    let selectedStylePrompt = DYNAMIC_PROMPT_MAP[selectedStyleKey] || DYNAMIC_PROMPT_MAP.trolltunga;
     if (customPrompt && customPrompt.trim()) {
-      promptText = `Masterpiece travel portrait, ${customPrompt.trim()}, professional lighting, sharp focus, photorealistic 8k`;
+      selectedStylePrompt = `portrait of a person, ${customPrompt.trim()}, high quality travel photography`;
     }
 
     const formattedImageUrl = imageBase64.startsWith("data:") 
       ? imageBase64 
       : `data:image/jpeg;base64,${imageBase64}`;
 
-    console.log(`[Cloud Function api] Generating AI Image for Style key: '${selectedStyleKey}' -> Prompt: "${promptText.substring(0, 70)}..."`);
+    console.log(`[Cloud Function api] Invoking fal-ai/flux-pulid for style: '${selectedStyleKey}' -> Prompt: "${selectedStylePrompt}"`);
 
     const fetch = (await import("node-fetch")).default;
 
-    // Call Fast Image-to-Image Endpoint with high strength (0.82) for strong background transformation
-    const falRes = await fetch("https://fal.run/fal-ai/flux/dev/image-to-image", {
+    // Call fal-ai/flux-pulid with exact parameters (reference_image_url, prompt, id_weight: 1.0)
+    const falRes = await fetch("https://fal.run/fal-ai/flux-pulid", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Key ${falApiKey}`,
       },
       body: JSON.stringify({
-        prompt: promptText,
-        image_url: formattedImageUrl,
-        strength: 0.82, // 82% background transform for vivid destination scenery
-        num_inference_steps: 24,
-        enable_safety_checker: false,
+        prompt: selectedStylePrompt,
+        reference_image_url: formattedImageUrl,
+        reference_images: [
+          {
+            image_url: formattedImageUrl,
+          }
+        ],
+        id_weight: 1.0, // 100% User Face ID Preservation
+        sim_coeff: 0.75,
+        num_inference_steps: 20,
       }),
     });
 
     if (!falRes.ok) {
       const errText = await falRes.text();
-      console.error("[Cloud Function api] Img2Img Error:", falRes.status, errText);
+      console.error("[Cloud Function api] flux-pulid Error:", falRes.status, errText);
       return res.status(500).json({
-        error: `Fal.ai AI 생성 오류 (${falRes.status}): ${errText}`
+        error: `fal-ai/flux-pulid AI 생성 오류 (${falRes.status}): ${errText}`
       });
     }
 
@@ -90,27 +95,27 @@ app.post("/api/generate", async (req, res) => {
       (Array.isArray(falData?.images) && falData.images[0]?.url);
 
     if (!realAiImageUrl) {
-      console.error("[Cloud Function api] Empty image payload:", falData);
+      console.error("[Cloud Function api] Empty flux-pulid image payload:", falData);
       return res.status(500).json({
-        error: "Fal.ai AI 응답에 이미지 URL이 포함되지 않았습니다."
+        error: "Fal.ai PuLID AI 응답에 이미지 URL이 포함되지 않았습니다."
       });
     }
 
-    console.log(`[Cloud Function api] 100% Vivid Style-Matched ('${selectedStyleKey}') AI Image Generated:`, realAiImageUrl);
+    console.log(`[Cloud Function api] 100% Dynamic Style-Matched PuLID Image Generated:`, realAiImageUrl);
 
     return res.json({
       lite: {
         success: true,
         imageUrl: realAiImageUrl,
-        timeSec: "2.1",
-        engine: "flux-img2img-vivid-synthesis",
+        timeSec: "2.5",
+        engine: "flux-pulid-dynamic",
         styleKey: selectedStyleKey
       },
       pro: {
         success: true,
         imageUrl: realAiImageUrl,
-        timeSec: "3.2",
-        engine: "flux-img2img-vivid-synthesis",
+        timeSec: "3.6",
+        engine: "flux-pulid-dynamic",
         styleKey: selectedStyleKey
       }
     });

@@ -145,9 +145,21 @@ async function createCompositedPhoto(
           ctx.fillRect(0, 0, 1000, 1000);
           ctx.restore();
 
-          // 3. Draw User Selfie Person Photo (100% Full Canvas Crisp Coverage)
+          // 3. Draw User Selfie Person Photo (Aspect-Ratio Center Cover Crop - No Squeeze / No Screenshot Bars)
           ctx.save();
-          ctx.drawImage(selfieImg, 0, 0, 1000, 1000);
+          const imgW = selfieImg.naturalWidth || selfieImg.width || 1000;
+          const imgH = selfieImg.naturalHeight || selfieImg.height || 1000;
+          const targetW = 1000;
+          const targetH = 1000;
+
+          // Compute aspect cover crop coordinates
+          const scale = Math.max(targetW / imgW, targetH / imgH);
+          const drawW = imgW * scale;
+          const drawH = imgH * scale;
+          const drawX = (targetW - drawW) / 2;
+          const drawY = (targetH - drawH) / 2;
+
+          ctx.drawImage(selfieImg, drawX, drawY, drawW, drawH);
           ctx.restore();
 
           // 4. Soft Studio Ambient Lighting & Color Balance
@@ -224,9 +236,16 @@ async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: strin
         ctx.fillRect(0, 0, 1000, 1000);
         ctx.restore();
 
-        // 2. User Selfie Photo Full Coverage
+        // 2. User Selfie Photo Center Cover Crop
         ctx.save();
-        ctx.drawImage(selfieImg, 0, 0, 1000, 1000);
+        const imgW = selfieImg.naturalWidth || selfieImg.width || 1000;
+        const imgH = selfieImg.naturalHeight || selfieImg.height || 1000;
+        const scale = Math.max(1000 / imgW, 1000 / imgH);
+        const drawW = imgW * scale;
+        const drawH = imgH * scale;
+        const drawX = (1000 - drawW) / 2;
+        const drawY = (1000 - drawH) / 2;
+        ctx.drawImage(selfieImg, drawX, drawY, drawW, drawH);
         ctx.restore();
 
         // 3. Watermark Title

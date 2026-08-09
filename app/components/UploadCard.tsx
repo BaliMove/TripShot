@@ -729,24 +729,18 @@ export default function UploadCard({
           const resJson = await response.json();
           if (resJson?.lite?.imageUrl || resJson?.pro?.imageUrl) {
             data = resJson;
+          } else {
+            throw new Error(resJson?.error || "AI 생성 결과 데이터가 없습니다.");
           }
+        } else {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData?.error || `서버 에러 (${response.status})`);
         }
-      } catch (backendErr) {
-        console.warn("[Backend API Route Fetch] Network route fallback to client renderer:", backendErr);
-      }
-
-      // Guaranteed Instant High-Quality Client Compositor (Failsafe)
-      if (!data || !data.lite?.imageUrl) {
-        const bgUrl =
-          STYLE_PREVIEWS[selectedStyleId] ||
-          STYLE_PREVIEWS.trolltunga ||
-          "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80";
-        const styleLabel = selectedStyle?.label ?? "AI 여행 화보";
-        const compositedImg = await createCompositedPhoto(currentSelfie, bgUrl, styleLabel);
-        data = {
-          lite: { success: true, imageUrl: compositedImg, timeSec: "2.8" },
-          pro: { success: true, imageUrl: compositedImg, timeSec: "3.9" },
-        };
+      } catch (backendErr: any) {
+        console.error("[Backend API Route Fetch Error]:", backendErr);
+        setError(`AI 생성 실패: ${backendErr.message || "백엔드 통신 오류"}`);
+        setIsLoading(false);
+        return;
       }
 
 

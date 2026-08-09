@@ -190,34 +190,11 @@ export async function POST(req: NextRequest) {
     const proResult = optionAResult;
 
     if (!liteResult.success && !proResult.success) {
-      console.warn("Generating high quality matched studio portrait with exact gender and style alignment.");
-      
-      const gender = body.gender ?? "male";
-      const isMale = gender === "male";
-
-      // Ultra High-Quality Asian male/female business & passport portraits tailored to user's selection
-      let matchedImageUrl = isMale
-        ? "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1200&q=80" // Handsome Asian/East-Asian male portrait in sharp suit
-        : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1200&q=80"; // Elegant Asian/East-Asian female business executive
-
-      if (styleId === "id_photo" || styleId === "passport") {
-        matchedImageUrl = isMale
-          ? "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1200&q=80"
-          : "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=1200&q=80";
-      }
-
-      return NextResponse.json({
-        lite: {
-          success: true,
-          imageUrl: matchedImageUrl,
-          timeSec: "2.1"
-        },
-        pro: {
-          success: true,
-          imageUrl: matchedImageUrl,
-          timeSec: "3.2"
-        }
-      });
+      const errDetail = (liteResult as ModelErrorResult).error || "AI 화보 이미지 생성 실패";
+      return NextResponse.json(
+        { error: `백엔드 AI 서버 통신 오류: ${errDetail}` },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({
@@ -227,24 +204,10 @@ export async function POST(req: NextRequest) {
 
   } catch (err: unknown) {
     console.error("Generate API Error:", err);
-
-    const gender = body?.gender ?? "male";
-    const isMale = gender === "male";
-    const matchedImageUrl = isMale
-      ? "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1200&q=80"
-      : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1200&q=80";
-
-    return NextResponse.json({
-      lite: {
-        success: true,
-        imageUrl: matchedImageUrl,
-        timeSec: "2.0"
-      },
-      pro: {
-        success: true,
-        imageUrl: matchedImageUrl,
-        timeSec: "3.1"
-      }
-    });
+    const errMsg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json(
+      { error: `서버 예외 발생: ${errMsg}` },
+      { status: 500 }
+    );
   }
 }

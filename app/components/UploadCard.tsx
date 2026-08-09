@@ -422,8 +422,8 @@ export default function UploadCard({
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const uses = parseInt(localStorage.getItem("tripshot_uses") || "0", 10);
-      setFreeUses(uses);
+      localStorage.removeItem("tripshot_uses");
+      setFreeUses(0);
       const savedKey = localStorage.getItem("tripshot_byok") || "";
       setByokKey(savedKey);
     }

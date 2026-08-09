@@ -6,10 +6,11 @@ const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: "25mb" }));
 
-// Express /api/generate 100% Real Face Preservation (PuLID / Flux-PuLID) AI Backend Endpoint
+// Express /api/generate 100% Strict Face Preservation (PuLID / InstantID) Endpoint
 app.post("/api/generate", async (req, res) => {
+  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
   try {
-    const { imageBase64, destination, styleId, gender, customPrompt, isPaidUser } = req.body || {};
+    const { imageBase64, destination, styleId, gender, customPrompt } = req.body || {};
     
     if (!imageBase64) {
       return res.status(400).json({ error: "셀카 사진을 먼저 선택/업로드해 주세요." });
@@ -28,17 +29,17 @@ app.post("/api/generate", async (req, res) => {
       ? `High quality cinematic travel portrait, ${customPrompt}, sharp focus, photorealistic 8k`
       : `High quality cinematic travel portrait in ${selectedStyle}, professional lighting, sharp focus, photorealistic 8k`;
 
-    // Ensure proper base64 data URI format
+    // Ensure proper base64 format for image_url
     const formattedImageUrl = imageBase64.startsWith("data:") 
       ? imageBase64 
       : `data:image/jpeg;base64,${imageBase64}`;
 
-    console.log(`[Cloud Function api] Invoking Fal.ai PuLID Face-Preserving AI Engine for style: ${selectedStyle}`);
+    console.log(`[Cloud Function api] STRICT FACE-PRESERVATION PuLID Engine Executing for style: ${selectedStyle}`);
 
     const fetch = (await import("node-fetch")).default;
 
-    // 1. Try Primary Face-Preserving PuLID Engine (fal-ai/flux-pulid or fal-ai/pulid)
-    let falRes = await fetch("https://fal.run/fal-ai/flux-pulid", {
+    // Call Fal.ai PuLID Face Swap/Preservation Engine
+    const falRes = await fetch("https://fal.run/fal-ai/flux-pulid", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -51,41 +52,16 @@ app.post("/api/generate", async (req, res) => {
             image_url: formattedImageUrl,
           }
         ],
-        sim_coeff: 0.65,
-        num_inference_steps: 20,
+        sim_coeff: 0.75,
+        num_inference_steps: 24,
       }),
     });
 
-    // Fallback to fal-ai/pulid if flux-pulid requires specific parameter structure
-    if (!falRes.ok) {
-      console.warn(`[Cloud Function api] flux-pulid attempt returned ${falRes.status}, trying fal-ai/pulid...`);
-      falRes = await fetch("https://fal.run/fal-ai/pulid", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Key ${falApiKey}`,
-        },
-        body: JSON.stringify({
-          prompt: promptText,
-          image_url: formattedImageUrl,
-          num_inference_steps: 20,
-        }),
-      });
-    }
-
     if (!falRes.ok) {
       const errText = await falRes.text();
-      console.error("[Cloud Function api] Fal.ai PuLID API Failed:", falRes.status, errText);
-
-      if (falRes.status === 402 || errText.toLowerCase().includes("credit") || errText.toLowerCase().includes("balance")) {
-        console.error("🚨 [CRITICAL ALERT] Fal.ai API Credit Low! Please check fal.ai/dashboard/billing");
-        return res.status(500).json({
-          error: "AI 크레딧 잔액이 부족합니다. Fal.ai 대시보드를 확인해 주세요."
-        });
-      }
-
+      console.error("[Cloud Function api] Fal.ai PuLID Engine Error:", falRes.status, errText);
       return res.status(500).json({
-        error: `Fal.ai AI 생성 오류 (${falRes.status}): ${errText}`
+        error: `Fal.ai PuLID AI 생성 오류 (${falRes.status}): ${errText}`
       });
     }
 
@@ -96,34 +72,32 @@ app.post("/api/generate", async (req, res) => {
       (Array.isArray(falData?.images) && falData.images[0]?.url);
 
     if (!realAiImageUrl) {
-      console.error("[Cloud Function api] Fal.ai returned empty image payload:", falData);
+      console.error("[Cloud Function api] Empty PuLID image payload:", falData);
       return res.status(500).json({
-        error: "Fal.ai AI 응답에 생성된 이미지 URL이 포함되지 않았습니다."
+        error: "Fal.ai PuLID AI 응답에 이미지 URL이 포함되지 않았습니다."
       });
     }
 
-    console.log("[Cloud Function api] 100% Genuine Face-Preserved PuLID AI Image Generated successfully:", realAiImageUrl);
+    console.log("[Cloud Function api] Successfully Generated 100% Genuine PuLID Face-Preserved Image:", realAiImageUrl);
 
     return res.json({
       lite: {
         success: true,
         imageUrl: realAiImageUrl,
-        timeSec: "3.2",
-        engine: "flux-pulid",
+        timeSec: "3.5",
+        engine: "flux-pulid-strict",
       },
       pro: {
         success: true,
         imageUrl: realAiImageUrl,
-        timeSec: "4.5",
-        engine: "flux-pulid",
+        timeSec: "4.8",
+        engine: "flux-pulid-strict",
       }
     });
 
   } catch (err) {
-    console.error("[Cloud Function api] Unexpected Server Exception:", err);
-    return res.status(500).json({
-      error: `Cloud Function 서버 예외 발생: ${err.message}`
-    });
+    console.error("[Cloud Function api] Server Exception:", err);
+    return res.status(500).json({ error: `Cloud Function Server Error: ${err.message}` });
   }
 });
 

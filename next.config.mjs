@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
   generateBuildId: async () => `build-${Date.now()}`,
   images: {
     unoptimized: true,

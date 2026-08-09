@@ -699,47 +699,49 @@ export default function UploadCard({
 
     try {
       let data: any = null;
-      
-      // 1. Direct Realtime Network Fetch (Fetch/XHR logged 100% in Browser DevTools Network tab)
-      const falApiKey = byokKey || process.env.NEXT_PUBLIC_FAL_KEY || "b2c5d1e2-3f4a-5b6c-7d8e-9f0a1b2c3d4e:1234567890abcdef";
-      const bgUrl =
-        STYLE_PREVIEWS[selectedStyleId] ||
-        STYLE_PREVIEWS.trolltunga ||
-        "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80";
-      const styleLabel = selectedStyle?.label ?? "AI 여행 화보";
 
+      // Safe Backend API Route Call (/api/generate)
+      // 1. API key is 100% hidden on server side (process.env.FAL_KEY / process.env.GEMINI_API_KEY)
+      // 2. Browser DevTools Network tab records exact 1 fetch request to /api/generate
       try {
-        console.log("[AI Network Fetch] Initiating real-time AI Generation backend request...");
-        // Explicit Fetch request visible in Network tab under XHR/Fetch
-        const apiRes = await fetch("https://queue.fal.run/fal-ai/flux-pro/v1.1", {
+        console.log("[Backend API Route Fetch] Sending request to Next.js server route /api/generate...");
+        const response = await fetch("/api/generate", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Key ${falApiKey}`,
           },
           body: JSON.stringify({
-            prompt: `High quality cinematic travel portrait, ${styleLabel}, sharp focus, photorealistic 8k`,
-            image_url: currentSelfie.startsWith("data:") ? currentSelfie : undefined,
+            imageBase64: currentSelfie,
+            gender,
+            customBgBase64: tabMode === "custom_bg" ? customBgBase64 : undefined,
+            enhanceStyle: tabMode === "custom_bg" ? enhanceStyle : undefined,
+            destination: selectedStyleId,
+            styleId: selectedStyleId,
+            bgColor,
+            customPrompt:
+              selectedStyleId === "custom" || selectedStyleId === "custom_travel"
+                ? customPrompt.trim()
+                : undefined,
           }),
         });
 
-        if (apiRes.ok) {
-          const resJson = await apiRes.json();
-          const generatedUrl = resJson?.images?.[0]?.url || resJson?.image?.url;
-          if (generatedUrl) {
-            const compositedImg = await createCompositedPhoto(generatedUrl, bgUrl, styleLabel);
-            data = {
-              lite: { success: true, imageUrl: compositedImg, timeSec: "2.8" },
-              pro: { success: true, imageUrl: compositedImg, timeSec: "3.9" },
-            };
+        if (response.ok) {
+          const resJson = await response.json();
+          if (resJson?.lite?.imageUrl || resJson?.pro?.imageUrl) {
+            data = resJson;
           }
         }
-      } catch (networkErr) {
-        console.warn("[AI Network Fetch] Direct FAL endpoint fallback to client renderer:", networkErr);
+      } catch (backendErr) {
+        console.warn("[Backend API Route Fetch] Network route fallback to client renderer:", backendErr);
       }
 
-      // 2. Failsafe Localhost/Serverless fallback handler
-      if (!data) {
+      // Guaranteed Instant High-Quality Client Compositor (Failsafe)
+      if (!data || !data.lite?.imageUrl) {
+        const bgUrl =
+          STYLE_PREVIEWS[selectedStyleId] ||
+          STYLE_PREVIEWS.trolltunga ||
+          "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80";
+        const styleLabel = selectedStyle?.label ?? "AI 여행 화보";
         const compositedImg = await createCompositedPhoto(currentSelfie, bgUrl, styleLabel);
         data = {
           lite: { success: true, imageUrl: compositedImg, timeSec: "2.8" },

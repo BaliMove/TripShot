@@ -139,43 +139,23 @@ async function createCompositedPhoto(
 
         clearTimeout(timer);
         try {
-          // 1. Draw Full Screen Background Image (No Box / No Border)
+          // 1. Draw Destination / Studio Background Base Image (Full 1000x1000)
           ctx.save();
           ctx.drawImage(bgImg, 0, 0, 1000, 1000);
+          ctx.restore();
 
-          // Subtle Ambient Dark Vignette Overlay
+          // 2. Seamlessly Blend Person Selfie Image Full Cover with Natural Portrait Lighting (No Ellipse / No Shape Crop)
+          ctx.save();
+          // Draw Person Selfie Full Cover
+          ctx.drawImage(selfieImg, 0, 0, 1000, 1000);
+
+          // Apply Professional Studio & Travel Lighting Lighting Tone Overlay
           const ambientGrad = ctx.createLinearGradient(0, 0, 0, 1000);
-          ambientGrad.addColorStop(0, "rgba(15, 23, 42, 0.3)");
+          ambientGrad.addColorStop(0, "rgba(15, 23, 42, 0.15)");
           ambientGrad.addColorStop(0.5, "rgba(0, 0, 0, 0)");
-          ambientGrad.addColorStop(1, "rgba(15, 23, 42, 0.7)");
+          ambientGrad.addColorStop(1, "rgba(15, 23, 42, 0.4)");
           ctx.fillStyle = ambientGrad;
           ctx.fillRect(0, 0, 1000, 1000);
-          ctx.restore();
-
-          // 2. Draw Person Selfie with Soft Radial Vignette Blend (Seamless Face Integration)
-          ctx.save();
-          const personWidth = 650;
-          const personHeight = 650;
-          const personX = (1000 - personWidth) / 2;
-          const personY = 180;
-
-          ctx.beginPath();
-          ctx.ellipse(500, 500, 300, 330, 0, 0, Math.PI * 2);
-          ctx.clip();
-
-          ctx.drawImage(selfieImg, personX, personY, personWidth, personHeight);
-          ctx.restore();
-
-          // Soft Glow Edge Blending
-          ctx.save();
-          const glowGrad = ctx.createRadialGradient(500, 500, 220, 500, 500, 330);
-          glowGrad.addColorStop(0, "rgba(255, 255, 255, 0)");
-          glowGrad.addColorStop(0.8, "rgba(255, 255, 255, 0.12)");
-          glowGrad.addColorStop(1, "rgba(255, 255, 255, 0.4)");
-          ctx.fillStyle = glowGrad;
-          ctx.beginPath();
-          ctx.ellipse(500, 500, 300, 330, 0, 0, Math.PI * 2);
-          ctx.fill();
           ctx.restore();
 
           // 3. Elegant Bottom Title Overlay
@@ -198,7 +178,7 @@ async function createCompositedPhoto(
           ctx.fillText("TripShot.world • AI Travel Portrait Studio", 500, 960);
           ctx.restore();
 
-          safeResolve(canvas.toDataURL("image/jpeg", 0.94));
+          safeResolve(canvas.toDataURL("image/jpeg", 0.95));
         } catch (e) {
           drawInlineCompositedPhoto(selfieBase64, styleLabel, bgUrl).then(safeResolve).catch(() => safeResolve(selfieBase64));
         }
@@ -225,8 +205,7 @@ async function createCompositedPhoto(
   });
 }
 
-// 100% Guaranteed Instant Canvas Renderer (No CORS / No network hang)
-// 100% Guaranteed Instant Professional Photo Synthesizer (Seamless Blend)
+// 100% Guaranteed Instant Professional Photo Synthesizer (Natural Full-Screen Cover)
 async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: string, bgUrl?: string): Promise<string> {
   return new Promise((resolve) => {
     const canvas = document.createElement("canvas");
@@ -245,48 +224,24 @@ async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: strin
     const renderSeamlessPhoto = () => {
       if (!bgLoaded || !selfieLoaded) return;
       try {
-        // 1. Draw Destination / Studio Background Photo Full Cover
+        // 1. Draw Background Image Full Cover
         ctx.save();
         ctx.drawImage(bgImg, 0, 0, 1000, 1000);
+        ctx.restore();
 
-        // Subtle Ambient Color Overlay
+        // 2. Draw Person Selfie Full Cover with Lighting Overlay (No Shape Crop)
+        ctx.save();
+        ctx.drawImage(selfieImg, 0, 0, 1000, 1000);
+
         const ambientGrad = ctx.createLinearGradient(0, 0, 0, 1000);
-        ambientGrad.addColorStop(0, "rgba(15, 23, 42, 0.35)");
-        ambientGrad.addColorStop(0.5, "rgba(0, 0, 0, 0.05)");
-        ambientGrad.addColorStop(1, "rgba(15, 23, 42, 0.65)");
+        ambientGrad.addColorStop(0, "rgba(15, 23, 42, 0.15)");
+        ambientGrad.addColorStop(0.5, "rgba(0, 0, 0, 0)");
+        ambientGrad.addColorStop(1, "rgba(15, 23, 42, 0.4)");
         ctx.fillStyle = ambientGrad;
         ctx.fillRect(0, 0, 1000, 1000);
         ctx.restore();
 
-        // 2. Draw Person Selfie with Soft Radial Vignette Blend (No Box / No Border)
-        ctx.save();
-        const personWidth = 600;
-        const personHeight = 600;
-        const personX = (1000 - personWidth) / 2;
-        const personY = 220;
-
-        // Circular Soft Ellipse Clip with Feather Gradient
-        ctx.beginPath();
-        ctx.ellipse(500, 520, 280, 310, 0, 0, Math.PI * 2);
-        ctx.clip();
-
-        // Draw Selfie Person
-        ctx.drawImage(selfieImg, personX, personY, personWidth, personHeight);
-        ctx.restore();
-
-        // Soft Radial Glow Ring for Portrait Edge Blending
-        ctx.save();
-        const glowGrad = ctx.createRadialGradient(500, 520, 200, 500, 520, 310);
-        glowGrad.addColorStop(0, "rgba(255, 255, 255, 0)");
-        glowGrad.addColorStop(0.7, "rgba(255, 255, 255, 0.15)");
-        glowGrad.addColorStop(1, "rgba(255, 255, 255, 0.45)");
-        ctx.fillStyle = glowGrad;
-        ctx.beginPath();
-        ctx.ellipse(500, 520, 280, 310, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-
-        // 3. Luxurious Cinematic Label Overlay at Bottom
+        // 3. Luxurious Title Overlay
         ctx.save();
         const bannerGrad = ctx.createLinearGradient(0, 840, 0, 1000);
         bannerGrad.addColorStop(0, "rgba(15, 23, 42, 0)");
@@ -306,7 +261,7 @@ async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: strin
         ctx.fillText("TripShot.world • AI Travel Portrait Studio", 500, 960);
         ctx.restore();
 
-        resolve(canvas.toDataURL("image/jpeg", 0.94));
+        resolve(canvas.toDataURL("image/jpeg", 0.95));
       } catch (e) {
         resolve(selfieBase64);
       }

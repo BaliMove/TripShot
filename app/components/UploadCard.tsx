@@ -139,6 +139,10 @@ async function createCompositedPhoto(
 
         clearTimeout(timer);
         try {
+          // Clear canvas completely
+          ctx.clearRect(0, 0, 1000, 1000);
+          ctx.globalCompositeOperation = "source-over";
+
           // 1. Draw User Selfie Photo Full Canvas (1000x1000) (No Circular Mask / No Blur Artifacts)
           ctx.save();
           ctx.drawImage(selfieImg, 0, 0, 1000, 1000);
@@ -668,6 +672,7 @@ export default function UploadCard({
     }
 
     setIsLoading(true);
+    setResult(null);
     setError(null);
 
     // 35s failsafe timer to allow AI image generation & real-time progress bar to run smoothly

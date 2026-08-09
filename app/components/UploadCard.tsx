@@ -141,12 +141,19 @@ async function createCompositedPhoto(
           ctx.clearRect(0, 0, 1000, 1000);
           ctx.globalCompositeOperation = "source-over";
 
-          // 1. Draw Selected Concept Style Background (Suits/Destinations Backdrop 1000x1000)
+          // 1. Draw Selected Destination/Concept Style Background (100% Crisp Full Canvas)
           ctx.save();
-          ctx.drawImage(bgImg, 0, 0, 1000, 1000);
+          const bgW = bgImg.naturalWidth || bgImg.width || 1000;
+          const bgH = bgImg.naturalHeight || bgImg.height || 1000;
+          const bgScale = Math.max(1000 / bgW, 1000 / bgH);
+          const bgDrawW = bgW * bgScale;
+          const bgDrawH = bgH * bgScale;
+          const bgDrawX = (1000 - bgDrawW) / 2;
+          const bgDrawY = (1000 - bgDrawH) / 2;
+          ctx.drawImage(bgImg, bgDrawX, bgDrawY, bgDrawW, bgDrawH);
           ctx.restore();
 
-          // 2. Draw User Selfie Person Photo with Soft Portrait Lighting Blend
+          // 2. Draw User Selfie Person Photo (100% Solid Crisp Coverage - ZERO Ghost Translucency)
           ctx.save();
           const imgW = selfieImg.naturalWidth || selfieImg.width || 1000;
           const imgH = selfieImg.naturalHeight || selfieImg.height || 1000;
@@ -156,19 +163,18 @@ async function createCompositedPhoto(
           const drawX = (1000 - drawW) / 2;
           const drawY = (1000 - drawH) / 2;
 
-          ctx.globalCompositeOperation = "soft-light";
-          ctx.drawImage(selfieImg, drawX, drawY, drawW, drawH);
           ctx.globalCompositeOperation = "source-over";
+          ctx.globalAlpha = 1.0;
+          ctx.drawImage(selfieImg, drawX, drawY, drawW, drawH);
           ctx.restore();
 
-          // 3. Soft Studio Ambient Lighting & Color Balance
+          // 3. Subtle Cinematic Vignette Overlay (Bottom Banner Frame)
           ctx.save();
-          const toneGrad = ctx.createLinearGradient(0, 0, 0, 1000);
-          toneGrad.addColorStop(0, "rgba(15, 23, 42, 0.05)");
-          toneGrad.addColorStop(0.5, "rgba(0, 0, 0, 0)");
-          toneGrad.addColorStop(1, "rgba(15, 23, 42, 0.6)");
+          const toneGrad = ctx.createLinearGradient(0, 700, 0, 1000);
+          toneGrad.addColorStop(0, "rgba(15, 23, 42, 0)");
+          toneGrad.addColorStop(1, "rgba(15, 23, 42, 0.85)");
           ctx.fillStyle = toneGrad;
-          ctx.fillRect(0, 0, 1000, 1000);
+          ctx.fillRect(0, 700, 1000, 300);
           ctx.restore();
 
           // 4. Watermark Title & Branding Overlay

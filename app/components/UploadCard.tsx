@@ -717,6 +717,7 @@ export default function UploadCard({
             enhanceStyle: tabMode === "custom_bg" ? enhanceStyle : undefined,
             destination: selectedStyleId,
             styleId: selectedStyleId,
+            stylePrompt: selectedStyle?.prompt,
             bgColor,
             customPrompt:
               selectedStyleId === "custom" || selectedStyleId === "custom_travel"

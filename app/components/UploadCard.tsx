@@ -362,8 +362,20 @@ export default function UploadCard({
         setSelectedPlan(plan);
         setShowPayPalModal(true);
       };
+      const handleAddCredits = (e: CustomEvent) => {
+        const added = Number(e.detail) || 30;
+        setPaidCredits((prev) => prev + added);
+        setFreeUses((prev) => Math.max(0, prev - added));
+        setPlanToast(`🎟️ 쿠폰 등록 성공! +${added}회 무료 크레딧이 충전되었습니다! 🎉`);
+        setTimeout(() => setPlanToast(null), 8000);
+        alert(`🎟️ 쿠폰 등록 성공!\n+${added}회 무료 생성권이 충전되었습니다. (7일간 마음껏 이용해 보세요!) 🎉`);
+      };
       window.addEventListener("tripshot_select_plan" as any, handlePlanSelect as any);
-      return () => window.removeEventListener("tripshot_select_plan" as any, handlePlanSelect as any);
+      window.addEventListener("tripshot_add_credits" as any, handleAddCredits as any);
+      return () => {
+        window.removeEventListener("tripshot_select_plan" as any, handlePlanSelect as any);
+        window.removeEventListener("tripshot_add_credits" as any, handleAddCredits as any);
+      };
     }
   }, []);
 
@@ -667,7 +679,8 @@ export default function UploadCard({
 
     const isBypassLimit = isDevEnv || isAdminQuery || isAdminStorage;
 
-    if (freeUses >= 2 && !byokKey && !isBypassLimit) {
+    const maxAllowedFreeUses = 30 + paidCredits;
+    if (freeUses >= maxAllowedFreeUses && !byokKey && !isBypassLimit) {
       setShowByokModal(true);
       return;
     }

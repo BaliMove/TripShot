@@ -139,40 +139,46 @@ async function createCompositedPhoto(
 
         clearTimeout(timer);
         try {
-          // 1. Draw Full Canvas Selected Destination/Studio Background Base Photo
+          // 1. Draw Full Canvas Background Base Photo (1000x1000)
           ctx.save();
           ctx.drawImage(bgImg, 0, 0, 1000, 1000);
           ctx.restore();
 
-          // 2. Create Feathered Soft Alpha Mask Canvas for User Selfie Face & Upper Body
+          // 2. Draw Selfie Person with Soft Vignette Blend in Studio/Travel Setting
           const selfieCanvas = document.createElement("canvas");
           selfieCanvas.width = 1000;
           selfieCanvas.height = 1000;
           const sCtx = selfieCanvas.getContext("2d");
 
           if (sCtx) {
-            // Draw selfie photo
-            sCtx.drawImage(selfieImg, 0, 0, 1000, 1000);
+            // Draw selfie photo centered with optimal upper-body portrait aspect
+            const pWidth = 720;
+            const pHeight = 720;
+            const pX = (1000 - pWidth) / 2;
+            const pY = 160;
 
-            // Apply Radial Soft Feather Alpha Mask to erase sharp edges seamlessly
+            sCtx.drawImage(selfieImg, pX, pY, pWidth, pHeight);
+
+            // Feathered Edge Blend Mask
             sCtx.globalCompositeOperation = "destination-in";
-            const maskGrad = sCtx.createRadialGradient(500, 480, 180, 500, 480, 460);
+            const maskGrad = sCtx.createRadialGradient(500, 500, 200, 500, 500, 420);
             maskGrad.addColorStop(0, "rgba(0, 0, 0, 1)");
-            maskGrad.addColorStop(0.7, "rgba(0, 0, 0, 0.85)");
+            maskGrad.addColorStop(0.75, "rgba(0, 0, 0, 0.9)");
             maskGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
             sCtx.fillStyle = maskGrad;
             sCtx.fillRect(0, 0, 1000, 1000);
 
-            // Draw Feathered Selfie onto main background canvas
             ctx.save();
+            ctx.shadowColor = "rgba(0, 0, 0, 0.35)";
+            ctx.shadowBlur = 30;
             ctx.drawImage(selfieCanvas, 0, 0, 1000, 1000);
             ctx.restore();
           }
 
-          // 3. Apply Cinematic Lighting & Color Tone Harmonizer
+          // 3. Apply Ambient Lighting & Color Balance
           ctx.save();
           const toneGrad = ctx.createLinearGradient(0, 0, 0, 1000);
-          toneGrad.addColorStop(0, "rgba(15, 23, 42, 0.15)");
+          toneGrad.addColorStop(0, "rgba(15, 23, 42, 0.12)");
           toneGrad.addColorStop(0.5, "rgba(0, 0, 0, 0)");
           toneGrad.addColorStop(1, "rgba(15, 23, 42, 0.75)");
           ctx.fillStyle = toneGrad;
@@ -679,7 +685,7 @@ export default function UploadCard({
       return;
     }
 
-    // Phase 4: Free limit check (Bypass if localhost, dev mode, admin=true query, or tripshot_admin=true in localStorage)
+    // Phase 4: Free limit check (Allow generous 999 uses during 7-day friend beta testing)
     const isDevEnv =
       typeof window !== "undefined" &&
       (window.location.hostname === "localhost" ||
@@ -697,7 +703,7 @@ export default function UploadCard({
 
     const isBypassLimit = isDevEnv || isAdminQuery || isAdminStorage;
 
-    const maxAllowedFreeUses = 30 + paidCredits;
+    const maxAllowedFreeUses = 999 + paidCredits;
     if (freeUses >= maxAllowedFreeUses && !byokKey && !isBypassLimit) {
       setShowByokModal(true);
       return;
@@ -711,10 +717,9 @@ export default function UploadCard({
       setIsLoading(false);
     }, 35000);
 
-    // 버튼 클릭 시 100% 생성 진행 화면(Loading View)으로 즉시 스무스 스크롤 이동
+    // 버튼 클릭 시 100% 생성 진행 화면(Loading View)으로 즉시 스무스 스크롤 자동 이동!
     setTimeout(() => {
-      const targetEl = document.getElementById("loading-section") || document.getElementById("upload-section");
-      targetEl?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }, 50);
 
 

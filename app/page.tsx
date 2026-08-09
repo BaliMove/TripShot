@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import UploadCard from "./components/UploadCard";
+import CouponModal from "./components/CouponModal";
 import { CATEGORIES, STYLES, STYLE_PREVIEWS, type CategoryId } from "./lib/styles";
 
 import { detectUserDeviceAndLang, TRANSLATIONS, type Language } from "./lib/i18n";
@@ -11,6 +12,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>("extreme");
   const [selectedStyleId, setSelectedStyleId] = useState<string>("trolltunga");
   const [lang, setLang] = useState<Language>("ko");
+  const [isCouponOpen, setIsCouponOpen] = useState(false);
 
   useEffect(() => {
     const { lang: detectedLang } = detectUserDeviceAndLang();
@@ -69,10 +71,17 @@ export default function Home() {
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setIsCouponOpen(true)}
+              className="bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] sm:text-xs font-black px-3 py-2 sm:px-4 sm:py-2.5 rounded-full transition-all duration-200 shadow-md active:scale-95 flex items-center gap-1 whitespace-nowrap cursor-pointer border border-emerald-400/50"
+            >
+              <span>🎟️ 쿠폰 등록</span>
+            </button>
+
+            <button
               onClick={scrollToUpload}
               className="bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 text-white text-[11px] sm:text-xs font-black px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-full transition-all duration-200 shadow-md active:scale-95 flex items-center gap-1 whitespace-nowrap cursor-pointer"
             >
-              <span>👤 로그인 / 혜택 연동</span>
+              <span>👤 로그인 / 혜택</span>
             </button>
 
             <button
@@ -450,6 +459,20 @@ export default function Home() {
           <p>© 2026 TripShot.world. All rights reserved. ✈️ JalanJalan Indah Series.</p>
         </div>
       </footer>
+
+      {/* Coupon Modal */}
+      <CouponModal
+        isOpen={isCouponOpen}
+        onClose={() => setIsCouponOpen(false)}
+        onApplyCoupon={(addedCredits) => {
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("tripshot_add_credits", { detail: addedCredits })
+            );
+          }
+          scrollToUpload();
+        }}
+      />
     </div>
   );
 }

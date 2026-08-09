@@ -110,10 +110,10 @@ async function createCompositedPhoto(
       }
     };
 
-    // Failsafe timer: Fallback to instant seamless photo renderer
+    // 1.5s Timeout protection to prevent stuck loading state
     const timer = setTimeout(() => {
       drawInlineCompositedPhoto(selfieBase64, styleLabel, bgUrl).then(safeResolve).catch(() => safeResolve(selfieBase64));
-    }, 2000);
+    }, 1500);
 
     try {
       const canvas = document.createElement("canvas");
@@ -139,35 +139,27 @@ async function createCompositedPhoto(
 
         clearTimeout(timer);
         try {
-          // 1. Draw Destination / Studio Background Base Image (Full 1000x1000)
+          // 1. Draw Full Screen Background Image
           ctx.save();
           ctx.drawImage(bgImg, 0, 0, 1000, 1000);
-          ctx.restore();
 
-          // 2. Seamlessly Blend Person Selfie Image Full Cover with Natural Portrait Lighting (No Ellipse / No Shape Crop)
-          ctx.save();
-          // Draw Person Selfie Full Cover
-          ctx.drawImage(selfieImg, 0, 0, 1000, 1000);
-
-          // Apply Professional Studio & Travel Lighting Lighting Tone Overlay
-          const ambientGrad = ctx.createLinearGradient(0, 0, 0, 1000);
-          ambientGrad.addColorStop(0, "rgba(15, 23, 42, 0.15)");
-          ambientGrad.addColorStop(0.5, "rgba(0, 0, 0, 0)");
-          ambientGrad.addColorStop(1, "rgba(15, 23, 42, 0.4)");
+          // Soft Ambient Vignette Overlay
+          const ambientGrad = ctx.createLinearGradient(0, 400, 0, 1000);
+          ambientGrad.addColorStop(0, "rgba(15, 23, 42, 0)");
+          ambientGrad.addColorStop(1, "rgba(15, 23, 42, 0.75)");
           ctx.fillStyle = ambientGrad;
-          ctx.fillRect(0, 0, 1000, 1000);
+          ctx.fillRect(0, 400, 1000, 600);
           ctx.restore();
 
-          // 3. Elegant Bottom Title Overlay
+          // 2. Overlay User Selfie Photo Full Height/Width
           ctx.save();
-          const bannerGrad = ctx.createLinearGradient(0, 840, 0, 1000);
-          bannerGrad.addColorStop(0, "rgba(15, 23, 42, 0)");
-          bannerGrad.addColorStop(1, "rgba(15, 23, 42, 0.85)");
-          ctx.fillStyle = bannerGrad;
-          ctx.fillRect(0, 840, 1000, 160);
+          ctx.drawImage(selfieImg, 0, 0, 1000, 1000);
+          ctx.restore();
 
+          // 3. Elegant Bottom Title & Watermark
+          ctx.save();
           ctx.fillStyle = "#ffffff";
-          ctx.font = "bold 34px sans-serif";
+          ctx.font = "bold 32px sans-serif";
           ctx.textAlign = "center";
           ctx.shadowColor = "rgba(0,0,0,0.8)";
           ctx.shadowBlur = 10;
@@ -178,7 +170,7 @@ async function createCompositedPhoto(
           ctx.fillText("TripShot.world • AI Travel Portrait Studio", 500, 960);
           ctx.restore();
 
-          safeResolve(canvas.toDataURL("image/jpeg", 0.95));
+          safeResolve(canvas.toDataURL("image/jpeg", 0.94));
         } catch (e) {
           drawInlineCompositedPhoto(selfieBase64, styleLabel, bgUrl).then(safeResolve).catch(() => safeResolve(selfieBase64));
         }
@@ -205,7 +197,7 @@ async function createCompositedPhoto(
   });
 }
 
-// 100% Guaranteed Instant Professional Photo Synthesizer (Natural Full-Screen Cover)
+// 100% Guaranteed Instant Photo Renderer
 async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: string, bgUrl?: string): Promise<string> {
   return new Promise((resolve) => {
     const canvas = document.createElement("canvas");
@@ -215,39 +207,19 @@ async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: strin
     canvas.width = 1000;
     canvas.height = 1000;
 
-    const bgImg = new Image();
     const selfieImg = new Image();
-
-    let bgLoaded = false;
-    let selfieLoaded = false;
-
-    const renderSeamlessPhoto = () => {
-      if (!bgLoaded || !selfieLoaded) return;
+    selfieImg.onload = () => {
       try {
-        // 1. Draw Background Image Full Cover
-        ctx.save();
-        ctx.drawImage(bgImg, 0, 0, 1000, 1000);
-        ctx.restore();
-
-        // 2. Draw Person Selfie Full Cover with Lighting Overlay (No Shape Crop)
-        ctx.save();
+        // 1. Draw User Photo Full Screen (No Frame / No Shape Crop)
         ctx.drawImage(selfieImg, 0, 0, 1000, 1000);
 
-        const ambientGrad = ctx.createLinearGradient(0, 0, 0, 1000);
-        ambientGrad.addColorStop(0, "rgba(15, 23, 42, 0.15)");
-        ambientGrad.addColorStop(0.5, "rgba(0, 0, 0, 0)");
-        ambientGrad.addColorStop(1, "rgba(15, 23, 42, 0.4)");
-        ctx.fillStyle = ambientGrad;
-        ctx.fillRect(0, 0, 1000, 1000);
-        ctx.restore();
-
-        // 3. Luxurious Title Overlay
+        // 2. Cinematic Gradient & Watermark
         ctx.save();
-        const bannerGrad = ctx.createLinearGradient(0, 840, 0, 1000);
+        const bannerGrad = ctx.createLinearGradient(0, 800, 0, 1000);
         bannerGrad.addColorStop(0, "rgba(15, 23, 42, 0)");
         bannerGrad.addColorStop(1, "rgba(15, 23, 42, 0.85)");
         ctx.fillStyle = bannerGrad;
-        ctx.fillRect(0, 840, 1000, 160);
+        ctx.fillRect(0, 800, 1000, 200);
 
         ctx.fillStyle = "#ffffff";
         ctx.font = "bold 34px sans-serif";
@@ -258,36 +230,15 @@ async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: strin
 
         ctx.font = "bold 18px sans-serif";
         ctx.fillStyle = "rgba(226, 232, 240, 0.85)";
-        ctx.fillText("TripShot.world • AI Travel Portrait Studio", 500, 960);
+        ctx.fillText("TripShot.world • 100% Safe AI Studio", 500, 960);
         ctx.restore();
 
-        resolve(canvas.toDataURL("image/jpeg", 0.95));
+        resolve(canvas.toDataURL("image/jpeg", 0.94));
       } catch (e) {
         resolve(selfieBase64);
       }
     };
-
-    bgImg.crossOrigin = "anonymous";
-    selfieImg.crossOrigin = "anonymous";
-
-    bgImg.onload = () => {
-      bgLoaded = true;
-      renderSeamlessPhoto();
-    };
-    bgImg.onerror = () => {
-      bgLoaded = true;
-      renderSeamlessPhoto();
-    };
-
-    selfieImg.onload = () => {
-      selfieLoaded = true;
-      renderSeamlessPhoto();
-    };
-    selfieImg.onerror = () => {
-      resolve(selfieBase64);
-    };
-
-    bgImg.src = bgUrl || STYLE_PREVIEWS.paris;
+    selfieImg.onerror = () => resolve(selfieBase64);
     selfieImg.src = selfieBase64;
   });
 }

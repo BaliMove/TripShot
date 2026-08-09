@@ -141,32 +141,29 @@ async function createCompositedPhoto(
         try {
           ctx.clearRect(0, 0, 1000, 1000);
 
-          // 1. Draw Clean Premium Studio Backdrop Gradient
+          // 1. Draw Selected Concept Style Background (1000x1000)
           ctx.save();
-          const bgGrad = ctx.createLinearGradient(0, 0, 1000, 1000);
-          bgGrad.addColorStop(0, "#1e293b");
-          bgGrad.addColorStop(0.5, "#0f172a");
-          bgGrad.addColorStop(1, "#0284c7");
-          ctx.fillStyle = bgGrad;
-          ctx.fillRect(0, 0, 1000, 1000);
+          ctx.drawImage(bgImg, 0, 0, 1000, 1000);
           ctx.restore();
 
-          // 2. Draw User Selfie Photo Full Canvas (1000x1000) (Guaranteed Crisp & Direct)
+          // 2. Draw Person Selfie with Soft Studio Lighting Filter
           ctx.save();
+          ctx.globalCompositeOperation = "soft-light";
           ctx.drawImage(selfieImg, 0, 0, 1000, 1000);
+          ctx.globalCompositeOperation = "source-over";
           ctx.restore();
 
-          // 3. Draw Soft Ambient Lighting & Studio Tone Balance
+          // 3. Draw Ambient Lighting & Tone Balance
           ctx.save();
           const toneGrad = ctx.createLinearGradient(0, 0, 0, 1000);
-          toneGrad.addColorStop(0, "rgba(15, 23, 42, 0.08)");
+          toneGrad.addColorStop(0, "rgba(15, 23, 42, 0.05)");
           toneGrad.addColorStop(0.5, "rgba(0, 0, 0, 0)");
-          toneGrad.addColorStop(1, "rgba(15, 23, 42, 0.65)");
+          toneGrad.addColorStop(1, "rgba(15, 23, 42, 0.6)");
           ctx.fillStyle = toneGrad;
           ctx.fillRect(0, 0, 1000, 1000);
           ctx.restore();
 
-          // 4. Watermark Title & Branding
+          // 4. Watermark Title & Branding Overlay
           ctx.save();
           const bannerGrad = ctx.createLinearGradient(0, 840, 0, 1000);
           bannerGrad.addColorStop(0, "rgba(15, 23, 42, 0)");

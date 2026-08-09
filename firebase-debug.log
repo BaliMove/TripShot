@@ -1,22 +1,17 @@
-[debug] [2026-08-09T11:39:41.496Z] ----------------------------------------------------------------------
-[debug] [2026-08-09T11:39:41.500Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\owner\AppData\Local\npm-cache\_npx\7750544ccf494d8b\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting
-[debug] [2026-08-09T11:39:41.500Z] CLI Version:   15.26.0
-[debug] [2026-08-09T11:39:41.500Z] Platform:      win32
-[debug] [2026-08-09T11:39:41.500Z] Node Version:  v24.14.0
-[debug] [2026-08-09T11:39:41.500Z] Detected Agent: antigravity
-[debug] [2026-08-09T11:39:41.501Z] Time:          Sun Aug 09 2026 18:39:41 GMT+0700 (Western Indonesia Time)
-[debug] [2026-08-09T11:39:41.501Z] ----------------------------------------------------------------------
+[debug] [2026-08-09T11:41:44.934Z] ----------------------------------------------------------------------
+[debug] [2026-08-09T11:41:44.937Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\owner\AppData\Local\npm-cache\_npx\7750544ccf494d8b\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting
+[debug] [2026-08-09T11:41:44.938Z] CLI Version:   15.26.0
+[debug] [2026-08-09T11:41:44.938Z] Platform:      win32
+[debug] [2026-08-09T11:41:44.938Z] Node Version:  v24.14.0
+[debug] [2026-08-09T11:41:44.938Z] Detected Agent: antigravity
+[debug] [2026-08-09T11:41:44.938Z] Time:          Sun Aug 09 2026 18:41:44 GMT+0700 (Western Indonesia Time)
+[debug] [2026-08-09T11:41:44.938Z] ----------------------------------------------------------------------
 [debug] 
-[debug] [2026-08-09T11:39:43.015Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] [2026-08-09T11:39:43.015Z] > authorizing via signed-in user (idolizat@gmail.com)
-[debug] [2026-08-09T11:39:43.015Z] [iam] checking project tripshot-world for permissions ["firebase.projects.get","firebasehosting.sites.update"]
-[debug] [2026-08-09T11:39:43.029Z] Checked if tokens are valid: true, expires at: 1786278767664
-[debug] [2026-08-09T11:39:43.029Z] Checked if tokens are valid: true, expires at: 1786278767664
-[debug] [2026-08-09T11:39:43.030Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/tripshot-world:testIamPermissions [none]
-[debug] [2026-08-09T11:39:43.030Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/tripshot-world:testIamPermissions  x-goog-user-project=tripshot-world
-[debug] [2026-08-09T11:39:43.031Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/tripshot-world:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
-[debug] [2026-08-09T11:39:43.500Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/tripshot-world:testIamPermissions 200
-[debug] [2026-08-09T11:39:43.500Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/tripshot-world:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
-[debug] [2026-08-09T11:39:43.500Z] Checked if tokens are valid: true, expires at: 1786278767664
-[debug] [2026-08-09T11:39:43.500Z] Checked if tokens are valid: true, expires at: 1786278767664
-[debug] [2026-08-09T11:39:43.501Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/tripshot-world [none]
+[debug] [2026-08-09T11:41:46.343Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-09T11:41:46.344Z] > authorizing via signed-in user (idolizat@gmail.com)
+[debug] [2026-08-09T11:41:46.344Z] [iam] checking project tripshot-world for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-08-09T11:41:46.362Z] Checked if tokens are valid: true, expires at: 1786278767664
+[debug] [2026-08-09T11:41:46.363Z] Checked if tokens are valid: true, expires at: 1786278767664
+[debug] [2026-08-09T11:41:46.365Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/tripshot-world:testIamPermissions [none]
+[debug] [2026-08-09T11:41:46.365Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/tripshot-world:testIamPermissions  x-goog-user-project=tripshot-world
+[debug] [2026-08-09T11:41:46.365Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/tripshot-world:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}

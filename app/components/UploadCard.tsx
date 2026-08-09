@@ -110,10 +110,10 @@ async function createCompositedPhoto(
       }
     };
 
-    // 1.5s Timeout protection to prevent stuck loading overlay
+    // Failsafe timer
     const timer = setTimeout(() => {
-      drawInlineCompositedPhoto(selfieBase64, styleLabel).then(safeResolve).catch(() => safeResolve(selfieBase64));
-    }, 1500);
+      drawInlineCompositedPhoto(selfieBase64, styleLabel, bgUrl).then(safeResolve).catch(() => safeResolve(selfieBase64));
+    }, 1800);
 
     try {
       const canvas = document.createElement("canvas");
@@ -139,31 +139,53 @@ async function createCompositedPhoto(
 
         clearTimeout(timer);
         try {
-          ctx.clearRect(0, 0, 1000, 1000);
-
-          // 1. Draw Selected Concept Style Background (1000x1000)
+          // 1. Draw Full Canvas Background Base Photo (1000x1000)
           ctx.save();
           ctx.drawImage(bgImg, 0, 0, 1000, 1000);
           ctx.restore();
 
-          // 2. Draw Person Selfie with Soft Studio Lighting Filter
-          ctx.save();
-          ctx.globalCompositeOperation = "soft-light";
-          ctx.drawImage(selfieImg, 0, 0, 1000, 1000);
-          ctx.globalCompositeOperation = "source-over";
-          ctx.restore();
+          // 2. Draw Selfie Person with Soft Vignette Blend in Studio/Travel Setting
+          const selfieCanvas = document.createElement("canvas");
+          selfieCanvas.width = 1000;
+          selfieCanvas.height = 1000;
+          const sCtx = selfieCanvas.getContext("2d");
 
-          // 3. Draw Ambient Lighting & Tone Balance
+          if (sCtx) {
+            // Draw selfie photo centered with optimal upper-body portrait aspect
+            const pWidth = 720;
+            const pHeight = 720;
+            const pX = (1000 - pWidth) / 2;
+            const pY = 160;
+
+            sCtx.drawImage(selfieImg, pX, pY, pWidth, pHeight);
+
+            // Feathered Edge Blend Mask
+            sCtx.globalCompositeOperation = "destination-in";
+            const maskGrad = sCtx.createRadialGradient(500, 500, 200, 500, 500, 420);
+            maskGrad.addColorStop(0, "rgba(0, 0, 0, 1)");
+            maskGrad.addColorStop(0.75, "rgba(0, 0, 0, 0.9)");
+            maskGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+            sCtx.fillStyle = maskGrad;
+            sCtx.fillRect(0, 0, 1000, 1000);
+
+            ctx.save();
+            ctx.shadowColor = "rgba(0, 0, 0, 0.35)";
+            ctx.shadowBlur = 30;
+            ctx.drawImage(selfieCanvas, 0, 0, 1000, 1000);
+            ctx.restore();
+          }
+
+          // 3. Apply Ambient Lighting & Color Balance
           ctx.save();
           const toneGrad = ctx.createLinearGradient(0, 0, 0, 1000);
-          toneGrad.addColorStop(0, "rgba(15, 23, 42, 0.05)");
+          toneGrad.addColorStop(0, "rgba(15, 23, 42, 0.12)");
           toneGrad.addColorStop(0.5, "rgba(0, 0, 0, 0)");
-          toneGrad.addColorStop(1, "rgba(15, 23, 42, 0.6)");
+          toneGrad.addColorStop(1, "rgba(15, 23, 42, 0.75)");
           ctx.fillStyle = toneGrad;
           ctx.fillRect(0, 0, 1000, 1000);
           ctx.restore();
 
-          // 4. Watermark Title & Branding Overlay
+          // 4. Elegant Bottom Title & Watermark Overlay
           ctx.save();
           const bannerGrad = ctx.createLinearGradient(0, 840, 0, 1000);
           bannerGrad.addColorStop(0, "rgba(15, 23, 42, 0)");
@@ -183,35 +205,35 @@ async function createCompositedPhoto(
           ctx.fillText("TripShot.world • AI Travel Portrait Studio", 500, 960);
           ctx.restore();
 
-          safeResolve(canvas.toDataURL("image/jpeg", 0.94));
+          safeResolve(canvas.toDataURL("image/jpeg", 0.95));
         } catch (e) {
-          drawInlineCompositedPhoto(selfieBase64, styleLabel).then(safeResolve).catch(() => safeResolve(selfieBase64));
+          drawInlineCompositedPhoto(selfieBase64, styleLabel, bgUrl).then(safeResolve).catch(() => safeResolve(selfieBase64));
         }
       };
 
       bgImg.onload = checkDone;
       bgImg.onerror = () => {
         clearTimeout(timer);
-        drawInlineCompositedPhoto(selfieBase64, styleLabel).then(safeResolve).catch(() => safeResolve(selfieBase64));
+        drawInlineCompositedPhoto(selfieBase64, styleLabel, bgUrl).then(safeResolve).catch(() => safeResolve(selfieBase64));
       };
 
       selfieImg.onload = checkDone;
       selfieImg.onerror = () => {
         clearTimeout(timer);
-        drawInlineCompositedPhoto(selfieBase64, styleLabel).then(safeResolve).catch(() => safeResolve(selfieBase64));
+        drawInlineCompositedPhoto(selfieBase64, styleLabel, bgUrl).then(safeResolve).catch(() => safeResolve(selfieBase64));
       };
 
       bgImg.src = bgUrl;
       selfieImg.src = selfieBase64;
     } catch (err) {
       clearTimeout(timer);
-      drawInlineCompositedPhoto(selfieBase64, styleLabel).then(safeResolve).catch(() => safeResolve(selfieBase64));
+      drawInlineCompositedPhoto(selfieBase64, styleLabel, bgUrl).then(safeResolve).catch(() => safeResolve(selfieBase64));
     }
   });
 }
 
-// 100% Guaranteed Instant Canvas Renderer (No CORS / No network hang)
-async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: string): Promise<string> {
+// 100% Guaranteed Instant Soft Feather Photo Renderer
+async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: string, bgUrl?: string): Promise<string> {
   return new Promise((resolve) => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -220,17 +242,42 @@ async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: strin
     canvas.width = 1000;
     canvas.height = 1000;
 
+    const bgImg = new Image();
     const selfieImg = new Image();
-    selfieImg.onload = () => {
-      try {
-        ctx.clearRect(0, 0, 1000, 1000);
 
-        // 1. Draw Full Canvas Person Selfie Photo (1000x1000)
+    let bgLoaded = false;
+    let selfieLoaded = false;
+
+    const renderComposite = () => {
+      if (!bgLoaded || !selfieLoaded) return;
+      try {
+        // 1. Background
         ctx.save();
-        ctx.drawImage(selfieImg, 0, 0, 1000, 1000);
+        ctx.drawImage(bgImg, 0, 0, 1000, 1000);
         ctx.restore();
 
-        // 2. Soft Ambient Lighting
+        // 2. Feathered Soft Alpha Selfie Layer
+        const selfieCanvas = document.createElement("canvas");
+        selfieCanvas.width = 1000;
+        selfieCanvas.height = 1000;
+        const sCtx = selfieCanvas.getContext("2d");
+
+        if (sCtx) {
+          sCtx.drawImage(selfieImg, 0, 0, 1000, 1000);
+          sCtx.globalCompositeOperation = "destination-in";
+          const maskGrad = sCtx.createRadialGradient(500, 480, 180, 500, 480, 460);
+          maskGrad.addColorStop(0, "rgba(0, 0, 0, 1)");
+          maskGrad.addColorStop(0.7, "rgba(0, 0, 0, 0.85)");
+          maskGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+          sCtx.fillStyle = maskGrad;
+          sCtx.fillRect(0, 0, 1000, 1000);
+
+          ctx.save();
+          ctx.drawImage(selfieCanvas, 0, 0, 1000, 1000);
+          ctx.restore();
+        }
+
+        // 3. Cinematic Overlay
         ctx.save();
         const bannerGrad = ctx.createLinearGradient(0, 800, 0, 1000);
         bannerGrad.addColorStop(0, "rgba(15, 23, 42, 0)");
@@ -250,12 +297,30 @@ async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: strin
         ctx.fillText("TripShot.world • 100% Safe AI Studio", 500, 960);
         ctx.restore();
 
-        resolve(canvas.toDataURL("image/jpeg", 0.94));
+        resolve(canvas.toDataURL("image/jpeg", 0.95));
       } catch (e) {
         resolve(selfieBase64);
       }
     };
-    selfieImg.onerror = () => resolve(selfieBase64);
+
+    bgImg.onload = () => {
+      bgLoaded = true;
+      renderComposite();
+    };
+    bgImg.onerror = () => {
+      bgLoaded = true;
+      renderComposite();
+    };
+
+    selfieImg.onload = () => {
+      selfieLoaded = true;
+      renderComposite();
+    };
+    selfieImg.onerror = () => {
+      resolve(selfieBase64);
+    };
+
+    bgImg.src = bgUrl || STYLE_PREVIEWS.paris;
     selfieImg.src = selfieBase64;
   });
 }
@@ -645,7 +710,6 @@ export default function UploadCard({
     }
 
     setIsLoading(true);
-    setResult(null);
     setError(null);
 
     // 35s failsafe timer to allow AI image generation & real-time progress bar to run smoothly

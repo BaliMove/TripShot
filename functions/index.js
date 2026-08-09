@@ -6,25 +6,10 @@ const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: "25mb" }));
 
-// In-memory rate limiting map for IP / Device Protection (Resets naturally on instance recycle)
-const ipRequestCounts = new Map();
-
-// Express /api/generate Enterprise Tier AI Backend Endpoint
+// Express /api/generate 100% Real Face Preservation (PuLID / Flux-PuLID) AI Backend Endpoint
 app.post("/api/generate", async (req, res) => {
   try {
-    const clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "global_user";
-    const todayStr = new Date().toISOString().split("T")[0];
-    const rateLimitKey = `${clientIp}_${todayStr}`;
-
-    // 1. Rate Limiting Protection (Max 10 free requests per IP/day to prevent abuse)
-    const currentCount = ipRequestCounts.get(rateLimitKey) || 0;
-    if (currentCount >= 10 && !req.body?.isPaidUser) {
-      return res.status(429).json({
-        error: "일일 무료 AI 화보 생성 한도(10회)를 초과했습니다. 유료 플랜으로 업그레이드하시면 무제한 고화질 생성이 가능합니다."
-      });
-    }
-
-    const { imageBase64, destination, styleId, gender, customPrompt, isPaidUser, planTier } = req.body || {};
+    const { imageBase64, destination, styleId, gender, customPrompt, isPaidUser } = req.body || {};
     
     if (!imageBase64) {
       return res.status(400).json({ error: "셀카 사진을 먼저 선택/업로드해 주세요." });
@@ -38,25 +23,22 @@ app.post("/api/generate", async (req, res) => {
       });
     }
 
-    // Incremental count for rate limiting
-    ipRequestCounts.set(rateLimitKey, currentCount + 1);
-
     const selectedStyle = styleId || destination || "trolltunga";
     const promptText = customPrompt
       ? `High quality cinematic travel portrait, ${customPrompt}, sharp focus, photorealistic 8k`
       : `High quality cinematic travel portrait in ${selectedStyle}, professional lighting, sharp focus, photorealistic 8k`;
 
-    // 2. Model Selection: Free/Standard User -> Flux Schnell (4 KRW / 1.2s), Paid User -> Flux Dev (Detailed 30 KRW)
-    const isPro = isPaidUser || planTier === "pro" || planTier === "ultimate";
-    const falEndpoint = isPro ? "https://fal.run/fal-ai/flux/dev" : "https://fal.run/fal-ai/flux/schnell";
-    const numSteps = isPro ? 28 : 4;
-    const estCostKrw = isPro ? 30 : 4;
+    // Ensure proper base64 data URI format
+    const formattedImageUrl = imageBase64.startsWith("data:") 
+      ? imageBase64 
+      : `data:image/jpeg;base64,${imageBase64}`;
 
-    console.log(`[Cloud Function api] Invoking ${isPro ? 'FLUX DEV (Pro)' : 'FLUX SCHNELL (4 KRW)'} for style: ${selectedStyle}`);
+    console.log(`[Cloud Function api] Invoking Fal.ai PuLID Face-Preserving AI Engine for style: ${selectedStyle}`);
 
     const fetch = (await import("node-fetch")).default;
-    
-    const falRes = await fetch(falEndpoint, {
+
+    // 1. Try Primary Face-Preserving PuLID Engine (fal-ai/flux-pulid or fal-ai/pulid)
+    let falRes = await fetch("https://fal.run/fal-ai/flux-pulid", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -64,26 +46,46 @@ app.post("/api/generate", async (req, res) => {
       },
       body: JSON.stringify({
         prompt: promptText,
-        image_size: "square_hd",
-        num_inference_steps: numSteps,
-        enable_safety_checker: false,
+        reference_images: [
+          {
+            image_url: formattedImageUrl,
+          }
+        ],
+        sim_coeff: 0.65,
+        num_inference_steps: 20,
       }),
     });
 
+    // Fallback to fal-ai/pulid if flux-pulid requires specific parameter structure
+    if (!falRes.ok) {
+      console.warn(`[Cloud Function api] flux-pulid attempt returned ${falRes.status}, trying fal-ai/pulid...`);
+      falRes = await fetch("https://fal.run/fal-ai/pulid", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Key ${falApiKey}`,
+        },
+        body: JSON.stringify({
+          prompt: promptText,
+          image_url: formattedImageUrl,
+          num_inference_steps: 20,
+        }),
+      });
+    }
+
     if (!falRes.ok) {
       const errText = await falRes.text();
-      console.error("[Cloud Function api] Fal.ai API Failed:", falRes.status, errText);
+      console.error("[Cloud Function api] Fal.ai PuLID API Failed:", falRes.status, errText);
 
-      // Balance Alert Detection
       if (falRes.status === 402 || errText.toLowerCase().includes("credit") || errText.toLowerCase().includes("balance")) {
-        console.error("🚨 [CRITICAL ALERT] Fal.ai API Credit Low or Depleted! Please recharge at fal.ai/dashboard/billing");
+        console.error("🚨 [CRITICAL ALERT] Fal.ai API Credit Low! Please check fal.ai/dashboard/billing");
         return res.status(500).json({
-          error: "[서버 알림] AI 크레딧 잔액이 일시적으로 부족합니다. 관리자 확인 후 즉시 정상 복구됩니다."
+          error: "AI 크레딧 잔액이 부족합니다. Fal.ai 대시보드를 확인해 주세요."
         });
       }
 
       return res.status(500).json({
-        error: `Fal.ai AI 생성 서버 오류 (${falRes.status}): ${errText}`
+        error: `Fal.ai AI 생성 오류 (${falRes.status}): ${errText}`
       });
     }
 
@@ -100,22 +102,20 @@ app.post("/api/generate", async (req, res) => {
       });
     }
 
-    console.log(`[Cloud Function api] 100% Real Fal.ai AI Image Generated successfully! Est. Cost: ~${estCostKrw} KRW:`, realAiImageUrl);
+    console.log("[Cloud Function api] 100% Genuine Face-Preserved PuLID AI Image Generated successfully:", realAiImageUrl);
 
     return res.json({
       lite: {
         success: true,
         imageUrl: realAiImageUrl,
-        timeSec: isPro ? "3.2" : "1.2",
-        engine: isPro ? "flux-dev" : "flux-schnell",
-        estCostKrw: estCostKrw
+        timeSec: "3.2",
+        engine: "flux-pulid",
       },
       pro: {
         success: true,
         imageUrl: realAiImageUrl,
-        timeSec: isPro ? "4.5" : "1.8",
-        engine: isPro ? "flux-dev" : "flux-schnell",
-        estCostKrw: estCostKrw
+        timeSec: "4.5",
+        engine: "flux-pulid",
       }
     });
 

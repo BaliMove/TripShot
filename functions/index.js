@@ -6,23 +6,27 @@ const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: "25mb" }));
 
-// Dynamic Style Prompt Mapping Dictionary for fal-ai/flux-pulid
+// Master Comprehensive Dynamic Style Prompt Mapping Dictionary for fal-ai/flux-pulid
 const DYNAMIC_PROMPT_MAP = {
-  // Travel Destinations
-  trolltunga: "portrait of a person standing on Trolltunga cliff in Norway, breathtaking fjord and mountain background, outdoor travel photography",
-  devils_pool: "portrait of a person swimming at Devil's Pool Victoria Falls Zambia, waterfall cliff edge background, dramatic mist and rainbow, travel photography",
-  zambia_devils_pool: "portrait of a person swimming at Devil's Pool Victoria Falls Zambia, waterfall cliff edge background, dramatic mist and rainbow, travel photography",
-  zermatt: "portrait of a person in Zermatt Switzerland, majestic Matterhorn snowy mountain peak background, winter outdoor travel photography",
-  santorini: "portrait of a person in Santorini Greece, iconic white buildings and blue dome background, Aegean sea, summer travel photography",
-  pyramids: "portrait of a person at Great Pyramids of Giza Egypt, desert sand dunes background, travel photography",
-  bali: "portrait of a person at Bali Gates of Heaven Lempuyang, volcano background, tropical travel photography",
-  capri: "portrait of a person in Capri Italy, Faraglioni rocks background, Mediterranean sea travel photography",
+  // 1. Studio & Business Suits Concepts
+  corporate: "masterpiece studio portrait of a person wearing a sharp formal navy blue business suit jacket, white shirt, elegant modern office glass background, professional corporate headshot, photorealistic 8k",
+  business_suit: "masterpiece studio portrait of a person wearing a sharp formal navy blue business suit jacket, white shirt, elegant modern office glass background, professional corporate headshot, photorealistic 8k",
+  business: "masterpiece studio portrait of a person wearing a sharp formal navy blue business suit jacket, white shirt, elegant modern office glass background, professional corporate headshot, photorealistic 8k",
+  passport_photo: "official studio passport photo portrait of a person, solid clean white background, formal dark jacket suit, centered face, studio lighting, photorealistic 8k",
+  passport: "official studio passport photo portrait of a person, solid clean white background, formal dark jacket suit, centered face, studio lighting, photorealistic 8k",
+  student_id: "friendly student ID photo portrait of a person, soft pastel blue background, smart casual shirt, bright smile, photorealistic 8k",
+  id_card: "official ID photo portrait of a person, solid neutral light gray background, formal shirt, photorealistic 8k",
 
-  // Studio & Concepts
-  business_suit: "portrait of a person wearing a sharp business suit, elegant modern office background",
-  passport_photo: "portrait of a person, professional studio passport photo, solid clean white background, formal attire",
-  student_id: "portrait of a friendly person for student ID, soft blurred campus background, casual shirt",
-  id_card: "official ID photo portrait of a person, neutral solid light gray background, neat smart attire",
+  // 2. Travel Destinations & Attractions
+  trift_bridge: "epic travel portrait of a person standing on Trift suspension bridge in Switzerland, breathtaking alpine glacier canyon background, photorealistic 8k",
+  trolltunga: "epic travel portrait of a person standing on Trolltunga cliff ledge in Norway, breathtaking fjord and snowy mountain background, photorealistic 8k",
+  devils_pool: "breathtaking travel portrait of a person swimming at Devil's Pool Victoria Falls Zambia, edge of waterfall cliff background, mist and rainbow, photorealistic 8k",
+  zambia_devils_pool: "breathtaking travel portrait of a person swimming at Devil's Pool Victoria Falls Zambia, edge of waterfall cliff background, mist and rainbow, photorealistic 8k",
+  zermatt: "stunning winter travel portrait in Zermatt Switzerland, Matterhorn peak background, alpine jacket, photorealistic 8k",
+  santorini: "beautiful travel portrait in Santorini Greece, white dome buildings background, Aegean sea, photorealistic 8k",
+  pyramids: "epic travel portrait at Great Pyramids of Giza Egypt, desert sand dunes background, photorealistic 8k",
+  bali: "exotic travel portrait at Bali Gates of Heaven Lempuyang, volcano background, photorealistic 8k",
+  capri: "luxury travel portrait in Capri Italy, Faraglioni sea stack rocks background, photorealistic 8k",
 };
 
 // Express /api/generate 100% Dynamic Style-Matched PuLID Backend Endpoint
@@ -43,23 +47,23 @@ app.post("/api/generate", async (req, res) => {
       });
     }
 
-    const selectedStyleKey = (styleId || destination || "trolltunga").toLowerCase().replace(/-/g, "_");
+    const rawKey = (styleId || destination || "corporate").toLowerCase().replace(/-/g, "_");
     
-    // Dynamic Prompt Resolution
-    let selectedStylePrompt = DYNAMIC_PROMPT_MAP[selectedStyleKey] || DYNAMIC_PROMPT_MAP.trolltunga;
+    // Comprehensive Dynamic Prompt Resolution with fallback to corporate suit
+    let selectedStylePrompt = DYNAMIC_PROMPT_MAP[rawKey] || DYNAMIC_PROMPT_MAP.corporate;
     if (customPrompt && customPrompt.trim()) {
-      selectedStylePrompt = `portrait of a person, ${customPrompt.trim()}, high quality travel photography`;
+      selectedStylePrompt = `portrait of a person, ${customPrompt.trim()}, high quality photography`;
     }
 
     const formattedImageUrl = imageBase64.startsWith("data:") 
       ? imageBase64 
       : `data:image/jpeg;base64,${imageBase64}`;
 
-    console.log(`[Cloud Function api] Invoking fal-ai/flux-pulid for style: '${selectedStyleKey}' -> Prompt: "${selectedStylePrompt}"`);
+    console.log(`[Cloud Function api] Invoking fal-ai/flux-pulid for Key: '${rawKey}' -> Prompt: "${selectedStylePrompt.substring(0, 70)}..."`);
 
     const fetch = (await import("node-fetch")).default;
 
-    // Call fal-ai/flux-pulid with exact parameters (reference_image_url, prompt, id_weight: 1.0)
+    // Call fal-ai/flux-pulid with exact parameters
     const falRes = await fetch("https://fal.run/fal-ai/flux-pulid", {
       method: "POST",
       headers: {
@@ -101,7 +105,7 @@ app.post("/api/generate", async (req, res) => {
       });
     }
 
-    console.log(`[Cloud Function api] 100% Dynamic Style-Matched PuLID Image Generated:`, realAiImageUrl);
+    console.log(`[Cloud Function api] 100% Dynamic Style-Matched ('${rawKey}') PuLID Image Generated:`, realAiImageUrl);
 
     return res.json({
       lite: {
@@ -109,14 +113,14 @@ app.post("/api/generate", async (req, res) => {
         imageUrl: realAiImageUrl,
         timeSec: "2.5",
         engine: "flux-pulid-dynamic",
-        styleKey: selectedStyleKey
+        styleKey: rawKey
       },
       pro: {
         success: true,
         imageUrl: realAiImageUrl,
         timeSec: "3.6",
         engine: "flux-pulid-dynamic",
-        styleKey: selectedStyleKey
+        styleKey: rawKey
       }
     });
 

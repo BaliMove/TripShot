@@ -75,7 +75,7 @@ export default function PayPalModal({
     if (envClientId && envClientId.trim() !== "") {
       setClientId(envClientId.trim());
     } else {
-      setClientId("AQHZpfD8wC2vx5TKBIkSyKqm4uJBwnfRYhRpAgRX6MOE1zkMR1KGGOS6xsfCqsHrPcrNJ7CoIAjTDAj-");
+      setClientId("BAAr--XBdO4SPPkUXFsYm1Ju6TNQytwLlgHwdDd_r17OCZxc9L1Xqob1YiYfhC3Ibq7Ua2Qf8PXVkKsD4s");
     }
   }, []);
 

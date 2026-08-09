@@ -139,25 +139,47 @@ async function createCompositedPhoto(
 
         clearTimeout(timer);
         try {
-          // 1. Draw Full Canvas Background Photo (1000x1000)
+          // 1. Draw Full Canvas Selected Destination/Studio Background Base Photo
           ctx.save();
           ctx.drawImage(bgImg, 0, 0, 1000, 1000);
           ctx.restore();
 
-          // 2. Draw User Selfie Photo Full Canvas (1000x1000) with Seamless Lighting Tone (No Inner Box / No Shape Border)
-          ctx.save();
-          ctx.drawImage(selfieImg, 0, 0, 1000, 1000);
+          // 2. Create Feathered Soft Alpha Mask Canvas for User Selfie Face & Upper Body
+          const selfieCanvas = document.createElement("canvas");
+          selfieCanvas.width = 1000;
+          selfieCanvas.height = 1000;
+          const sCtx = selfieCanvas.getContext("2d");
 
-          // Apply Professional Studio & Travel Lighting Ambient Overlay
-          const ambientGrad = ctx.createLinearGradient(0, 0, 0, 1000);
-          ambientGrad.addColorStop(0, "rgba(15, 23, 42, 0.15)");
-          ambientGrad.addColorStop(0.5, "rgba(0, 0, 0, 0)");
-          ambientGrad.addColorStop(1, "rgba(15, 23, 42, 0.5)");
-          ctx.fillStyle = ambientGrad;
+          if (sCtx) {
+            // Draw selfie photo
+            sCtx.drawImage(selfieImg, 0, 0, 1000, 1000);
+
+            // Apply Radial Soft Feather Alpha Mask to erase sharp edges seamlessly
+            sCtx.globalCompositeOperation = "destination-in";
+            const maskGrad = sCtx.createRadialGradient(500, 480, 180, 500, 480, 460);
+            maskGrad.addColorStop(0, "rgba(0, 0, 0, 1)");
+            maskGrad.addColorStop(0.7, "rgba(0, 0, 0, 0.85)");
+            maskGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+            sCtx.fillStyle = maskGrad;
+            sCtx.fillRect(0, 0, 1000, 1000);
+
+            // Draw Feathered Selfie onto main background canvas
+            ctx.save();
+            ctx.drawImage(selfieCanvas, 0, 0, 1000, 1000);
+            ctx.restore();
+          }
+
+          // 3. Apply Cinematic Lighting & Color Tone Harmonizer
+          ctx.save();
+          const toneGrad = ctx.createLinearGradient(0, 0, 0, 1000);
+          toneGrad.addColorStop(0, "rgba(15, 23, 42, 0.15)");
+          toneGrad.addColorStop(0.5, "rgba(0, 0, 0, 0)");
+          toneGrad.addColorStop(1, "rgba(15, 23, 42, 0.75)");
+          ctx.fillStyle = toneGrad;
           ctx.fillRect(0, 0, 1000, 1000);
           ctx.restore();
 
-          // 3. Elegant Bottom Title & Watermark
+          // 4. Elegant Bottom Title & Watermark Overlay
           ctx.save();
           const bannerGrad = ctx.createLinearGradient(0, 840, 0, 1000);
           bannerGrad.addColorStop(0, "rgba(15, 23, 42, 0)");
@@ -204,7 +226,7 @@ async function createCompositedPhoto(
   });
 }
 
-// 100% Guaranteed Instant Photo Renderer (Full 1000x1000 Canvas)
+// 100% Guaranteed Instant Soft Feather Photo Renderer
 async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: string, bgUrl?: string): Promise<string> {
   return new Promise((resolve) => {
     const canvas = document.createElement("canvas");
@@ -223,24 +245,33 @@ async function drawInlineCompositedPhoto(selfieBase64: string, styleLabel: strin
     const renderComposite = () => {
       if (!bgLoaded || !selfieLoaded) return;
       try {
-        // 1. Draw Background Full Canvas
+        // 1. Background
         ctx.save();
         ctx.drawImage(bgImg, 0, 0, 1000, 1000);
         ctx.restore();
 
-        // 2. Draw User Selfie Full Canvas
-        ctx.save();
-        ctx.drawImage(selfieImg, 0, 0, 1000, 1000);
+        // 2. Feathered Soft Alpha Selfie Layer
+        const selfieCanvas = document.createElement("canvas");
+        selfieCanvas.width = 1000;
+        selfieCanvas.height = 1000;
+        const sCtx = selfieCanvas.getContext("2d");
 
-        const ambientGrad = ctx.createLinearGradient(0, 0, 0, 1000);
-        ambientGrad.addColorStop(0, "rgba(15, 23, 42, 0.15)");
-        ambientGrad.addColorStop(0.5, "rgba(0, 0, 0, 0)");
-        ambientGrad.addColorStop(1, "rgba(15, 23, 42, 0.5)");
-        ctx.fillStyle = ambientGrad;
-        ctx.fillRect(0, 0, 1000, 1000);
-        ctx.restore();
+        if (sCtx) {
+          sCtx.drawImage(selfieImg, 0, 0, 1000, 1000);
+          sCtx.globalCompositeOperation = "destination-in";
+          const maskGrad = sCtx.createRadialGradient(500, 480, 180, 500, 480, 460);
+          maskGrad.addColorStop(0, "rgba(0, 0, 0, 1)");
+          maskGrad.addColorStop(0.7, "rgba(0, 0, 0, 0.85)");
+          maskGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+          sCtx.fillStyle = maskGrad;
+          sCtx.fillRect(0, 0, 1000, 1000);
 
-        // 3. Vignette & Title Overlay
+          ctx.save();
+          ctx.drawImage(selfieCanvas, 0, 0, 1000, 1000);
+          ctx.restore();
+        }
+
+        // 3. Cinematic Overlay
         ctx.save();
         const bannerGrad = ctx.createLinearGradient(0, 800, 0, 1000);
         bannerGrad.addColorStop(0, "rgba(15, 23, 42, 0)");

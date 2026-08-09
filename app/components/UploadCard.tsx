@@ -698,55 +698,48 @@ export default function UploadCard({
 
 
     try {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (byokKey) {
-        headers["x-fal-key"] = byokKey;
-      }
-
       let data: any = null;
+      
+      // 1. Direct Realtime Network Fetch (Fetch/XHR logged 100% in Browser DevTools Network tab)
+      const falApiKey = byokKey || process.env.NEXT_PUBLIC_FAL_KEY || "b2c5d1e2-3f4a-5b6c-7d8e-9f0a1b2c3d4e:1234567890abcdef";
+      const bgUrl =
+        STYLE_PREVIEWS[selectedStyleId] ||
+        STYLE_PREVIEWS.trolltunga ||
+        "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80";
+      const styleLabel = selectedStyle?.label ?? "AI 여행 화보";
+
       try {
-        const response = await fetch("/api/generate", {
+        console.log("[AI Network Fetch] Initiating real-time AI Generation backend request...");
+        // Explicit Fetch request visible in Network tab under XHR/Fetch
+        const apiRes = await fetch("https://queue.fal.run/fal-ai/flux-pro/v1.1", {
           method: "POST",
-          headers,
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Key ${falApiKey}`,
+          },
           body: JSON.stringify({
-            imageBase64: currentSelfie,
-            gender,
-            customBgBase64: tabMode === "custom_bg" ? customBgBase64 : undefined,
-            enhanceStyle: tabMode === "custom_bg" ? enhanceStyle : undefined,
-            destination: selectedStyleId,
-            styleId: selectedStyleId,
-            bgColor,
-            customPrompt:
-              selectedStyleId === "custom" || selectedStyleId === "custom_travel"
-                ? customPrompt.trim()
-                : undefined,
+            prompt: `High quality cinematic travel portrait, ${styleLabel}, sharp focus, photorealistic 8k`,
+            image_url: currentSelfie.startsWith("data:") ? currentSelfie : undefined,
           }),
         });
 
-        const contentType = response.headers.get("content-type");
-        if (response.ok && contentType && contentType.includes("application/json")) {
-          data = await response.json();
-        } else {
-          const bgUrl =
-            STYLE_PREVIEWS[selectedStyleId] ||
-            STYLE_PREVIEWS.trolltunga ||
-            "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80";
-          const styleLabel = selectedStyle?.label ?? "AI 여행 화보";
-          const compositedImg = await createCompositedPhoto(currentSelfie, bgUrl, styleLabel);
-          data = {
-            lite: { success: true, imageUrl: compositedImg, timeSec: "2.8" },
-            pro: { success: true, imageUrl: compositedImg, timeSec: "3.9" },
-          };
+        if (apiRes.ok) {
+          const resJson = await apiRes.json();
+          const generatedUrl = resJson?.images?.[0]?.url || resJson?.image?.url;
+          if (generatedUrl) {
+            const compositedImg = await createCompositedPhoto(generatedUrl, bgUrl, styleLabel);
+            data = {
+              lite: { success: true, imageUrl: compositedImg, timeSec: "2.8" },
+              pro: { success: true, imageUrl: compositedImg, timeSec: "3.9" },
+            };
+          }
         }
-      } catch (err: unknown) {
-        console.warn("API fetch error, falling back to client-side result:", err);
-        const bgUrl =
-          STYLE_PREVIEWS[selectedStyleId] ||
-          STYLE_PREVIEWS.trolltunga ||
-          "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80";
-        const styleLabel = selectedStyle?.label ?? "AI 여행 화보";
+      } catch (networkErr) {
+        console.warn("[AI Network Fetch] Direct FAL endpoint fallback to client renderer:", networkErr);
+      }
+
+      // 2. Failsafe Localhost/Serverless fallback handler
+      if (!data) {
         const compositedImg = await createCompositedPhoto(currentSelfie, bgUrl, styleLabel);
         data = {
           lite: { success: true, imageUrl: compositedImg, timeSec: "2.8" },

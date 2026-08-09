@@ -95,8 +95,8 @@ export default function CouponModal({
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="예: TRIP30"
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-extrabold tracking-widest text-center text-lg uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all placeholder:text-slate-300 placeholder:font-normal"
+              placeholder="쿠폰 코드를 입력하세요"
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-extrabold tracking-widest text-center text-lg uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all placeholder:text-slate-400 placeholder:font-normal placeholder:tracking-normal placeholder:text-xs"
             />
           </div>
 
@@ -119,12 +119,6 @@ export default function CouponModal({
             🎟️ 30회 크레딧 받기
           </button>
         </form>
-
-        <div className="mt-4 pt-4 border-t border-slate-100 text-center">
-          <p className="text-[11px] text-slate-400 font-medium">
-            💡 추천 쿠폰 코드: <span className="font-extrabold text-emerald-600">TRIP30</span>
-          </p>
-        </div>
       </div>
     </div>
   );

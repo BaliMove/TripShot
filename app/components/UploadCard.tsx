@@ -750,14 +750,19 @@ export default function UploadCard({
       setProgress(100);
       setFreeFixCount(1);
       
-      // Immediately switch to result view after short 200ms smooth flash
-      setTimeout(() => {
-        setResult({
-          lite: data.lite,
-          pro: data.pro,
-        });
-        setIsLoading(false);
-      }, 200);
+      // Instantly switch to result view and scroll smoothly
+      setResult({
+        lite: data.lite,
+        pro: data.pro,
+      });
+      setIsLoading(false);
+
+      if (typeof window !== "undefined") {
+        const resultSection = document.getElementById("result-display-section") || document.getElementById("upload-card-root");
+        if (resultSection) {
+          resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
 
       // Increment free counter if BYOK key is not used
       if (!byokKey) {

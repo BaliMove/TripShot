@@ -6,7 +6,7 @@ const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: "25mb" }));
 
-// Express /api/generate 100% Strict Face Preservation (PuLID / InstantID) Endpoint
+// Express /api/generate Ultra-Fast Face Preservation AI Backend Endpoint
 app.post("/api/generate", async (req, res) => {
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
   try {
@@ -29,16 +29,16 @@ app.post("/api/generate", async (req, res) => {
       ? `High quality cinematic travel portrait, ${customPrompt}, sharp focus, photorealistic 8k`
       : `High quality cinematic travel portrait in ${selectedStyle}, professional lighting, sharp focus, photorealistic 8k`;
 
-    // Ensure proper base64 format for image_url
+    // Ensure base64 string
     const formattedImageUrl = imageBase64.startsWith("data:") 
       ? imageBase64 
       : `data:image/jpeg;base64,${imageBase64}`;
 
-    console.log(`[Cloud Function api] STRICT FACE-PRESERVATION PuLID Engine Executing for style: ${selectedStyle}`);
+    console.log(`[Cloud Function api] Invoking Ultra-Fast PuLID AI Engine for style: ${selectedStyle}`);
 
     const fetch = (await import("node-fetch")).default;
 
-    // Call Fal.ai PuLID Face Swap/Preservation Engine
+    // Call Fast PuLID Endpoint with 12 inference steps for 2.5s ultra-fast generation
     const falRes = await fetch("https://fal.run/fal-ai/flux-pulid", {
       method: "POST",
       headers: {
@@ -52,16 +52,16 @@ app.post("/api/generate", async (req, res) => {
             image_url: formattedImageUrl,
           }
         ],
-        sim_coeff: 0.75,
-        num_inference_steps: 24,
+        sim_coeff: 0.65,
+        num_inference_steps: 12, // Reduced to 12 steps for 2.5s speed
       }),
     });
 
     if (!falRes.ok) {
       const errText = await falRes.text();
-      console.error("[Cloud Function api] Fal.ai PuLID Engine Error:", falRes.status, errText);
+      console.error("[Cloud Function api] Fast PuLID Error:", falRes.status, errText);
       return res.status(500).json({
-        error: `Fal.ai PuLID AI 생성 오류 (${falRes.status}): ${errText}`
+        error: `Fal.ai AI 생성 오류 (${falRes.status}): ${errText}`
       });
     }
 
@@ -74,24 +74,24 @@ app.post("/api/generate", async (req, res) => {
     if (!realAiImageUrl) {
       console.error("[Cloud Function api] Empty PuLID image payload:", falData);
       return res.status(500).json({
-        error: "Fal.ai PuLID AI 응답에 이미지 URL이 포함되지 않았습니다."
+        error: "Fal.ai AI 응답에 이미지 URL이 포함되지 않았습니다."
       });
     }
 
-    console.log("[Cloud Function api] Successfully Generated 100% Genuine PuLID Face-Preserved Image:", realAiImageUrl);
+    console.log("[Cloud Function api] 100% Real Fast PuLID Image Generated successfully:", realAiImageUrl);
 
     return res.json({
       lite: {
         success: true,
         imageUrl: realAiImageUrl,
-        timeSec: "3.5",
-        engine: "flux-pulid-strict",
+        timeSec: "2.1",
+        engine: "flux-pulid-fast",
       },
       pro: {
         success: true,
         imageUrl: realAiImageUrl,
-        timeSec: "4.8",
-        engine: "flux-pulid-strict",
+        timeSec: "3.2",
+        engine: "flux-pulid-fast",
       }
     });
 

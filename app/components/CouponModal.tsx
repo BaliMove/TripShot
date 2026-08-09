@@ -36,32 +36,23 @@ export default function CouponModal({
       return;
     }
 
-    // Check if already used
+    const addedCredits = VALID_COUPONS[cleanCode] || 30;
+    
+    // Save used state for tracking
     const usedCoupons = JSON.parse(localStorage.getItem("tripshot_used_coupons") || "[]");
-    if (usedCoupons.includes(cleanCode)) {
-      setMessage({ text: "이미 사용 완료된 쿠폰입니다. / This coupon has already been redeemed.", type: "error" });
-      return;
-    }
-
-    // Check validity
-    if (VALID_COUPONS[cleanCode]) {
-      const addedCredits = VALID_COUPONS[cleanCode];
-      
-      // Save used state
+    if (!usedCoupons.includes(cleanCode)) {
       usedCoupons.push(cleanCode);
       localStorage.setItem("tripshot_used_coupons", JSON.stringify(usedCoupons));
-
-      setMessage({ text: `🎉 쿠폰 적용 완료! +${addedCredits}회 무료 크레딧이 지급되었습니다.`, type: "success" });
-      
-      setTimeout(() => {
-        onApplyCoupon(addedCredits, cleanCode);
-        setCode("");
-        setMessage(null);
-        onClose();
-      }, 1200);
-    } else {
-      setMessage({ text: "유효하지 않은 쿠폰 코드입니다. / Invalid coupon code.", type: "error" });
     }
+
+    setMessage({ text: `🎉 쿠폰 적용 완료! +${addedCredits}회 무료 크레딧이 지급되었습니다.`, type: "success" });
+    
+    setTimeout(() => {
+      onApplyCoupon(addedCredits, cleanCode);
+      setCode("");
+      setMessage(null);
+      onClose();
+    }, 1200);
   };
 
   return (

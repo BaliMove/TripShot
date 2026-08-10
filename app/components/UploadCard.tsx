@@ -1976,7 +1976,7 @@ export default function UploadCard({
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             {stylesInCategory.map((style) => {
               const isSelected = selectedStyleId === style.id;
-              const bgImage = style.imageUrl || STYLE_PREVIEWS[style.id] || STYLE_PREVIEWS.paris;
+              const bgImage = style.imageUrl || STYLE_PREVIEWS[style.id] || "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80";
 
               return (
                 <div

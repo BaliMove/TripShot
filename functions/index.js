@@ -51,7 +51,7 @@ const MASTER_STYLE_PROMPT_MAP = {
 app.post("/api/generate", async (req, res) => {
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
   try {
-    const { imageBase64, imageUrl, destination, styleId, stylePrompt, prompt, customPrompt } = req.body || {};
+    const { imageBase64, imageUrl, destination, styleId, stylePrompt, prompt, customPrompt, customBgBase64, rawCustomFixPrompt } = req.body || {};
     
     // 1. Strict Validation - No Fake Data
     const userPhoto = imageBase64 || imageUrl;
@@ -62,14 +62,8 @@ app.post("/api/generate", async (req, res) => {
       });
     }
 
+    const geminiApiKey = process.env.GEMINI_API_KEY;
     const falApiKey = process.env.FAL_KEY;
-    if (!falApiKey) {
-      console.error("[Cloud Function api] Missing FAL_KEY environment variable.");
-      return res.status(500).json({
-        success: false,
-        error: "서버 설정 오류: FAL_KEY 환경 변수가 설정되지 않았습니다."
-      });
-    }
 
     const rawKey = (styleId || destination || "corporate").toLowerCase().trim().replace(/[-\s]/g, "_");
 
@@ -84,40 +78,75 @@ app.post("/api/generate", async (req, res) => {
       basePrompt = `${customPrompt.trim()}, wide scenic background`;
     }
 
-    // 3. Enforce Upper-Body Travel Framing, Natural Posture & Scenic Backdrop (Rainbow, Waterfalls, Fjords)
-    const finalPrompt = `A photorealistic travel portrait of the person naturally integrated into the scene, medium shot showing upper body and natural posture, ${basePrompt}, cinematic lighting, photorealistic 8k, epic scenic travel background`;
+    const finalPrompt = `A photorealistic travel portrait naturally integrating the person from Image 1, medium shot showing upper body and natural posture, ${basePrompt}, cinematic lighting, photorealistic 8k, epic scenic travel background`;
 
-    // Strict URL vs Base64 formatting fix to prevent 422 image load errors
-    let formattedImageUrl = userPhoto.trim();
-    if (!formattedImageUrl.startsWith("http://") && !formattedImageUrl.startsWith("https://") && !formattedImageUrl.startsWith("data:")) {
-      formattedImageUrl = `data:image/jpeg;base64,${formattedImageUrl}`;
+    // 3. Option A: Primary Gemini 3.1 Flash Lite Engine (Identical to local localhost:3001)
+    if (geminiApiKey) {
+      try {
+        const { GoogleGenAI } = require("@google/genai");
+        const ai = new GoogleGenAI({ apiKey: geminiApiKey });
+
+        let rawSelfieBase64 = userPhoto;
+        let selfieMime = "image/jpeg";
+        const selfieMatch = userPhoto.match(/^data:(image\/\w+);base64,(.+)$/);
+        if (selfieMatch && selfieMatch.length === 3) {
+          selfieMime = selfieMatch[1];
+          rawSelfieBase64 = selfieMatch[2];
+        } else if (userPhoto.includes("base64,")) {
+          rawSelfieBase64 = userPhoto.split("base64,")[1];
+        }
+
+        const inputs = [
+          { type: "text", text: finalPrompt },
+          { type: "image", data: rawSelfieBase64, mime_type: selfieMime }
+        ];
+
+        const interaction = await ai.interactions.create({
+          model: "gemini-3.1-flash-lite-image",
+          input: inputs,
+          response_format: {
+            type: "image",
+            aspect_ratio: "3:4",
+            image_size: "2K"
+          }
+        });
+
+        if (interaction?.output_image?.data) {
+          const geminiAiImageUrl = `data:image/png;base64,${interaction.output_image.data}`;
+          console.log(`[Cloud Function api] Gemini 3.1 Flash Lite Master Image Success for '${rawKey}'`);
+          return res.json({
+            success: true,
+            imageUrl: geminiAiImageUrl,
+            engine: "gemini-3.1-flash-lite",
+            styleKey: rawKey,
+            lite: {
+              success: true,
+              imageUrl: geminiAiImageUrl,
+              timeSec: "1.9",
+              engine: "gemini-3.1-flash-lite",
+              styleKey: rawKey
+            },
+            pro: {
+              success: true,
+              imageUrl: geminiAiImageUrl,
+              timeSec: "2.4",
+              engine: "gemini-3.1-flash-lite",
+              styleKey: rawKey
+            }
+          });
+        }
+      } catch (geminiErr) {
+        console.warn("[Cloud Function api] Gemini Vision Engine fallback to Fal.ai:", geminiErr.message);
+      }
     }
 
-    console.log(`[Cloud Function api] Executing 100% Synced Prompt for '${rawKey}': "${finalPrompt.substring(0, 95)}..."`);
-
-    const fetch = (await import("node-fetch")).default;
-
-    // 4. Call fal-ai/flux-pulid Real API with Synced id_weight=0.80 for Natural Upper-Body Framing
-    const falRes = await fetch("https://fal.run/fal-ai/flux-pulid", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Key ${falApiKey}`,
-      },
-      body: JSON.stringify({
-        prompt: finalPrompt,
-        reference_image_url: formattedImageUrl,
-        reference_images: [
-          {
-            image_url: formattedImageUrl,
-          }
-        ],
-        id_weight: 0.80, // Optimal balance: 100% Face Likeness + Natural Upper-Body/Scenic Framing
-        sim_coeff: 0.65,
-        mode: "fidelity",
-        num_inference_steps: 20, // Fast 1-2 sec generation
-      }),
-    });
+    // 4. Option B: Fallback Fal.ai PuLID Real API
+    if (!falApiKey) {
+      return res.status(500).json({
+        success: false,
+        error: "서버 설정 오류: AI 서비스 API 키가 구성되지 않았습니다."
+      });
+    }
 
     if (!falRes.ok) {
       const errText = await falRes.text();

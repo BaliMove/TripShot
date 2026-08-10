@@ -167,7 +167,7 @@ export const STYLES: StyleDef[] = [
     thrillMeter: "THRILL 98%",
     dangerBadge: "100% Safe AI",
     prompt:
-      "at Victoria Falls Devil's Pool Zambia, 108m waterfall cliff edge, mist and rainbow in background, epic travel shot, 8k",
+      "medium shot portrait resting hands naturally on edge of Victoria Falls Devil's Pool Zambia, 108m waterfall cliff plunge, vibrant vivid rainbow mist in background, natural smile, epic travel photography, photorealistic 8k",
   },
   {
     id: "kjeragbolten",

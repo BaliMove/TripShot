@@ -12,7 +12,7 @@ app.use(express.json({ limit: "30mb" }));
 const MASTER_STYLE_PROMPT_MAP = {
   // Extreme Destinations
   trolltunga: "sitting safely on the edge of Trolltunga cliff Norway, 700m abyss below, dramatic fjord view, cinematic rim light, 8k",
-  devils_pool: "at Victoria Falls Devil's Pool Zambia, 108m waterfall cliff edge, mist and rainbow in background, epic travel shot, 8k",
+  devils_pool: "medium shot portrait resting hands naturally on edge of Victoria Falls Devil's Pool Zambia, 108m waterfall cliff plunge, vibrant vivid rainbow mist in background, natural smile, epic travel photography, photorealistic 8k",
   kjeragbolten: "standing on Kjeragbolten wedged rock in Norway, 1000m cliff gap, breathtaking mountain panorama, 8k",
   huashan_plank: "walking on the narrow Huashan plank walk cliff edge in China, steep mountain cliff drop, extreme thrill, 8k",
   pedra_telegrafo: "hanging from Pedra do Telégrafo rock Brazil with optical illusion cliff effect, ocean background, golden hour, 8k",
@@ -84,8 +84,8 @@ app.post("/api/generate", async (req, res) => {
       basePrompt = `${customPrompt.trim()}, wide scenic background`;
     }
 
-    // 3. Enforce Front Camera Gaze & Clear Face ID while retaining exact local prompt details
-    const finalPrompt = `front-facing portrait looking directly at camera, clear face, ${basePrompt}, photorealistic 8k, detailed epic scenic backdrop`;
+    // 3. Enforce Upper-Body Travel Framing, Natural Posture & Scenic Backdrop (Rainbow, Waterfalls, Fjords)
+    const finalPrompt = `A photorealistic travel portrait of the person naturally integrated into the scene, medium shot showing upper body and natural posture, ${basePrompt}, cinematic lighting, photorealistic 8k, epic scenic travel background`;
 
     // Strict URL vs Base64 formatting fix to prevent 422 image load errors
     let formattedImageUrl = userPhoto.trim();
@@ -97,7 +97,7 @@ app.post("/api/generate", async (req, res) => {
 
     const fetch = (await import("node-fetch")).default;
 
-    // 4. Call fal-ai/flux-pulid Real API
+    // 4. Call fal-ai/flux-pulid Real API with Synced id_weight=0.80 for Natural Upper-Body Framing
     const falRes = await fetch("https://fal.run/fal-ai/flux-pulid", {
       method: "POST",
       headers: {
@@ -112,8 +112,9 @@ app.post("/api/generate", async (req, res) => {
             image_url: formattedImageUrl,
           }
         ],
-        id_weight: 1.0, // 100% User Face ID Preservation
-        sim_coeff: 0.75,
+        id_weight: 0.80, // Optimal balance: 100% Face Likeness + Natural Upper-Body/Scenic Framing
+        sim_coeff: 0.65,
+        mode: "fidelity",
         num_inference_steps: 20, // Fast 1-2 sec generation
       }),
     });

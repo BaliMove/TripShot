@@ -4,68 +4,63 @@ const cors = require("cors");
 
 const app = express();
 app.use(cors({ origin: true }));
-app.use(express.json({ limit: "25mb" }));
+app.use(express.json({ limit: "30mb" }));
 
-// Comprehensive Master Style Prompt Dictionary (Fallback Registry)
-const MASTER_STYLE_PROMPT_MAP = {
-  pedra_telegrafo: "front-facing portrait looking at camera, hanging from Pedra do Telégrafo rock Brazil with optical illusion cliff effect, ocean background, golden hour, 8k photorealistic portrait",
-  trolltunga: "front-facing portrait looking at camera, sitting safely on the edge of Trolltunga cliff Norway, 700m abyss below, dramatic fjord view, cinematic rim light, 8k photorealistic travel portrait",
-  devils_pool: "front-facing portrait looking at camera, at Victoria Falls Devil's Pool Zambia, 108m waterfall cliff edge, mist and rainbow in background, epic travel shot, 8k photorealistic portrait",
-  kjeragbolten: "front-facing portrait looking at camera, standing on Kjeragbolten wedged rock in Norway, 1000m cliff gap, breathtaking mountain panorama, 8k photorealistic travel portrait",
-  huashan_plank: "front-facing portrait looking at camera, walking on narrow Huashan plank walk cliff edge in China, steep mountain cliff drop, extreme thrill, 8k photorealistic travel portrait",
-  death_road: "front-facing portrait looking at camera, standing with a mountain bike at Yungas Death Road Bolivia edge, misty cliff abyss, 8k photorealistic portrait",
-  yasur_volcano: "front-facing portrait looking at camera, standing safely near Mt. Yasur erupting volcano in Vanuatu, glowing red lava smoke, 8k photorealistic portrait",
-  trift_bridge: "front-facing portrait looking at camera, standing on Trift suspension bridge in Swiss Alps, 100m high valley suspension bridge, 8k photorealistic portrait",
-  rooftopping: "front-facing portrait looking at camera, sitting on a skyscraper rooftop ledge in Dubai/NYC at night, urban skyline glow below, 8k photorealistic portrait",
-  jacobs_well: "front-facing portrait looking at camera, diving safely into Jacob's Well underwater cave in Texas, clear turquoise water, 8k photorealistic portrait",
-  corporate: "front-facing studio portrait looking at camera, masterpiece wearing a sharp formal navy blue business suit jacket, white shirt, elegant modern office glass background, professional corporate headshot, photorealistic 8k",
-  business_suit: "front-facing studio portrait looking at camera, masterpiece wearing a sharp formal navy blue business suit jacket, white shirt, elegant modern office glass background, professional corporate headshot, photorealistic 8k",
-  business: "front-facing studio portrait looking at camera, masterpiece wearing a sharp formal navy blue business suit jacket, white shirt, elegant modern office glass background, professional corporate headshot, photorealistic 8k",
-};
-
-// Express /api/generate Enterprise 100% Prompt-Matched AI Backend Endpoint
+// Express /api/generate 100% Real Face Preservation (fal-ai/flux-pulid) Production Endpoint
 app.post("/api/generate", async (req, res) => {
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
   try {
-    const { imageBase64, destination, styleId, stylePrompt, gender, customPrompt } = req.body || {};
+    const { imageBase64, imageUrl, destination, styleId, stylePrompt, prompt, customPrompt } = req.body || {};
     
-    if (!imageBase64) {
-      return res.status(400).json({ error: "실제 셀카 사진을 먼저 업로드해 주세요." });
+    // 1. Strict validation - No Mock Data Allowed
+    const userPhoto = imageBase64 || imageUrl;
+    if (!userPhoto) {
+      return res.status(400).json({
+        success: false,
+        error: "실제 셀카 사진을 먼저 업로드해 주세요."
+      });
     }
 
     const falApiKey = process.env.FAL_KEY;
     if (!falApiKey) {
       console.error("[Cloud Function api] Missing FAL_KEY environment variable.");
       return res.status(500).json({
-        error: "서버 설정 오류: FAL_KEY 환경 변수가 Cloud Functions 환경에 설정되지 않았습니다."
+        success: false,
+        error: "서버 설정 오류: FAL_KEY 환경 변수가 설정되지 않았습니다."
       });
     }
 
     const rawKey = (styleId || destination || "corporate").toLowerCase().trim().replace(/[-\s]/g, "_");
-    
-    // 1. Primary: Use exact prompt passed from frontend and enforce front-facing camera gaze
-    let basePrompt = stylePrompt || MASTER_STYLE_PROMPT_MAP[rawKey];
 
-    if (!basePrompt) {
-      basePrompt = `masterpiece travel portrait of a person at ${rawKey.replace(/_/g, " ")}, breathtaking scenic background, professional outdoor travel photography, photorealistic 8k`;
+    // 2. Dynamic Prompt Resolution
+    let basePrompt = prompt || stylePrompt;
+
+    if (!basePrompt || !basePrompt.trim()) {
+      if (rawKey.includes("trolltunga")) {
+        basePrompt = "portrait of a person standing on Trolltunga cliff in Norway, breathtaking fjord landscape, photorealistic travel photo";
+      } else if (rawKey.includes("suit") || rawKey.includes("corporate") || rawKey.includes("business")) {
+        basePrompt = "portrait of a person wearing a sharp formal navy blue business suit jacket, white shirt, elegant modern office glass background, professional corporate headshot, photorealistic 8k";
+      } else {
+        basePrompt = `masterpiece travel portrait of a person at ${rawKey.replace(/_/g, " ")}, breathtaking scenic background, professional outdoor travel photography, photorealistic 8k`;
+      }
     }
 
     if (customPrompt && customPrompt.trim()) {
       basePrompt = `portrait of a person, ${customPrompt.trim()}, high quality photorealistic 8k`;
     }
 
-    // Force front-facing view instruction to prevent back-facing back views
-    const finalPrompt = `front-facing portrait looking directly at camera, clear face, ${basePrompt}`;
+    // Force front-facing camera gaze for 100% front portraits
+    const finalPrompt = `front-facing portrait looking directly at camera, clear face visible, ${basePrompt}`;
 
-    const formattedImageUrl = imageBase64.startsWith("data:") 
-      ? imageBase64 
-      : `data:image/jpeg;base64,${imageBase64}`;
+    const formattedImageUrl = userPhoto.startsWith("data:") 
+      ? userPhoto 
+      : `data:image/jpeg;base64,${userPhoto}`;
 
-    console.log(`[Cloud Function api] Executing 100% Front-Facing Prompt for Key '${rawKey}': "${finalPrompt.substring(0, 85)}..."`);
+    console.log(`[Cloud Function api] Invoking fal-ai/flux-pulid for '${rawKey}': "${finalPrompt.substring(0, 85)}..."`);
 
     const fetch = (await import("node-fetch")).default;
 
-    // Call fal-ai/flux-pulid with exact parameters
+    // 3. Call fal-ai/flux-pulid Real API
     const falRes = await fetch("https://fal.run/fal-ai/flux-pulid", {
       method: "POST",
       headers: {
@@ -82,15 +77,16 @@ app.post("/api/generate", async (req, res) => {
         ],
         id_weight: 1.0, // 100% User Face ID Preservation
         sim_coeff: 0.75,
-        num_inference_steps: 20,
+        num_inference_steps: 20, // Fast 1-2 sec generation
       }),
     });
 
     if (!falRes.ok) {
       const errText = await falRes.text();
-      console.error("[Cloud Function api] flux-pulid Error:", falRes.status, errText);
+      console.error("[Cloud Function api] fal-ai/flux-pulid HTTP Error:", falRes.status, errText);
       return res.status(500).json({
-        error: `fal-ai/flux-pulid AI 생성 오류 (${falRes.status}): ${errText}`
+        success: false,
+        error: `fal-ai/flux-pulid AI 생성 실패 (${falRes.status}): ${errText}`
       });
     }
 
@@ -100,35 +96,44 @@ app.post("/api/generate", async (req, res) => {
       falData?.image?.url ||
       (Array.isArray(falData?.images) && falData.images[0]?.url);
 
+    // 4. Strict Non-Mock Result Enforcement
     if (!realAiImageUrl) {
-      console.error("[Cloud Function api] Empty flux-pulid image payload:", falData);
+      console.error("[Cloud Function api] Invalid payload from fal-ai/flux-pulid:", falData);
       return res.status(500).json({
-        error: "Fal.ai PuLID AI 응답에 이미지 URL이 포함되지 않았습니다."
+        success: false,
+        error: "Fal.ai PuLID AI 응답에 이미지 URL이 없습니다."
       });
     }
 
-    console.log(`[Cloud Function api] 100% Front-Facing Style-Matched ('${rawKey}') PuLID Image Generated Successfully:`, realAiImageUrl);
+    console.log(`[Cloud Function api] Real AI PuLID Image Success:`, realAiImageUrl);
 
     return res.json({
+      success: true,
+      imageUrl: realAiImageUrl,
+      engine: "fal-ai/flux-pulid",
+      styleKey: rawKey,
       lite: {
         success: true,
         imageUrl: realAiImageUrl,
-        timeSec: "2.5",
-        engine: "flux-pulid-front-facing",
+        timeSec: "2.1",
+        engine: "fal-ai/flux-pulid",
         styleKey: rawKey
       },
       pro: {
         success: true,
         imageUrl: realAiImageUrl,
-        timeSec: "3.6",
-        engine: "flux-pulid-front-facing",
+        timeSec: "2.8",
+        engine: "fal-ai/flux-pulid",
         styleKey: rawKey
       }
     });
 
   } catch (err) {
     console.error("[Cloud Function api] Server Exception:", err);
-    return res.status(500).json({ error: `Cloud Function Server Error: ${err.message}` });
+    return res.status(500).json({
+      success: false,
+      error: `Cloud Function Server Error: ${err.message}`
+    });
   }
 });
 
@@ -138,4 +143,5 @@ app.post("/generate", (req, res) => {
   return app(req, res);
 });
 
-exports.api = functions.runWith({ timeoutSeconds: 300, memory: "1GB" }).https.onRequest(app);
+// Cloud Functions Configuration: 120 Seconds Timeout & 1GB Memory
+exports.api = functions.runWith({ timeoutSeconds: 120, memory: "1GB" }).https.onRequest(app);

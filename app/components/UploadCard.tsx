@@ -691,12 +691,14 @@ export default function UploadCard({
           },
           body: JSON.stringify({
             imageBase64: currentSelfie,
+            imageUrl: currentSelfie,
             gender,
             customBgBase64: tabMode === "custom_bg" ? customBgBase64 : undefined,
             enhanceStyle: tabMode === "custom_bg" ? enhanceStyle : undefined,
             destination: selectedStyleId,
             styleId: selectedStyleId,
             stylePrompt: selectedStyle?.prompt,
+            prompt: selectedStyle?.prompt,
             bgColor,
             customPrompt:
               selectedStyleId === "custom" || selectedStyleId === "custom_travel"

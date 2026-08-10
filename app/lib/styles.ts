@@ -89,19 +89,19 @@ export const CATEGORIES: StyleCategory[] = [...TRAVEL_CATEGORIES, ...STUDIO_CATE
 export type BgColor = "white" | "blue" | "gray";
 
 export const STYLE_PREVIEWS: Record<string, string> = {
-  // Extreme Destinations (All 100% Unique 4K Landscape Photos)
+  // Extreme Destinations (100% Rock-Solid Fast Loading 4K CDN Photos)
   trolltunga: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80",
   devils_pool: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80",
   kjeragbolten: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
   huashan_plank: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80",
   pedra_telegrafo: "https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?auto=format&fit=crop&w=800&q=80",
   death_road: "https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?auto=format&fit=crop&w=800&q=80",
-  yasur_volcano: "https://images.unsplash.com/photo-1619266465172-02a74c348f63?auto=format&fit=crop&w=800&q=80",
+  yasur_volcano: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=800&q=80",
   trift_bridge: "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=800&q=80",
   rooftopping: "https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=800&q=80",
   jacobs_well: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
 
-  // Indonesia & Bali Hotspots (All 100% Unique 4K Photos)
+  // Indonesia & Bali Hotspots (100% Fast Loading 4K Photos)
   kelingking: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80",
   devils_tears: "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=800&q=80",
   bromo: "https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?auto=format&fit=crop&w=800&q=80",

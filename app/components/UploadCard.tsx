@@ -1302,8 +1302,8 @@ export default function UploadCard({
               </div>
 
 
-              {/* One-Line Input & Submit Button (Mobile Responsive Fix) */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full">
+              {/* One-Line Input & Submit Button (Mobile Bulletproof 100% Width Fix) */}
+              <div className="w-full max-w-full box-border overflow-hidden flex flex-col gap-2.5">
                 <input
                   type="text"
                   placeholder="예: 혼자 나오게 해주고, 내 얼굴 더 닮게 해줘..."
@@ -1312,13 +1312,13 @@ export default function UploadCard({
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleCustomFix();
                   }}
-                  className="w-full sm:flex-1 min-w-0 bg-slate-950 border border-slate-700 focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 rounded-2xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none transition-all font-medium"
+                  className="w-full max-w-full box-border min-w-0 bg-slate-950 border border-slate-700 focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 rounded-2xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none transition-all font-medium block"
                 />
                 <button
                   type="button"
                   onClick={() => handleCustomFix()}
                   disabled={isFixing || !customFixPrompt.trim()}
-                  className="w-full sm:w-auto shrink-0 justify-center bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-black py-3 px-5 rounded-2xl transition-all shadow-lg shadow-sky-500/20 flex items-center gap-2 active:scale-95 whitespace-nowrap"
+                  className="w-full box-border shrink-0 justify-center bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-black py-3.5 px-5 rounded-2xl transition-all shadow-lg shadow-sky-500/20 flex items-center gap-2 active:scale-95 whitespace-nowrap cursor-pointer"
                 >
                   {isFixing ? (
                     <>
@@ -1509,8 +1509,8 @@ export default function UploadCard({
               💡 예시 문구를 누르면 아래 입력창에 채워집니다. 원하는 요청을 자유롭게 덧붙여 적은 후 오른쪽 [수정 반영] 버튼을 눌러주세요!
             </p>
 
-            {/* One-Line Input & Submit Button (Mobile Responsive Fix) */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full">
+            {/* One-Line Input & Submit Button (Mobile Bulletproof 100% Width Fix) */}
+            <div className="w-full max-w-full box-border overflow-hidden flex flex-col gap-2.5">
               <input
                 ref={customFixInputRef}
                 type="text"
@@ -1520,13 +1520,13 @@ export default function UploadCard({
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleCustomFix();
                 }}
-                className="w-full sm:flex-1 min-w-0 bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-2xl py-3 px-4 text-xs sm:text-sm font-semibold text-white placeholder-slate-500 focus:outline-none transition-all"
+                className="w-full max-w-full box-border min-w-0 bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-2xl py-3 px-4 text-xs sm:text-sm font-semibold text-white placeholder-slate-500 focus:outline-none transition-all block"
               />
               <button
                 type="button"
                 onClick={() => handleCustomFix()}
                 disabled={isFixing || !customFixPrompt.trim()}
-                className="w-full sm:w-auto shrink-0 justify-center bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 hover:brightness-110 active:scale-95 text-white font-black text-xs sm:text-sm py-3 px-4 rounded-2xl shadow-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 whitespace-nowrap"
+                className="w-full box-border shrink-0 justify-center bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 hover:brightness-110 active:scale-95 text-white font-black text-xs sm:text-sm py-3.5 px-4 rounded-2xl shadow-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 whitespace-nowrap"
               >
                 {isFixing ? (
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

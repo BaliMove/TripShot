@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 
 const app = express();
+
+// 1. Fully Allow CORS for tripshot.world and all origins
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: "30mb" }));
 

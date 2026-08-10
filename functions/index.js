@@ -8,7 +8,7 @@ const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: "30mb" }));
 
-// Express /api/generate 100% Real Face & Upper Body Scenic Framing (fal-ai/flux-pulid) Endpoint
+// Express /api/generate 100% Real Face + Full-Body/Wide Environmental Scenic Framing Endpoint
 app.post("/api/generate", async (req, res) => {
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
   try {
@@ -34,33 +34,35 @@ app.post("/api/generate", async (req, res) => {
 
     const rawKey = (styleId || destination || "corporate").toLowerCase().trim().replace(/[-\s]/g, "_");
 
-    // 2. Dynamic Prompt Resolution with Explicit Zoom-Out & Outfit Guidance
+    // 2. Dynamic Prompt Resolution with Explicit Full-Body / Upper-Body Wide View
     let basePrompt = prompt || stylePrompt;
 
     if (!basePrompt || !basePrompt.trim()) {
-      if (rawKey.includes("santorini")) {
-        basePrompt = "wide-angle travel photo, camera pulled back, zoom out view showing the full iconic blue dome church roofs and Aegean sea backdrop of Santorini Greece, wearing stylish summer white clothes";
-      } else if (rawKey.includes("trolltunga")) {
-        basePrompt = "wide-angle travel photo, camera pulled back, standing on Trolltunga cliff ledge in Norway, breathtaking fjord landscape below, clear sunny day";
+      if (rawKey.includes("trolltunga")) {
+        basePrompt = "standing naturally on Trolltunga cliff ledge in Norway, full body view showing clothes and shoes, breathtaking fjord canyon landscape below, clear sunny day";
+      } else if (rawKey.includes("kjerag")) {
+        basePrompt = "standing on Kjeragbolten wedged rock in Norway, full body view standing, 1000m cliff gap, breathtaking mountain panorama";
+      } else if (rawKey.includes("santorini")) {
+        basePrompt = "standing on white balcony terrace in Santorini Greece, wide view showing body and clothes, iconic blue dome church roofs and Aegean sea backdrop, golden hour sunlight";
       } else if (rawKey.includes("suit") || rawKey.includes("corporate") || rawKey.includes("business") || rawKey.includes("id_photo") || rawKey.includes("passport")) {
-        basePrompt = "formal business portrait, wearing a clean crisp white formal dress shirt and sharp dark navy suit jacket, elegant solid neutral light gray studio backdrop, neat corporate headshot";
+        basePrompt = "formal business headshot portrait, upper body visible wearing a clean crisp white formal dress shirt and sharp dark navy suit jacket, elegant solid neutral light gray studio backdrop";
       } else {
-        basePrompt = `wide-angle environmental travel portrait at ${rawKey.replace(/_/g, " ")}, camera pulled back, showing full scenic background, professional outdoor travel photography`;
+        basePrompt = `standing at ${rawKey.replace(/_/g, " ")}, full body or upper body view showing clothes, breathtaking wide scenic travel background, professional outdoor travel photography`;
       }
     }
 
     if (customPrompt && customPrompt.trim()) {
-      basePrompt = `${customPrompt.trim()}, high quality scenic background`;
+      basePrompt = `${customPrompt.trim()}, wide scenic background`;
     }
 
-    // 3. Enforce Upper Body Medium Shot Framing + Front Camera Gaze + Clear Face ID
-    const finalPrompt = `medium shot environmental travel portrait of a person, upper body visible showing shoulders and clothes, front-facing looking directly at camera, clear face, ${basePrompt}, photorealistic 8k, detailed wide angle background`;
+    // 3. Enforce Wide Environmental Shot + Full/Upper Body Framing + Front Camera Gaze + 100% Face ID
+    const finalPrompt = `wide environmental shot, camera pulled far back, full body or upper body view standing naturally, showing clothes, front-facing looking directly at camera, clear face, ${basePrompt}, photorealistic 8k, detailed epic wide backdrop`;
 
     const formattedImageUrl = userPhoto.startsWith("data:") 
       ? userPhoto 
       : `data:image/jpeg;base64,${userPhoto}`;
 
-    console.log(`[Cloud Function api] Executing PuLID Wide-Framing Prompt for '${rawKey}': "${finalPrompt.substring(0, 95)}..."`);
+    console.log(`[Cloud Function api] Executing PuLID Full-Body Wide-Shot Prompt for '${rawKey}': "${finalPrompt.substring(0, 95)}..."`);
 
     const fetch = (await import("node-fetch")).default;
 
@@ -108,7 +110,7 @@ app.post("/api/generate", async (req, res) => {
       });
     }
 
-    console.log(`[Cloud Function api] 100% Real Face + Wide Scenic Image Success:`, realAiImageUrl);
+    console.log(`[Cloud Function api] 100% Full Body Wide Scenic Image Success:`, realAiImageUrl);
 
     return res.json({
       success: true,

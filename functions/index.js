@@ -34,18 +34,18 @@ app.post("/api/generate", async (req, res) => {
 
     const rawKey = (styleId || destination || "corporate").toLowerCase().trim().replace(/[-\s]/g, "_");
 
-    // 2. Dynamic Prompt Resolution
+    // 2. Dynamic Prompt Resolution with Explicit Zoom-Out & Outfit Guidance
     let basePrompt = prompt || stylePrompt;
 
     if (!basePrompt || !basePrompt.trim()) {
-      if (rawKey.includes("trolltunga")) {
-        basePrompt = "standing on Trolltunga cliff ledge in Norway, breathtaking fjord landscape, clear sunny day";
-      } else if (rawKey.includes("santorini")) {
-        basePrompt = "standing on white balcony terrace in Santorini Greece, iconic blue domes and Aegean sea backdrop, golden hour sunlight";
-      } else if (rawKey.includes("suit") || rawKey.includes("corporate") || rawKey.includes("business")) {
-        basePrompt = "wearing a sharp formal dark navy blue business suit jacket and white shirt, elegant modern office studio background";
+      if (rawKey.includes("santorini")) {
+        basePrompt = "wide-angle travel photo, camera pulled back, zoom out view showing the full iconic blue dome church roofs and Aegean sea backdrop of Santorini Greece, wearing stylish summer white clothes";
+      } else if (rawKey.includes("trolltunga")) {
+        basePrompt = "wide-angle travel photo, camera pulled back, standing on Trolltunga cliff ledge in Norway, breathtaking fjord landscape below, clear sunny day";
+      } else if (rawKey.includes("suit") || rawKey.includes("corporate") || rawKey.includes("business") || rawKey.includes("id_photo") || rawKey.includes("passport")) {
+        basePrompt = "formal business portrait, wearing a clean crisp white formal dress shirt and sharp dark navy suit jacket, elegant solid neutral light gray studio backdrop, neat corporate headshot";
       } else {
-        basePrompt = `at ${rawKey.replace(/_/g, " ")}, breathtaking wide scenic travel background, professional travel photography`;
+        basePrompt = `wide-angle environmental travel portrait at ${rawKey.replace(/_/g, " ")}, camera pulled back, showing full scenic background, professional outdoor travel photography`;
       }
     }
 
@@ -54,13 +54,13 @@ app.post("/api/generate", async (req, res) => {
     }
 
     // 3. Enforce Upper Body Medium Shot Framing + Front Camera Gaze + Clear Face ID
-    const finalPrompt = `medium shot travel portrait of a person, upper body visible showing shoulders and clothes, front-facing looking directly at camera, clear face, ${basePrompt}, photorealistic 8k, detailed wide angle background`;
+    const finalPrompt = `medium shot environmental travel portrait of a person, upper body visible showing shoulders and clothes, front-facing looking directly at camera, clear face, ${basePrompt}, photorealistic 8k, detailed wide angle background`;
 
     const formattedImageUrl = userPhoto.startsWith("data:") 
       ? userPhoto 
       : `data:image/jpeg;base64,${userPhoto}`;
 
-    console.log(`[Cloud Function api] Executing PuLID Upper-Body Framing Prompt for '${rawKey}': "${finalPrompt.substring(0, 95)}..."`);
+    console.log(`[Cloud Function api] Executing PuLID Wide-Framing Prompt for '${rawKey}': "${finalPrompt.substring(0, 95)}..."`);
 
     const fetch = (await import("node-fetch")).default;
 
@@ -108,7 +108,7 @@ app.post("/api/generate", async (req, res) => {
       });
     }
 
-    console.log(`[Cloud Function api] 100% Real Face + Upper Body Scenic Image Success:`, realAiImageUrl);
+    console.log(`[Cloud Function api] 100% Real Face + Wide Scenic Image Success:`, realAiImageUrl);
 
     return res.json({
       success: true,

@@ -157,20 +157,20 @@ export default function Home() {
       <section id="destinations" className="max-w-7xl mx-auto px-6 py-12">
         <div className="text-center mb-10">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-            🌍 대표 명소 카테고리
+            ⚡ 100% 안전한 익스트림 & 대표 명소
           </h2>
           <p className="text-slate-500 text-sm sm:text-base">
-            클릭 한 번으로 인도네시아 발리, 보로부두르 사원부터 파리 에펠탑까지 이동하세요.
+            노르웨이 트롤퉁가, 셰라그볼텐부터 발리, 파리까지 방구석에서 10초 만에 완성하세요.
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {STYLES.filter((s) => s.category === "travel").map((style) => {
-            const bgImage = style.imageUrl || STYLE_PREVIEWS[style.id] || STYLE_PREVIEWS.paris;
+          {STYLES.filter((s) => s.category === "extreme" || s.category === "travel").slice(0, 8).map((style) => {
+            const bgImage = style.imageUrl || STYLE_PREVIEWS[style.id] || STYLE_PREVIEWS.trolltunga;
             return (
               <div
                 key={style.id}
-                onClick={() => selectStyleAndScroll("travel", style.id)}
+                onClick={() => selectStyleAndScroll(style.category === "extreme" ? "extreme" : "travel", style.id)}
                 className="group bg-white rounded-3xl p-4 border border-slate-200/90 shadow-md hover:shadow-2xl hover:border-sky-400 transition-all duration-300 cursor-pointer flex flex-col justify-between"
               >
                 <div>
@@ -198,13 +198,12 @@ export default function Home() {
 
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-sky-600 group-hover:text-indigo-600">
                   <span>이 배경 선택하기</span>
-                  <span className="group-hover:translate-x-1 transition-transform">➔</span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </div>
               </div>
             );
           })}
         </div>
-
       </section>
 
       {/* Value Proposition Highlights */}

@@ -96,10 +96,10 @@ export const STYLE_PREVIEWS: Record<string, string> = {
   huashan_plank: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?v=2.0&auto=format&fit=crop&w=800&q=80",
   pedra_telegrafo: "https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?v=2.0&auto=format&fit=crop&w=800&q=80",
   death_road: "https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?v=2.0&auto=format&fit=crop&w=800&q=80",
-  yasur_volcano: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?v=2.0&auto=format&fit=crop&w=800&q=80",
-  trift_bridge: "https://images.unsplash.com/photo-1533105079780-92b9be482077?v=2.0&auto=format&fit=crop&w=800&q=80",
-  rooftopping: "https://images.unsplash.com/photo-1514565131-fce0801e5785?v=2.0&auto=format&fit=crop&w=800&q=80",
-  jacobs_well: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?v=2.0&auto=format&fit=crop&w=800&q=80",
+  yasur_volcano: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?v=3.0&auto=format&fit=crop&w=800&q=80",
+  trift_bridge: "https://images.unsplash.com/photo-1533105079780-92b9be482077?v=3.0&auto=format&fit=crop&w=800&q=80",
+  rooftopping: "https://images.unsplash.com/photo-1514565131-fce0801e5785?v=3.0&auto=format&fit=crop&w=800&q=80",
+  jacobs_well: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?v=3.0&auto=format&fit=crop&w=800&q=80",
 
   // Indonesia & Bali Hotspots (100% Fast Loading 4K Photos with Cache-Busting v=2.0)
   kelingking: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?v=2.0&auto=format&fit=crop&w=800&q=80",
@@ -223,7 +223,7 @@ export const STYLES: StyleDef[] = [
     label: "바누아투 야수르 활화산",
     description: "붉은 용암과 연기가 분출하는 활화산 입구",
     emoji: "🌋",
-    imageUrl: STYLE_PREVIEWS.yasur_volcano,
+    imageUrl: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?v=3.0&auto=format&fit=crop&w=800&q=80",
     thrillMeter: "THRILL 96%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -235,7 +235,7 @@ export const STYLES: StyleDef[] = [
     label: "스위스 트리프트 현수교",
     description: "알프스 산맥 100m 골짜기 위 아찔 현수교",
     emoji: "🇨🇭",
-    imageUrl: STYLE_PREVIEWS.trift_bridge,
+    imageUrl: "https://images.unsplash.com/photo-1533105079780-92b9be482077?v=3.0&auto=format&fit=crop&w=800&q=80",
     thrillMeter: "THRILL 93%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -247,7 +247,7 @@ export const STYLES: StyleDef[] = [
     label: "마천루 루프탑",
     description: "두바이·뉴욕 초고층 빌딩 난간 아찔 야경",
     emoji: "🏙️",
-    imageUrl: STYLE_PREVIEWS.rooftopping,
+    imageUrl: "https://images.unsplash.com/photo-1514565131-fce0801e5785?v=3.0&auto=format&fit=crop&w=800&q=80",
     thrillMeter: "THRILL 95%",
     dangerBadge: "100% Safe AI",
     prompt:
@@ -259,7 +259,7 @@ export const STYLES: StyleDef[] = [
     label: "미국 자콥스 웰",
     description: "깊은 수중 동굴 수영장 구멍 다이빙 샷",
     emoji: "🤿",
-    imageUrl: STYLE_PREVIEWS.jacobs_well,
+    imageUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?v=3.0&auto=format&fit=crop&w=800&q=80",
     thrillMeter: "THRILL 92%",
     dangerBadge: "100% Safe AI",
     prompt:

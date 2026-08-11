@@ -127,6 +127,8 @@ app.post("/api/generate", async (req, res) => {
           }
         });
 
+        console.log(`[Cloud Function api] Gemini Raw Response for '${modelName}':`, JSON.stringify(interaction, null, 2));
+
         const imageData = 
           interaction?.output_image?.data ||
           interaction?.candidates?.[0]?.content?.parts?.find((p) => p.inline_data || p.inlineData)?.inline_data?.data ||

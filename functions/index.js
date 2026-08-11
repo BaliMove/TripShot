@@ -106,19 +106,74 @@ app.post("/api/generate", async (req, res) => {
     ];
 
     const startTime = Date.now();
-    const modelsToTry = [
-      "gemini-2.5-flash",
-      "gemini-2.0-flash",
-      "imagen-3.0-generate-002",
-      "gemini-3.1-flash-lite-image"
-    ];
+    let geminiAiImageUrl = null;
+    let usedEngine = "gemini-2.5-flash";
 
-    let lastErrorMsg = "";
-    for (const modelName of modelsToTry) {
+    // Method 1: Try Official GoogleGenAI SDK generateImages for Imagen 3
+    try {
+      console.log("[Cloud Function api] Method 1: Trying ai.models.generateImages (Imagen 3)");
+      const imagenRes = await ai.models.generateImages({
+        model: "imagen-3.0-generate-002",
+        prompt: finalPrompt,
+        config: {
+          numberOfImages: 1,
+          outputMimeType: "image/jpeg",
+          aspectRatio: "3:4"
+        }
+      });
+      console.log("[Cloud Function api] Imagen Raw Response:", JSON.stringify(imagenRes, null, 2));
+
+      const base64Data = imagenRes?.generatedImages?.[0]?.image?.imageBytes;
+      if (base64Data) {
+        geminiAiImageUrl = `data:image/jpeg;base64,${base64Data}`;
+        usedEngine = "imagen-3.0-generate-002";
+      }
+    } catch (imagenErr) {
+      console.warn("[Cloud Function api] Method 1 Imagen failed:", imagenErr.message);
+    }
+
+    // Method 2: Try Official GoogleGenAI SDK generateContent for Gemini 2.5/2.0 Vision
+    if (!geminiAiImageUrl) {
+      const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash"];
+      for (const m of modelsToTry) {
+        try {
+          console.log(`[Cloud Function api] Method 2: Trying ai.models.generateContent (${m})`);
+          const response = await ai.models.generateContent({
+            model: m,
+            contents: [
+              finalPrompt,
+              {
+                inlineData: {
+                  data: rawSelfieBase64,
+                  mimeType: selfieMime
+                }
+              }
+            ]
+          });
+          console.log(`[Cloud Function api] Gemini Raw Response for ${m}:`, JSON.stringify(response, null, 2));
+
+          const candidates = response?.candidates || response?.response?.candidates;
+          const parts = candidates?.[0]?.content?.parts || [];
+          const imgPart = parts.find((p) => p.inlineData || p.inline_data);
+          const base64Data = imgPart?.inlineData?.data || imgPart?.inline_data?.data;
+
+          if (base64Data) {
+            geminiAiImageUrl = `data:image/png;base64,${base64Data}`;
+            usedEngine = m;
+            break;
+          }
+        } catch (mErr) {
+          console.warn(`[Cloud Function api] Method 2 ${m} failed:`, mErr.message);
+        }
+      }
+    }
+
+    // Method 3: Try Experimental ai.interactions.create
+    if (!geminiAiImageUrl) {
       try {
-        console.log(`[Cloud Function api] Trying Google Gemini model: ${modelName}`);
+        console.log("[Cloud Function api] Method 3: Trying ai.interactions.create (gemini-3.1-flash-lite-image)");
         const interaction = await ai.interactions.create({
-          model: modelName,
+          model: "gemini-3.1-flash-lite-image",
           input: inputs,
           response_format: {
             type: "image",
@@ -126,43 +181,45 @@ app.post("/api/generate", async (req, res) => {
             image_size: "2K"
           }
         });
+        console.log("[Cloud Function api] Interaction Raw Response:", JSON.stringify(interaction, null, 2));
 
-        console.log(`[Cloud Function api] Gemini Raw Response for '${modelName}':`, JSON.stringify(interaction, null, 2));
-
-        const imageData = 
+        const base64Data = 
           interaction?.output_image?.data ||
           interaction?.candidates?.[0]?.content?.parts?.find((p) => p.inline_data || p.inlineData)?.inline_data?.data ||
           interaction?.candidates?.[0]?.content?.parts?.find((p) => p.inline_data || p.inlineData)?.inlineData?.data;
 
-        if (imageData) {
-          const timeSec = ((Date.now() - startTime) / 1000).toFixed(1);
-          const geminiAiImageUrl = `data:image/png;base64,${imageData}`;
-          console.log(`[Cloud Function api] Google Gemini Image Success (${modelName}) for '${rawKey}' in ${timeSec}s`);
-          return res.json({
-            success: true,
-            imageUrl: geminiAiImageUrl,
-            engine: modelName,
-            styleKey: rawKey,
-            lite: {
-              success: true,
-              imageUrl: geminiAiImageUrl,
-              timeSec: timeSec,
-              engine: modelName,
-              styleKey: rawKey
-            },
-            pro: {
-              success: true,
-              imageUrl: geminiAiImageUrl,
-              timeSec: timeSec,
-              engine: modelName,
-              styleKey: rawKey
-            }
-          });
+        if (base64Data) {
+          geminiAiImageUrl = `data:image/png;base64,${base64Data}`;
+          usedEngine = "gemini-3.1-flash-lite-image";
         }
-      } catch (err) {
-        lastErrorMsg = err.message || String(err);
-        console.warn(`[Cloud Function api] Gemini model '${modelName}' failed:`, lastErrorMsg);
+      } catch (intErr) {
+        console.warn("[Cloud Function api] Method 3 Interaction failed:", intErr.message);
       }
+    }
+
+    if (geminiAiImageUrl) {
+      const timeSec = ((Date.now() - startTime) / 1000).toFixed(1);
+      console.log(`[Cloud Function api] Google Gemini Image Success (${usedEngine}) for '${rawKey}' in ${timeSec}s`);
+      return res.json({
+        success: true,
+        imageUrl: geminiAiImageUrl,
+        engine: usedEngine,
+        styleKey: rawKey,
+        lite: {
+          success: true,
+          imageUrl: geminiAiImageUrl,
+          timeSec: timeSec,
+          engine: usedEngine,
+          styleKey: rawKey
+        },
+        pro: {
+          success: true,
+          imageUrl: geminiAiImageUrl,
+          timeSec: timeSec,
+          engine: usedEngine,
+          styleKey: rawKey
+        }
+      });
     }
 
     return res.status(500).json({

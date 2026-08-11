@@ -127,9 +127,14 @@ app.post("/api/generate", async (req, res) => {
           }
         });
 
-        if (interaction?.output_image?.data) {
+        const imageData = 
+          interaction?.output_image?.data ||
+          interaction?.candidates?.[0]?.content?.parts?.find((p) => p.inline_data || p.inlineData)?.inline_data?.data ||
+          interaction?.candidates?.[0]?.content?.parts?.find((p) => p.inline_data || p.inlineData)?.inlineData?.data;
+
+        if (imageData) {
           const timeSec = ((Date.now() - startTime) / 1000).toFixed(1);
-          const geminiAiImageUrl = `data:image/png;base64,${interaction.output_image.data}`;
+          const geminiAiImageUrl = `data:image/png;base64,${imageData}`;
           console.log(`[Cloud Function api] Google Gemini Image Success (${modelName}) for '${rawKey}' in ${timeSec}s`);
           return res.json({
             success: true,

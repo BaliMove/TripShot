@@ -106,40 +106,56 @@ app.post("/api/generate", async (req, res) => {
     ];
 
     const startTime = Date.now();
-    const interaction = await ai.interactions.create({
-      model: "gemini-3.1-flash-lite-image",
-      input: inputs,
-      response_format: {
-        type: "image",
-        aspect_ratio: "3:4",
-        image_size: "2K"
-      }
-    });
-    const timeSec = ((Date.now() - startTime) / 1000).toFixed(1);
+    const modelsToTry = [
+      "gemini-2.5-flash",
+      "gemini-2.0-flash",
+      "imagen-3.0-generate-002",
+      "gemini-3.1-flash-lite-image"
+    ];
 
-    if (interaction?.output_image?.data) {
-      const geminiAiImageUrl = `data:image/png;base64,${interaction.output_image.data}`;
-      console.log(`[Cloud Function api] 100% Google Gemini 3.1 Flash Lite Image Success for '${rawKey}'`);
-      return res.json({
-        success: true,
-        imageUrl: geminiAiImageUrl,
-        engine: "gemini-3.1-flash-lite",
-        styleKey: rawKey,
-        lite: {
-          success: true,
-          imageUrl: geminiAiImageUrl,
-          timeSec: timeSec,
-          engine: "gemini-3.1-flash-lite",
-          styleKey: rawKey
-        },
-        pro: {
-          success: true,
-          imageUrl: geminiAiImageUrl,
-          timeSec: timeSec,
-          engine: "gemini-3.1-flash-lite",
-          styleKey: rawKey
+    let lastErrorMsg = "";
+    for (const modelName of modelsToTry) {
+      try {
+        console.log(`[Cloud Function api] Trying Google Gemini model: ${modelName}`);
+        const interaction = await ai.interactions.create({
+          model: modelName,
+          input: inputs,
+          response_format: {
+            type: "image",
+            aspect_ratio: "3:4",
+            image_size: "2K"
+          }
+        });
+
+        if (interaction?.output_image?.data) {
+          const timeSec = ((Date.now() - startTime) / 1000).toFixed(1);
+          const geminiAiImageUrl = `data:image/png;base64,${interaction.output_image.data}`;
+          console.log(`[Cloud Function api] Google Gemini Image Success (${modelName}) for '${rawKey}' in ${timeSec}s`);
+          return res.json({
+            success: true,
+            imageUrl: geminiAiImageUrl,
+            engine: modelName,
+            styleKey: rawKey,
+            lite: {
+              success: true,
+              imageUrl: geminiAiImageUrl,
+              timeSec: timeSec,
+              engine: modelName,
+              styleKey: rawKey
+            },
+            pro: {
+              success: true,
+              imageUrl: geminiAiImageUrl,
+              timeSec: timeSec,
+              engine: modelName,
+              styleKey: rawKey
+            }
+          });
         }
-      });
+      } catch (err) {
+        lastErrorMsg = err.message || String(err);
+        console.warn(`[Cloud Function api] Gemini model '${modelName}' failed:`, lastErrorMsg);
+      }
     }
 
     return res.status(500).json({

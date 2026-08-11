@@ -1,6 +1,5 @@
-/** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "export",
+  output: process.env.NODE_ENV === "production" ? "export" : undefined,
   generateBuildId: async () => `build-${Date.now()}`,
   images: {
     unoptimized: true,

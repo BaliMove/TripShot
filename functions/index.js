@@ -148,6 +148,34 @@ app.post("/api/generate", async (req, res) => {
       });
     }
 
+    let formattedImageUrl = userPhoto.trim();
+    if (!formattedImageUrl.startsWith("http://") && !formattedImageUrl.startsWith("https://") && !formattedImageUrl.startsWith("data:")) {
+      formattedImageUrl = `data:image/jpeg;base64,${formattedImageUrl}`;
+    }
+
+    const fetch = (await import("node-fetch")).default;
+
+    const falRes = await fetch("https://fal.run/fal-ai/flux-pulid", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Key ${falApiKey}`,
+      },
+      body: JSON.stringify({
+        prompt: finalPrompt,
+        reference_image_url: formattedImageUrl,
+        reference_images: [
+          {
+            image_url: formattedImageUrl,
+          }
+        ],
+        id_weight: 0.80, // Optimal balance: 100% Face Likeness + Natural Upper-Body/Scenic Framing
+        sim_coeff: 0.65,
+        mode: "fidelity",
+        num_inference_steps: 20, // Fast 1-2 sec generation
+      }),
+    });
+
     if (!falRes.ok) {
       const errText = await falRes.text();
       console.error("[Cloud Function api] fal-ai/flux-pulid HTTP Error:", falRes.status, errText);

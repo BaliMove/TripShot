@@ -129,7 +129,8 @@ app.post("/api/generate", async (req, res) => {
         usedEngine = "imagen-3.0-generate-002";
       }
     } catch (imagenErr) {
-      console.warn("[Cloud Function api] Method 1 Imagen failed:", imagenErr.message);
+      console.error("[Cloud Function api] Method 1 Imagen failed with details:", JSON.stringify(imagenErr, Object.getOwnPropertyNames(imagenErr), 2));
+      console.warn("[Cloud Function api] Method 1 Imagen failed message:", imagenErr.message);
     }
 
     // Method 2: Try Official GoogleGenAI SDK generateContent for Gemini 2.5/2.0 Vision

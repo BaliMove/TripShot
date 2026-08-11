@@ -1982,35 +1982,47 @@ export default function UploadCard({
                 <div
                   key={style.id}
                   onClick={() => setSelectedStyleId(style.id)}
-                  className={`flex flex-col p-2.5 rounded-2xl cursor-pointer transition-all duration-300 border-2 select-none bg-white ${
+                  className={`group relative flex flex-col p-2.5 rounded-2xl cursor-pointer transition-all duration-300 border-2 select-none overflow-hidden ${
                     isSelected
-                      ? "border-sky-500 ring-2 ring-sky-500/20 shadow-md"
-                      : "border-slate-200/90 hover:border-sky-300 shadow-sm"
+                      ? "border-sky-500 ring-4 ring-sky-500/20 shadow-xl shadow-sky-500/10 bg-gradient-to-b from-sky-50/50 to-white scale-[1.02]"
+                      : "border-slate-200/90 hover:border-sky-400 hover:shadow-lg hover:scale-[1.01] bg-white"
                   }`}
                 >
+                  {/* Selected Indicator Check Mark */}
+                  {isSelected && (
+                    <div className="absolute top-2 right-2 z-10 w-5 h-5 rounded-full bg-sky-500 text-white flex items-center justify-center text-[10px] font-black shadow-md">
+                      ✓
+                    </div>
+                  )}
+
                   {/* Photo Banner Box */}
-                  <div className="w-full h-24 rounded-xl overflow-hidden relative mb-2 bg-slate-100 shadow-inner">
+                  <div className="w-full h-28 sm:h-32 rounded-xl overflow-hidden relative mb-2 bg-slate-100 shadow-inner group-hover:shadow-md transition-all">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={bgImage}
                       alt={style.label}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
                     />
-                    <div className="absolute top-1.5 left-1.5 bg-slate-950/80 backdrop-blur-md px-2 py-0.5 rounded-md text-[10px] font-black text-white border border-white/20">
-                      {style.emoji} {style.label}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-80" />
+                    
+                    <div className="absolute bottom-2 left-2 right-2 bg-slate-950/70 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-extrabold text-white border border-white/20 shadow-sm flex items-center justify-between">
+                      <span className="truncate">{style.emoji} {style.label}</span>
                     </div>
                   </div>
 
-                  <span className="text-xs font-extrabold text-slate-900 tracking-tight leading-tight mb-0.5">
+                  <span className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 group-hover:text-sky-600 transition-colors">
                     {style.label}
                   </span>
-                  <span className="text-[10px] text-slate-500 font-medium leading-tight line-clamp-2 mb-1.5">
+                  <span className="text-[10px] text-slate-500 font-medium leading-tight line-clamp-2 mb-2">
                     {style.description}
                   </span>
                   {style.thrillMeter && (
                     <div className="flex flex-wrap gap-1 mt-auto">
-                      <span className="text-[9px] bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded-md font-black">
+                      <span className="text-[9px] bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black px-2 py-0.5 rounded-full shadow-xs">
                         ⚡ {style.thrillMeter}
+                      </span>
+                      <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200/80 font-bold px-1.5 py-0.5 rounded-full">
+                        {style.dangerBadge || "100% Safe"}
                       </span>
                     </div>
                   )}

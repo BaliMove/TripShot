@@ -52,13 +52,13 @@ export default function Home() {
       </div>
 
       {/* Header / Navbar */}
-      <header className="sticky top-0 z-50 w-full border-b border-slate-200/70 bg-white/90 backdrop-blur-xl shadow-sm transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <span className="font-extrabold text-xl sm:text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-600 via-indigo-600 to-amber-500 font-outfit hover:opacity-90 transition-opacity">
+      <header className="sticky top-0 z-50 w-full border-b border-slate-200/70 bg-white/95 backdrop-blur-xl shadow-sm transition-all">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5 cursor-pointer shrink-0" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <span className="font-extrabold text-lg sm:text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-600 via-indigo-600 to-amber-500 font-outfit hover:opacity-90 transition-opacity">
               TripShot.world
             </span>
-            <span className="h-2.5 w-2.5 rounded-full bg-sky-500 animate-ping hidden sm:inline-block" />
+            <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-sky-500 animate-ping hidden sm:inline-block" />
           </div>
 
           {/* Desktop Navigation */}
@@ -69,30 +69,31 @@ export default function Home() {
             <a href="#pricing" className="hover:text-sky-600 transition-colors py-1 hover:border-b-2 border-sky-500">{t.navPricing}</a>
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <button
               onClick={() => setIsCouponOpen(true)}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] sm:text-xs font-black px-3 py-2 sm:px-4 sm:py-2.5 rounded-full transition-all duration-200 shadow-md active:scale-95 flex items-center gap-1 whitespace-nowrap cursor-pointer border border-emerald-400/50"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] sm:text-xs font-black px-2 py-1.5 sm:px-3.5 sm:py-2.5 rounded-full transition-all duration-200 shadow-sm active:scale-95 flex items-center gap-0.5 sm:gap-1 whitespace-nowrap cursor-pointer border border-emerald-400/50 min-h-[36px] sm:min-h-[44px]"
             >
-              <span>🎟️ 쿠폰 등록</span>
+              <span>🎟️</span>
+              <span className="hidden xs:inline sm:inline">쿠폰</span>
             </button>
 
             <button
               onClick={scrollToUpload}
-              className="bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 text-white text-[11px] sm:text-xs font-black px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-full transition-all duration-200 shadow-md active:scale-95 flex items-center gap-1 whitespace-nowrap cursor-pointer"
+              className="bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 text-white text-[10px] sm:text-xs font-black px-2 py-1.5 sm:px-4 sm:py-2.5 rounded-full transition-all duration-200 shadow-sm active:scale-95 flex items-center gap-0.5 sm:gap-1 whitespace-nowrap cursor-pointer min-h-[36px] sm:min-h-[44px]"
             >
-              <span>👤 로그인 / 혜택</span>
+              <span>👤</span>
+              <span className="hidden xs:inline sm:inline">로그인</span>
             </button>
 
             <button
               onClick={scrollToUpload}
-              className="bg-slate-900 hover:bg-sky-600 text-white text-xs sm:text-sm font-extrabold px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-full transition-all duration-200 shadow-md active:scale-95 flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+              className="bg-slate-900 hover:bg-sky-600 text-white text-[11px] sm:text-xs font-extrabold px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-full transition-all duration-200 shadow-md active:scale-95 flex items-center gap-1 whitespace-nowrap cursor-pointer min-h-[36px] sm:min-h-[44px]"
             >
+              <span>⚡</span>
               <span>{t.ctaMakeMyPhoto}</span>
             </button>
           </div>
-
-
         </div>
       </header>
 

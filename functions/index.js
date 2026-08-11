@@ -52,7 +52,7 @@ app.post("/api/generate", async (req, res) => {
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
   try {
     const { imageBase64, imageUrl, destination, styleId, stylePrompt, prompt, customPrompt, customBgBase64, rawCustomFixPrompt } = req.body || {};
-    
+
     // 1. Strict Validation - No Fake Data
     const userPhoto = imageBase64 || imageUrl;
     if (!userPhoto) {
@@ -84,7 +84,16 @@ app.post("/api/generate", async (req, res) => {
       basePrompt = `${customPrompt.trim()}, wide scenic background`;
     }
 
-    const finalPrompt = `A photorealistic travel portrait naturally integrating the person from Image 1, medium shot showing upper body and natural posture, ${basePrompt}, cinematic lighting, photorealistic 8k, epic scenic travel background`;
+    const isStudioConcept = 
+      ["corporate", "business_suit", "business", "studio", "id_photo", "passport", "student"].includes(rawKey) ||
+      basePrompt.toLowerCase().includes("studio") || basePrompt.toLowerCase().includes("passport") || basePrompt.toLowerCase().includes("business") || basePrompt.toLowerCase().includes("white background") || basePrompt.toLowerCase().includes("suit");
+
+    let finalPrompt = "";
+    if (isStudioConcept) {
+      finalPrompt = `A high-end professional indoor studio headshot portrait naturally integrating the person from Image 1, wearing a sophisticated dark navy business suit and tie, perfectly fitted suit jacket, clean professional studio lighting, standing indoors against a solid pure white or soft light gray studio wall background, 8k resolution, photorealistic studio photography, NO outdoor trees, NO outdoor lakes, NO mountains`;
+    } else {
+      finalPrompt = `A photorealistic travel portrait naturally integrating the person from Image 1, medium shot showing upper body and natural posture, ${basePrompt}, cinematic lighting, photorealistic 8k, epic scenic travel background`;
+    }
 
     // 3. Google Gemini 3.1 Flash Lite 100% Primary Vision Engine (Identical to local localhost:3001)
     const { GoogleGenAI } = require("@google/genai");
@@ -108,7 +117,7 @@ app.post("/api/generate", async (req, res) => {
     const startTime = Date.now();
     try {
       console.log("[Cloud Function api] Trying Gemini Image Generation Model");
-      
+
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash-image",
         contents: [
@@ -124,7 +133,7 @@ app.post("/api/generate", async (req, res) => {
 
       const candidates = response?.candidates || response?.response?.candidates;
       const parts = candidates?.[0]?.content?.parts || response?.parts || [];
-      
+
       const imgPart = parts.find((p) => p.inlineData?.data || p.inline_data?.data || p.imageBytes);
       const base64Data = imgPart?.inlineData?.data || imgPart?.inline_data?.data || imgPart?.imageBytes;
 

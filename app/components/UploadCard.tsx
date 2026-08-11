@@ -1977,7 +1977,17 @@ export default function UploadCard({
             {stylesInCategory.map((style) => {
               const isSelected = selectedStyleId === style.id;
               let bgImage = style.imageUrl || STYLE_PREVIEWS[style.id] || "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80";
-              if (bgImage && !bgImage.includes("v=99.0")) {
+              if (style.id === "corporate" || style.id === "business_suit" || style.id === "business") {
+                bgImage = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=99.0&auto=format&fit=crop&w=800&q=80";
+              } else if (style.id === "studio") {
+                bgImage = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?v=99.0&auto=format&fit=crop&w=800&q=80";
+              } else if (style.id === "id_photo") {
+                bgImage = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?v=99.0&auto=format&fit=crop&w=800&q=80";
+              } else if (style.id === "passport") {
+                bgImage = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=99.0&auto=format&fit=crop&w=800&q=80";
+              } else if (style.id === "student") {
+                bgImage = "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?v=99.0&auto=format&fit=crop&w=800&q=80";
+              } else if (bgImage && !bgImage.includes("v=99.0")) {
                 bgImage = bgImage.includes("?") ? `${bgImage}&v=99.0` : `${bgImage}?v=99.0`;
               }
 

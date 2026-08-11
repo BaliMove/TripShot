@@ -117,14 +117,14 @@ export const STYLE_PREVIEWS: Record<string, string> = {
   paris: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?v=2.0&auto=format&fit=crop&w=800&q=80",
   santorini: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?v=2.0&auto=format&fit=crop&w=800&q=80",
 
-  // Studio & ID Photo Concepts (4K High Quality Studio Suit & ID Photo Previews v=4.0)
-  corporate: "https://images.unsplash.com/photo-1560250097-0b93528c311a?v=4.0&auto=format&fit=crop&w=800&q=80",
-  business_suit: "https://images.unsplash.com/photo-1560250097-0b93528c311a?v=4.0&auto=format&fit=crop&w=800&q=80",
-  business: "https://images.unsplash.com/photo-1560250097-0b93528c311a?v=4.0&auto=format&fit=crop&w=800&q=80",
-  studio: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?v=4.0&auto=format&fit=crop&w=800&q=80",
-  id_photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=4.0&auto=format&fit=crop&w=800&q=80",
-  passport: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?v=4.0&auto=format&fit=crop&w=800&q=80",
-  student: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?v=4.0&auto=format&fit=crop&w=800&q=80",
+  // Studio & ID Photo Concepts (4K High Quality Studio Suit & ID Photo Previews v=5.0)
+  corporate: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=5.0&auto=format&fit=crop&w=800&q=80",
+  business_suit: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=5.0&auto=format&fit=crop&w=800&q=80",
+  business: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=5.0&auto=format&fit=crop&w=800&q=80",
+  studio: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?v=5.0&auto=format&fit=crop&w=800&q=80",
+  id_photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?v=5.0&auto=format&fit=crop&w=800&q=80",
+  passport: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=5.0&auto=format&fit=crop&w=800&q=80",
+  student: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?v=5.0&auto=format&fit=crop&w=800&q=80",
   astronaut: "/images/astronaut_photo.png",
   van_gogh: "/images/van_gogh_photo.png",
   yearbook: "/images/yearbook_photo.png",
@@ -434,8 +434,9 @@ export const STYLES: StyleDef[] = [
     id: "corporate",
     category: "business",
     label: "비즈니스 정장",
-    description: "고급 해드샷 전용 네이비 비즈니스 수트 수트 룩",
+    description: "고급 헤드샷 전용 네이비 비즈니스 수트 룩",
     emoji: "💼",
+    imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=5.0&auto=format&fit=crop&w=800&q=80",
     supportsBgColor: true,
     prompt:
       "A high-end executive portrait of the person, completely replacing original clothes with a luxury fitted navy blue business suit with white dress shirt, elegant studio lighting, professional studio background, id_weight: 0.72",
@@ -446,6 +447,7 @@ export const STYLES: StyleDef[] = [
     label: "스튜디오 헤드샷",
     description: "인물 부각 실내 고급 스튜디오 조명",
     emoji: "📸",
+    imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?v=5.0&auto=format&fit=crop&w=800&q=80",
     supportsBgColor: true,
     prompt:
       "Apply soft, flattering studio portrait lighting on the person, completely replacing original clothes with clean executive attire, solid elegant studio backdrop, id_weight: 0.72",
@@ -458,6 +460,7 @@ export const STYLES: StyleDef[] = [
     label: "취업용 증명사진",
     description: "단정한 정장 수트 착용, 규격 전면 증명사진",
     emoji: "🪪",
+    imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?v=5.0&auto=format&fit=crop&w=800&q=80",
     supportsBgColor: true,
     printable: true,
     prompt:
@@ -469,6 +472,7 @@ export const STYLES: StyleDef[] = [
     label: "여권·비자 사진",
     description: "국제 규정 준수 화이트 배경 규격 사진",
     emoji: "🛂",
+    imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=5.0&auto=format&fit=crop&w=800&q=80",
     printable: true,
     prompt:
       "An official compliant passport headshot photo of the person, centered front facing, completely replacing original clothes with dark formal attire, ears visible, neutral facial expression, strict solid white background, id_weight: 0.72",
@@ -479,6 +483,7 @@ export const STYLES: StyleDef[] = [
     label: "학생증·사원증",
     description: "밝고 단정한 스마트 캐주얼 증명사진",
     emoji: "🎓",
+    imageUrl: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?v=5.0&auto=format&fit=crop&w=800&q=80",
     supportsBgColor: true,
     printable: true,
     prompt:

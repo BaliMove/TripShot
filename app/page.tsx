@@ -166,7 +166,10 @@ export default function Home() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {STYLES.filter((s) => s.category === "extreme" || s.category === "travel").slice(0, 8).map((style) => {
-            const bgImage = style.imageUrl || STYLE_PREVIEWS[style.id] || STYLE_PREVIEWS.trolltunga;
+            let bgImage = style.imageUrl || STYLE_PREVIEWS[style.id] || STYLE_PREVIEWS.trolltunga;
+            if (bgImage && !bgImage.includes("v=99.0")) {
+              bgImage = bgImage.includes("?") ? `${bgImage}&v=99.0` : `${bgImage}?v=99.0`;
+            }
             return (
               <div
                 key={style.id}

@@ -105,8 +105,6 @@ app.post("/api/generate", async (req, res) => {
     if (selfieMatch && selfieMatch.length === 3) {
       selfieMime = selfieMatch[1];
       rawSelfieBase64 = selfieMatch[2];
-    } else if (userPhoto.includes("base64,")) {
-      rawSelfieBase64 = userPhoto.split("base64,")[1];
     }
 
     const inputs = [
@@ -114,49 +112,63 @@ app.post("/api/generate", async (req, res) => {
       { type: "image", data: rawSelfieBase64, mime_type: selfieMime }
     ];
 
-    const startTime = Date.now();
-    try {
-      console.log("[Cloud Function api] Trying Gemini Image Generation Model");
-
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash-image",
-        contents: [
-          finalPrompt,
-          {
-            inlineData: {
-              data: rawSelfieBase64,
-              mimeType: selfieMime
-            }
-          }
-        ]
+    const callModel = async (modelName) => {
+      const startTime = Date.now();
+      const interaction = await ai.interactions.create({
+        model: modelName,
+        input: inputs,
+        response_format: {
+          type: "image",
+          aspect_ratio: "3:4",
+          image_size: "2K"
+        }
       });
+      const timeSec = ((Date.now() - startTime) / 1000).toFixed(1);
 
-      const candidates = response?.candidates || response?.response?.candidates;
-      const parts = candidates?.[0]?.content?.parts || response?.parts || [];
-
-      const imgPart = parts.find((p) => p.inlineData?.data || p.inline_data?.data || p.imageBytes);
-      const base64Data = imgPart?.inlineData?.data || imgPart?.inline_data?.data || imgPart?.imageBytes;
-
-      if (base64Data) {
-        const mime = imgPart?.inlineData?.mimeType || imgPart?.inline_data?.mimeType || "image/jpeg";
-        const geminiAiImageUrl = `data:${mime};base64,${base64Data}`;
-        const timeSec = ((Date.now() - startTime) / 1000).toFixed(1);
-
-        return res.json({
+      if (interaction?.output_image?.data) {
+        return {
           success: true,
-          imageUrl: geminiAiImageUrl,
-          engine: "gemini-2.5-flash-image",
-          styleKey: rawKey,
-          lite: { success: true, imageUrl: geminiAiImageUrl, timeSec },
-          pro: { success: true, imageUrl: geminiAiImageUrl, timeSec }
-        });
-      } else {
-        throw new Error("모델 응답에 이미지 바이트 데이터가 포함되어 있지 않습니다.");
+          imageUrl: `data:image/png;base64,${interaction.output_image.data}`,
+          engine: modelName,
+          timeSec
+        };
       }
-    } catch (err) {
-      console.error("[Cloud Function api] Generation failed with details:", err.message);
-      return res.status(500).json({ success: false, error: err.message });
+      return null;
+    };
+
+    const modelsToTry = [
+      "gemini-3.1-flash-lite-image",
+      "gemini-3.1-flash-image",
+      "gemini-2.5-flash",
+      "imagen-3.0-generate-002"
+    ];
+
+    let lastErrorMsg = "";
+    for (const m of modelsToTry) {
+      try {
+        console.log(`[Cloud Function api] Trying model: ${m}`);
+        const result = await callModel(m);
+        if (result) {
+          console.log(`[Cloud Function api] Success with engine ${m} in ${result.timeSec}s`);
+          return res.json({
+            success: true,
+            imageUrl: result.imageUrl,
+            engine: result.engine,
+            styleKey: rawKey,
+            lite: { success: true, imageUrl: result.imageUrl, timeSec: result.timeSec, engine: result.engine },
+            pro: { success: true, imageUrl: result.imageUrl, timeSec: result.timeSec, engine: result.engine }
+          });
+        }
+      } catch (err) {
+        lastErrorMsg = err.message || String(err);
+        console.warn(`[Cloud Function api] Model ${m} failed: ${lastErrorMsg}`);
+      }
     }
+
+    return res.status(500).json({
+      success: false,
+      error: `Google Gemini AI 화보 생성 실패 (${lastErrorMsg})`
+    });
 
   } catch (err) {
     console.error("[Cloud Function api] Server Exception:", err);

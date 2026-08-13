@@ -117,14 +117,14 @@ export const STYLE_PREVIEWS: Record<string, string> = {
   paris: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?v=2.0&auto=format&fit=crop&w=800&q=80",
   santorini: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?v=2.0&auto=format&fit=crop&w=800&q=80",
 
-  // Studio & ID Photo Concepts (4K High Quality Studio Suit & ID Photo Previews v=5.0)
-  corporate: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=5.0&auto=format&fit=crop&w=800&q=80",
-  business_suit: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=5.0&auto=format&fit=crop&w=800&q=80",
-  business: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=5.0&auto=format&fit=crop&w=800&q=80",
-  studio: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?v=5.0&auto=format&fit=crop&w=800&q=80",
-  id_photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?v=5.0&auto=format&fit=crop&w=800&q=80",
-  passport: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=5.0&auto=format&fit=crop&w=800&q=80",
-  student: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?v=5.0&auto=format&fit=crop&w=800&q=80",
+  // Studio & ID Photo Concepts (4K High Quality Studio Suit & ID Photo Previews v=2026_STUDIO_V10)
+  corporate: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80",
+  business_suit: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80",
+  business: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80",
+  studio: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80",
+  id_photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80",
+  passport: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80",
+  student: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80",
   astronaut: "/images/astronaut_photo.png",
   van_gogh: "/images/van_gogh_photo.png",
   yearbook: "/images/yearbook_photo.png",

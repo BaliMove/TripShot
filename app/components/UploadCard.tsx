@@ -882,34 +882,61 @@ export default function UploadCard({
     return new Blob([u8arr], { type: mime });
   };
 
-  const triggerDownload = async (imageUrl: string, fileName?: string) => {
+  const triggerDownload = (imageUrl: string, fileName?: string) => {
     try {
-      const defaultName = `tripshot_${usedStyleId || "photo"}_${Date.now()}.png`;
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}_${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}${String(now.getSeconds()).padStart(2, "0")}`;
+      const defaultName = `tripshot_${usedStyleId || "photo"}_${dateStr}.png`;
       let nameToSave = fileName || defaultName;
       if (!nameToSave.toLowerCase().endsWith(".png") && !nameToSave.toLowerCase().endsWith(".jpg")) {
         nameToSave += ".png";
       }
 
-      let blob: Blob;
+      // Convert any image source (Data URL or Remote URL) to standard binary Blob
       if (imageUrl.startsWith("data:")) {
-        blob = dataUrlToBlob(imageUrl);
+        const blob = dataUrlToBlob(imageUrl);
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = nameToSave;
+        a.setAttribute("download", nameToSave);
+        document.body.appendChild(a);
+        a.click();
+
+        setTimeout(() => {
+          if (document.body.contains(a)) document.body.removeChild(a);
+          // Keep Blob URL alive for 30s to ensure Chrome finishes writing to disk
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+        }, 1000);
       } else {
-        const response = await fetch(imageUrl);
-        blob = await response.blob();
+        fetch(imageUrl)
+          .then((res) => res.blob())
+          .then((blob) => {
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = blobUrl;
+            a.download = nameToSave;
+            a.setAttribute("download", nameToSave);
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+              if (document.body.contains(a)) document.body.removeChild(a);
+              setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+            }, 1000);
+          })
+          .catch((err) => {
+            console.warn("Fetch blob fallback:", err);
+            const a = document.createElement("a");
+            a.href = imageUrl;
+            a.download = nameToSave;
+            a.setAttribute("download", nameToSave);
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+              if (document.body.contains(a)) document.body.removeChild(a);
+            }, 1000);
+          });
       }
-
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.style.display = "none";
-      a.href = blobUrl;
-      a.download = nameToSave;
-      document.body.appendChild(a);
-      a.click();
-
-      setTimeout(() => {
-        if (document.body.contains(a)) document.body.removeChild(a);
-        URL.revokeObjectURL(blobUrl);
-      }, 3000);
 
       setDownloadNotice(
         lang === "ko"
@@ -918,13 +945,16 @@ export default function UploadCard({
       );
       setTimeout(() => setDownloadNotice(null), 4000);
     } catch (e) {
-      console.warn("Direct blob download failed, fallback:", e);
+      console.warn("Download exception fallback:", e);
       const a = document.createElement("a");
       a.href = imageUrl;
       a.download = `tripshot_${usedStyleId || "photo"}.png`;
+      a.setAttribute("download", `tripshot_${usedStyleId || "photo"}.png`);
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
+      setTimeout(() => {
+        if (document.body.contains(a)) document.body.removeChild(a);
+      }, 1000);
     }
   };
 

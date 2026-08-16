@@ -99,14 +99,11 @@ export async function POST(req: NextRequest) {
     if (customBgBase64) {
       const fixAddon = rawCustomFixPrompt ? ` User fix request: ${rawCustomFixPrompt.trim()}.` : "";
       if (enhanceStyle === "vibrant") {
-        prompt = `A photorealistic travel portrait seamlessly integrating ALL person(s) / people from Image 1 (preserve exact number of people and facial identities from Image 1 whether solo or group of 2, 3+ people) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface (do not cut off feet floating in air). Wearing sophisticated resort wear matching their style, automatically enhance background lighting into a luxury 5-star resort sunny aesthetic with vibrant colors, cinematic lighting, 8k photo quality, preserving exact facial identity of all individuals from Image 1 with id_weight: 0.90.${fixAddon} ${NO_TEXT_INSTRUCTION}`;
+        prompt = `A photorealistic travel portrait seamlessly integrating ALL person(s) / people from Image 1 (preserve exact number of people and 100% identical facial identities from Image 1 whether solo or group of 2, 3+ people) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface (do not cut off feet floating in air). Wearing sophisticated resort wear matching their style, automatically enhance background lighting into a luxury 5-star resort sunny aesthetic with vibrant colors, cinematic lighting, 8k photo quality, strictly preserving exact facial identity of all individuals from Image 1 with id_weight: 0.95.${fixAddon} ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: altered face, morphed features, changed ethnicity.`;
       } else {
-        prompt = `A photorealistic travel portrait naturally integrating ALL person(s) / people from Image 1 (preserve exact number of people and facial identities from Image 1 whether solo or group of 2, 3+ people) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface (do not cut off feet floating in air). Wearing sophisticated resort wear, matching scene lighting and natural color tones, 8k quality, preserving exact facial identity of all individuals from Image 1 with id_weight: 0.90.${fixAddon} ${NO_TEXT_INSTRUCTION}`;
+        prompt = `A photorealistic travel portrait naturally integrating ALL person(s) / people from Image 1 (preserve exact number of people and 100% identical facial identities from Image 1 whether solo or group of 2, 3+ people) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface (do not cut off feet floating in air). Wearing sophisticated resort wear, matching scene lighting and natural color tones, 8k quality, strictly preserving exact facial identity of all individuals from Image 1 with id_weight: 0.95.${fixAddon} ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: altered face, morphed features, changed ethnicity.`;
       }
     } else {
-
-
-
       prompt = buildPrompt({
         styleId,
         bgColor,
@@ -116,7 +113,7 @@ export async function POST(req: NextRequest) {
 
       const isStudio = ["corporate", "business_suit", "business", "studio", "id_photo", "passport", "student"].includes(styleId.toLowerCase());
       if (isStudio) {
-        prompt = `A high-end professional indoor studio headshot portrait naturally integrating the person from Image 1, wearing a sophisticated dark navy business suit and tie, perfectly fitted suit jacket, clean professional studio lighting, standing indoors against a solid pure white or soft light gray studio wall background, 8k resolution, photorealistic studio photography, NO outdoor trees, NO outdoor lakes, NO mountains`;
+        prompt = `A high-end professional indoor studio headshot portrait naturally integrating the person from Image 1, wearing a sophisticated dark navy business suit and tie, perfectly fitted suit jacket, clean professional studio lighting, standing indoors against a solid pure white or soft light gray studio wall background, 8k resolution, photorealistic studio photography, strictly preserving exact facial features with id_weight: 0.95, NO outdoor trees, NO outdoor lakes, NO mountains`;
       }
     }
 
@@ -126,9 +123,9 @@ export async function POST(req: NextRequest) {
       const enrichedFixDirective = parsedFix.userRequestInstruction || parsedFix.styleModsPrompt || rawCustomFixPrompt?.trim() || "Enhance resemblance to original selfie";
 
       prompt = `CRITICAL MANDATORY INSTRUCTION:
-1. FACE IDENTITY LOCK: You MUST preserve the 100% exact facial identity, eyes, nose, lips, jawline, skin tone, gender, and likeness from Image 1 (the ORIGINAL USER SELFIE). Do NOT change the person into a different person or ethnicity.
-2. BACKGROUND & POSE: Keep the background scene, overall composition, lighting, and body pose from Image 2 (previous image).
-3. TARGET MODIFICATION & PROPS: Apply the user's specific requested changes with high fidelity: ${enrichedFixDirective}. ${parsedFix.soloPrompt ? `Ensure: ${parsedFix.soloPrompt}.` : ""} ${NO_TEXT_INSTRUCTION}`;
+1. FACE IDENTITY LOCK: You MUST preserve the 100% exact facial identity, eyes, nose, lips, jawline, skin tone, gender, and likeness of ALL individuals from Image 1 (the ORIGINAL USER SELFIE/PHOTO) with id_weight: 0.99. Do NOT change any person into a different person or ethnicity.
+2. BACKGROUND & POSE: Keep the background scene, overall composition, lighting, and body poses from Image 2 (previous image).
+3. TARGET MODIFICATION & PROPS: Apply the user's specific requested changes with high fidelity: ${enrichedFixDirective}. ${parsedFix.soloPrompt ? `Ensure: ${parsedFix.soloPrompt}.` : ""} ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: altered faces, morphed features.`;
     }
 
     const ai = new GoogleGenAI({ apiKey });

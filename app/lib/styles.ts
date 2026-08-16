@@ -586,7 +586,7 @@ export const STYLES: StyleDef[] = [
 ];
 
 export const DEFAULT_IDENTITY_NOTE =
-  "Preserve the traveler(s) exact facial features and identity naturally with id_weight: 0.80. Photorealistic professional quality.";
+  "STRICT FACE IDENTITY LOCK: Preserve 100% exact facial identity, eyes, nose, mouth, jawline, skin tone, facial proportions, and authentic expressions of ALL individuals from Image 1 with id_weight: 0.95. Photorealistic professional 8k quality.";
 
 export const NO_TEXT_INSTRUCTION =
   "CRITICAL: Absolutely NO text, NO watermarks, NO fonts, NO writings, NO instagram UI, NO social media overlay, NO username, NO comments, NO logo, NO frame, NO captions, NO buttons. Pure photorealistic photo only.";
@@ -797,7 +797,7 @@ export function buildPrompt(opts: {
   }
 
   const identityNote = isStudioStyle
-    ? "Preserve the person's exact facial features with id_weight: 0.72 while completely replacing original casual clothes and background."
+    ? "STRICT FACE IDENTITY LOCK: Preserve the person's exact 100% facial features, eyes, nose, mouth, jawline, and skin tone with id_weight: 0.95 while completely transforming clothes, outfit, and background into the requested concept."
     : DEFAULT_IDENTITY_NOTE;
 
   let finalPrompt = `${base} ${identityNote}`;

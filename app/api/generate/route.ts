@@ -110,11 +110,6 @@ export async function POST(req: NextRequest) {
         customPrompt: rawCustomPrompt,
         customFixPrompt: rawCustomFixPrompt,
       });
-
-      const isStudio = ["corporate", "business_suit", "business", "studio", "id_photo", "passport", "student"].includes(styleId.toLowerCase());
-      if (isStudio) {
-        prompt = `A high-end professional indoor studio headshot portrait naturally integrating the person from Image 1, wearing a sophisticated dark navy business suit and tie, perfectly fitted suit jacket, clean professional studio lighting, standing indoors against a solid pure white or soft light gray studio wall background, 8k resolution, photorealistic studio photography, strictly preserving exact facial features with id_weight: 0.95, NO outdoor trees, NO outdoor lakes, NO mountains`;
-      }
     }
 
     // If previousImageUrl exists, apply strict Face Identity Locking from Image 1 (Original Selfie)

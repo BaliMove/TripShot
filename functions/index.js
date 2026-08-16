@@ -121,16 +121,8 @@ function parseCustomFixPrompt(customFixPrompt) {
   }
 
   // 6. Lighting & Environment
-  if (lower.includes("노을") || lower.includes("석양") || lower.includes("황금") || lower.includes("sunset") || lower.includes("golden hour")) {
+  if (lower.includes("노을") || lower.includes("sunset") || lower.includes("석양")) {
     directives.push("LIGHTING: Warm golden hour sunset illumination with rich glowing amber rays");
-  } else if (lower.includes("밝게") || lower.includes("화사") || lower.includes("맑") || lower.includes("bright") || lower.includes("daylight") || lower.includes("sunny")) {
-    directives.push("LIGHTING: Bright, clean, vibrant daylight lighting");
-  } else if (lower.includes("야경") || lower.includes("밤") || lower.includes("night") || lower.includes("starry")) {
-    directives.push("LIGHTING: Atmospheric evening night view with ambient lights");
-  } else if (lower.includes("눈") || lower.includes("snow") || lower.includes("winter")) {
-    directives.push("ATMOSPHERE: Beautiful soft falling snow winter atmosphere");
-  } else if (lower.includes("비") || lower.includes("rain")) {
-    directives.push("ATMOSPHERE: Romantic light rain moody atmosphere");
   }
 
   const enrichedDirective = directives.length > 0
@@ -144,7 +136,7 @@ function parseCustomFixPrompt(customFixPrompt) {
 app.post("/api/generate", async (req, res) => {
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
   try {
-    const { imageBase64, imageUrl, destination, styleId, stylePrompt, prompt, customPrompt, customBgBase64, enhanceStyle, rawCustomFixPrompt, previousImageUrl } = req.body || {};
+    const { imageBase64, imageUrl, destination, styleId, stylePrompt, prompt, customPrompt, customBgBase64, enhanceStyle, rawCustomFixPrompt, previousImageUrl, bgColor } = req.body || {};
 
     // 1. Strict Validation - No Fake Data
     const userPhoto = imageBase64 || imageUrl;
@@ -206,32 +198,29 @@ app.post("/api/generate", async (req, res) => {
     let finalPrompt = "";
     if (customBgBase64) {
       const fixAddon = rawCustomFixPrompt ? ` User fix request: ${rawCustomFixPrompt.trim()}.` : "";
-      if (enhanceStyle === "vibrant") {
-        finalPrompt = `A photorealistic travel portrait seamlessly integrating ALL person(s) / people from Image 1 (preserve exact number of people and 100% identical facial identities from Image 1 whether solo or group of 2, 3+ people) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface (do not cut off feet floating in air). Wearing sophisticated resort wear matching their style, automatically enhance background lighting into a luxury 5-star resort sunny aesthetic with vibrant colors, cinematic lighting, 8k photo quality, strictly preserving exact facial identity and features of ALL individuals from Image 1 with id_weight: 0.95.${fixAddon} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image. CRITICAL NEGATIVE: altered face, morphed features, changed ethnicity.`;
-      } else {
-        finalPrompt = `A photorealistic travel portrait naturally integrating ALL person(s) / people from Image 1 (preserve exact number of people and 100% identical facial identities from Image 1 whether solo or group of 2, 3+ people) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface (do not cut off feet floating in air). Wearing sophisticated resort wear, matching scene lighting and natural color tones, 8k quality, strictly preserving exact facial identity and features of ALL individuals from Image 1 with id_weight: 0.95.${fixAddon} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image. CRITICAL NEGATIVE: altered face, morphed features, changed ethnicity.`;
-      }
+      finalPrompt = `A photorealistic travel portrait naturally integrating ALL person(s) / people from Image 1 (preserve exact number of people and 100% identical facial identities from Image 1) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface. Wearing sophisticated resort wear matching their style, 8k photo quality, strictly preserving exact facial identity and features of ALL individuals from Image 1 with id_weight: 0.95.${fixAddon} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image. CRITICAL NEGATIVE: altered face, morphed features, changed ethnicity.`;
     } else {
       let basePrompt = "";
       if ((rawKey === "custom" || rawKey === "custom_travel" || (customPrompt && customPrompt.trim())) && customPrompt) {
         basePrompt = `A photorealistic photo naturally integrating ALL person(s) / people from Image 1 (strictly preserve exact group size, number of people, and 100% identical facial identities of ALL people in Image 1) into the scene: ${customPrompt.trim()}, cinematic lighting, 8k resolution, highly detailed`;
+      } else if (MASTER_STYLE_PROMPT_MAP[rawKey]) {
+        basePrompt = MASTER_STYLE_PROMPT_MAP[rawKey];
+      } else if (prompt || stylePrompt) {
+        basePrompt = prompt || stylePrompt;
       } else {
-        basePrompt = prompt || stylePrompt || MASTER_STYLE_PROMPT_MAP[rawKey];
-        if (!basePrompt || !basePrompt.trim()) {
-          basePrompt = `standing at ${rawKey.replace(/_/g, " ")}, full body or upper body view showing clothes, breathtaking wide scenic travel background, professional outdoor travel photography`;
-        }
+        basePrompt = `standing at ${rawKey.replace(/_/g, " ")}, full body or upper body view showing clothes, breathtaking wide scenic travel background, professional outdoor travel photography`;
       }
 
-      const isStudioConcept = 
-        ["corporate", "business_suit", "business", "studio", "id_photo", "passport", "student"].includes(rawKey) ||
-        basePrompt.toLowerCase().includes("studio") || basePrompt.toLowerCase().includes("passport") || basePrompt.toLowerCase().includes("business") || basePrompt.toLowerCase().includes("white background") || basePrompt.toLowerCase().includes("suit");
-
-      if (isStudioConcept) {
-        finalPrompt = `A high-end professional indoor studio headshot portrait naturally integrating the person from Image 1, wearing a sophisticated dark navy business suit and tie, perfectly fitted suit jacket, clean professional studio lighting, standing indoors against a solid pure white or soft light gray studio wall background, 8k resolution, photorealistic studio photography, preserving exact facial features with id_weight: 0.95, NO outdoor trees, NO outdoor lakes, NO mountains`;
-      } else {
-        const fixAddon = rawCustomFixPrompt ? ` User refinement request: ${rawCustomFixPrompt.trim()}.` : "";
-        finalPrompt = `A photorealistic travel photo naturally integrating ALL person(s) from Image 1 (preserving all individuals and exact number of people): ${basePrompt}. STRICT FACE IDENTITY LOCK: Preserve 100% exact facial features, eyes, nose, mouth, jawline, skin tone, facial proportions, and authentic expressions of ALL individuals from Image 1 with id_weight: 0.95 while naturally placing them in the scene.${fixAddon} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image. CRITICAL NEGATIVE: altered face, distorted face, changed ethnicity, morphed features.`;
+      // Studio background color customization (if provided)
+      if (bgColor) {
+        let bgStr = "solid pure white studio background";
+        if (bgColor === "blue") bgStr = "solid clean light blue passport ID background";
+        if (bgColor === "gray") bgStr = "solid clean light gray studio background";
+        basePrompt += `. Background: ${bgStr}.`;
       }
+
+      const fixAddon = rawCustomFixPrompt ? ` User refinement request: ${rawCustomFixPrompt.trim()}.` : "";
+      finalPrompt = `A photorealistic photo naturally integrating the person from Image 1: ${basePrompt}. STRICT FACE IDENTITY LOCK: Preserve 100% exact facial features, eyes, nose, mouth, jawline, skin tone, facial proportions, gender, and authentic expressions of ALL individuals from Image 1 with id_weight: 0.95 while seamlessly transforming their clothing, attire, props, and surroundings into the requested style.${fixAddon} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image. CRITICAL NEGATIVE: altered face, distorted face, changed ethnicity, morphed features.`;
     }
 
     if (rawPrevImageBase64) {

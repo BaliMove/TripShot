@@ -117,14 +117,14 @@ export const STYLE_PREVIEWS: Record<string, string> = {
   paris: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?v=2.0&auto=format&fit=crop&w=800&q=80",
   santorini: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?v=2.0&auto=format&fit=crop&w=800&q=80",
 
-  // Studio & ID Photo Concepts (4K High Quality Studio Suit & ID Photo Previews v=2026_STUDIO_V10)
-  corporate: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80",
-  business_suit: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80",
-  business: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80",
-  studio: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80",
-  id_photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80",
-  passport: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80",
-  student: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80",
+  // Studio & ID Photo Concepts (Dedicated High Quality Studio & ID Photo Assets)
+  corporate: "/images/corporate_photo.png",
+  business_suit: "/images/employee_id_photo.png",
+  business: "/images/corporate_photo.png",
+  studio: "/images/studio_headshot.png",
+  id_photo: "/images/resume_photo.png",
+  passport: "/images/passport_photo.png",
+  student: "/images/profile_woman.png",
   astronaut: "/images/astronaut_photo.png",
   van_gogh: "/images/van_gogh_photo.png",
   yearbook: "/images/yearbook_photo.png",
@@ -436,7 +436,7 @@ export const STYLES: StyleDef[] = [
     label: "비즈니스 정장",
     description: "고급 헤드샷 전용 네이비 비즈니스 수트 룩",
     emoji: "💼",
-    imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=5.0&auto=format&fit=crop&w=800&q=80",
+    imageUrl: STYLE_PREVIEWS.corporate,
     supportsBgColor: true,
     prompt:
       "A high-end executive portrait of the person, completely replacing original clothes with a luxury fitted navy blue business suit with white dress shirt, elegant studio lighting, professional studio background, id_weight: 0.72",
@@ -447,7 +447,7 @@ export const STYLES: StyleDef[] = [
     label: "스튜디오 헤드샷",
     description: "인물 부각 실내 고급 스튜디오 조명",
     emoji: "📸",
-    imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?v=5.0&auto=format&fit=crop&w=800&q=80",
+    imageUrl: STYLE_PREVIEWS.studio,
     supportsBgColor: true,
     prompt:
       "Apply soft, flattering studio portrait lighting on the person, completely replacing original clothes with clean executive attire, solid elegant studio backdrop, id_weight: 0.72",
@@ -460,7 +460,7 @@ export const STYLES: StyleDef[] = [
     label: "취업용 증명사진",
     description: "단정한 정장 수트 착용, 규격 전면 증명사진",
     emoji: "🪪",
-    imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?v=5.0&auto=format&fit=crop&w=800&q=80",
+    imageUrl: STYLE_PREVIEWS.id_photo,
     supportsBgColor: true,
     printable: true,
     prompt:
@@ -472,7 +472,7 @@ export const STYLES: StyleDef[] = [
     label: "여권·비자 사진",
     description: "국제 규정 준수 화이트 배경 규격 사진",
     emoji: "🛂",
-    imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=5.0&auto=format&fit=crop&w=800&q=80",
+    imageUrl: STYLE_PREVIEWS.passport,
     printable: true,
     prompt:
       "An official compliant passport headshot photo of the person, centered front facing, completely replacing original clothes with dark formal attire, ears visible, neutral facial expression, strict solid white background, id_weight: 0.72",
@@ -483,7 +483,7 @@ export const STYLES: StyleDef[] = [
     label: "학생증·사원증",
     description: "밝고 단정한 스마트 캐주얼 증명사진",
     emoji: "🎓",
-    imageUrl: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?v=5.0&auto=format&fit=crop&w=800&q=80",
+    imageUrl: STYLE_PREVIEWS.student,
     supportsBgColor: true,
     printable: true,
     prompt:
@@ -497,6 +497,7 @@ export const STYLES: StyleDef[] = [
     label: "우주비행사 SF 화보",
     description: "우주선 내부 우주비행사 SF 수트",
     emoji: "🧑‍🚀",
+    imageUrl: STYLE_PREVIEWS.astronaut,
     prompt:
       "A fun creative concept headshot of the person wearing a sleek futuristic astronaut suit, completely replacing original clothes, cosmic galaxy background, sci-fi lighting, id_weight: 0.72",
   },
@@ -506,6 +507,7 @@ export const STYLES: StyleDef[] = [
     label: "고흐 명화 유화",
     description: "빈센트 반 고흐 별이 빛나는 밤 스타일 유화",
     emoji: "🎨",
+    imageUrl: STYLE_PREVIEWS.van_gogh,
     prompt:
       "A dramatic artistic oil painting portrait of the person in the distinctive style of Vincent van Gogh, thick impasto brushstrokes, Starry Night swirl sky backdrop, id_weight: 0.72",
   },
@@ -515,6 +517,7 @@ export const STYLES: StyleDef[] = [
     label: "90년대 레트로 졸업앨범",
     description: "미국 90s 하이스쿨 레이저 배경 졸업사진",
     emoji: "📒",
+    imageUrl: STYLE_PREVIEWS.yearbook,
     prompt:
       "A nostalgic 1990s American high school yearbook portrait of the person with classic blue-gray laser beam studio backdrop, vintage 90s outfit, id_weight: 0.72",
   },
@@ -524,6 +527,7 @@ export const STYLES: StyleDef[] = [
     label: "셜록 홈즈 앤티크 탐정",
     description: "19세기 런던 앤티크 서재 분위기 샷",
     emoji: "🕵️",
+    imageUrl: STYLE_PREVIEWS.sherlock,
     prompt:
       "A dramatic antique detective portrait of the person in 19th century London Victorian library, wearing tweed coat, warm fireplace glow, cinematic fog, id_weight: 0.72",
   },
@@ -533,6 +537,7 @@ export const STYLES: StyleDef[] = [
     label: "아이돌 데뷔 프로필",
     description: "K-pop 데뷔조 비주얼",
     emoji: "🌟",
+    imageUrl: STYLE_PREVIEWS.idol,
     prompt:
       "Transform into a K-pop idol debut profile photo: flawless dewy idol-style skin, trendy stylish stage outfit, dreamy pastel studio background with soft glowing lighting, magazine-quality retouching.",
   },
@@ -542,6 +547,7 @@ export const STYLES: StyleDef[] = [
     label: "K-드라마 포스터",
     description: "시네마틱 무드의 주인공",
     emoji: "🎬",
+    imageUrl: STYLE_PREVIEWS.kdrama,
     prompt:
       "Transform into a Korean drama official poster portrait: cinematic moody lighting, romantic wistful atmosphere, shallow depth of field, film-like color grading, elegant styling worthy of a lead role.",
   },
@@ -551,6 +557,7 @@ export const STYLES: StyleDef[] = [
     label: "패션 매거진 커버",
     description: "하이패션 에디토리얼 화보",
     emoji: "🖤",
+    imageUrl: STYLE_PREVIEWS.magazine,
     prompt:
       "Transform into a high-fashion magazine cover portrait: bold editorial studio lighting, designer outfit, confident powerful expression, clean minimal backdrop, Vogue-style composition.",
   },
@@ -560,6 +567,7 @@ export const STYLES: StyleDef[] = [
     label: "흑백 감성 화보",
     description: "필름 느낌의 모노크롬 아트",
     emoji: "🎞️",
+    imageUrl: STYLE_PREVIEWS.noir,
     prompt:
       "Transform into a black-and-white fine-art studio portrait: dramatic Rembrandt lighting, deep rich shadows, timeless monochrome film look, artistic and emotional.",
   },
@@ -569,6 +577,7 @@ export const STYLES: StyleDef[] = [
     label: "3D 애니 캐릭터",
     description: "애니메이션 영화 주인공처럼",
     emoji: "🧸",
+    imageUrl: STYLE_PREVIEWS.cartoon,
     identityNote:
       "Keep a strong, instantly recognizable resemblance to the person's face and features.",
     prompt:
@@ -641,45 +650,113 @@ export const STUDIO_NEGATIVE =
   "CRITICAL NEGATIVE: casual clothes, t-shirt, hoodie, sweater, outdoor background, natural landscape, original clothes, floating head, text, watermark, font, writing, logo, blurry, distorted face, double face";
 
 export function parseCustomFixPrompt(customFixPrompt: string) {
-  const text = customFixPrompt.toLowerCase();
+  if (!customFixPrompt || !customFixPrompt.trim()) {
+    return {
+      soloPrompt: "",
+      extraNegative: "",
+      idWeight: 0.90,
+      userRequestInstruction: "Enhance photorealistic quality and resemblance to original selfie.",
+      styleModsPrompt: "",
+    };
+  }
 
+  const rawText = customFixPrompt.trim();
+  const lower = rawText.toLowerCase();
+  const detectedDirectives: string[] = [];
   let soloPrompt = "";
   let extraNegative = "";
-  let idWeight = 0.85;
-  const styleMods: string[] = [];
+  let idWeight = 0.90;
 
-  // 1. 선글라스 감지
-  if (text.includes("선글라스") || text.includes("sunglasses")) {
-    styleMods.push("wearing stylish dark sunglasses on face");
+  // 1. 얼굴 정밀 보존 & 닮음 (한국어, 영어, 일본어, 중국어, 인니어)
+  if (
+    lower.includes("얼굴") || lower.includes("닮") || lower.includes("똑같이") || lower.includes("원본") || 
+    lower.includes("face") || lower.includes("resemble") || lower.includes("likeness") || lower.includes("identical") ||
+    lower.includes("顔") || lower.includes("似") || lower.includes("脸") || lower.includes("wajah")
+  ) {
+    idWeight = 0.99;
+    detectedDirectives.push("STRICT FACE ID LOCK: Exactly preserve the facial identity, eyes, nose, lips, facial bone structure, skin tone, and authentic smile from Image 1");
   }
 
-  // 2. 혼자만 나오게 감지
-  if (text.includes("혼자") || text.includes("1명") || text.includes("사람") || text.includes("지워")) {
-    soloPrompt = "strictly a single solo person, no extra people, no bystanders";
-    extraNegative = ", couple, 2people, extra person, partner, crowd, bystanders";
+  // 2. 다른 사람 제거 / 혼자만
+  if (
+    lower.includes("혼자") || lower.includes("1명") || lower.includes("지워") || lower.includes("다른 사람") || 
+    lower.includes("solo") || lower.includes("alone") || lower.includes("remove people") || lower.includes("no bystander") ||
+    lower.includes("一人") || lower.includes("其他人") || lower.includes("sendiri")
+  ) {
+    soloPrompt = "strictly a single solo person in focus, completely remove all other people, tourists, and background bystanders";
+    extraNegative = ", crowd, extra people, bystanders, pedestrians, tourists, double people";
+    detectedDirectives.push("REMOVE BACKGROUND PEOPLE: Erase all other people, show only the main subject");
   }
 
-  // 3. 얼굴 더 닮게 감지
-  if (text.includes("얼굴") || text.includes("닮") || text.includes("똑같이")) {
-    idWeight = 0.98;
-    styleMods.push("preserve exact original facial identity with high precision id_weight: 0.98");
+  // 3. 소품 / 손 동작 (물병, 음료, 카메라, 폰, 꽃 등)
+  if (lower.includes("물병") || lower.includes("생수") || lower.includes("물") || lower.includes("bottle") || lower.includes("water bottle")) {
+    detectedDirectives.push("PROP IN HAND: Hold a transparent bottled water in hand naturally with realistic fingers and grip");
+  } else if (lower.includes("커피") || lower.includes("음료") || lower.includes("잔") || lower.includes("coffee") || lower.includes("drink") || lower.includes("cup") || lower.includes("mug")) {
+    detectedDirectives.push("PROP IN HAND: Hold a beverage cup / coffee in hand naturally");
+  } else if (lower.includes("카메라") || lower.includes("camera")) {
+    detectedDirectives.push("PROP IN HAND: Hold a camera in hands naturally");
+  } else if (lower.includes("스마트폰") || lower.includes("핸드폰") || lower.includes("폰") || lower.includes("phone")) {
+    detectedDirectives.push("PROP IN HAND: Hold a smartphone in hand naturally");
+  } else if (lower.includes("꽃") || lower.includes("flower") || lower.includes("bouquet")) {
+    detectedDirectives.push("PROP IN HAND: Hold fresh flowers / bouquet in hand");
+  } else if (lower.includes("가방") || lower.includes("배낭") || lower.includes("bag") || lower.includes("backpack")) {
+    detectedDirectives.push("ACCESSORY: Wear / carry a stylish travel bag or backpack");
   }
 
-  // 4. 분위기 / 조명 감지
-  if (text.includes("노을") || text.includes("석양") || text.includes("황금")) {
-    styleMods.push("warm golden hour sunset lighting with dramatic sunset colors");
-  } else if (text.includes("밝게") || text.includes("화사")) {
-    styleMods.push("bright vivid daylight lighting");
-  } else if (text.includes("야경") || text.includes("밤")) {
-    styleMods.push("atmospheric night view with soft warm lighting");
+  // 4. 착용 액세서리 / 헤어 / 의상
+  if (lower.includes("선글라스") || lower.includes("sunglasses") || lower.includes("안경") || lower.includes("glasses")) {
+    detectedDirectives.push("ACCESSORY: Wear stylish sunglasses/glasses naturally on the face");
   }
+  if (lower.includes("모자") || lower.includes("hat") || lower.includes("cap") || lower.includes("beanie")) {
+    detectedDirectives.push("ACCESSORY: Wear a stylish hat/cap on the head");
+  }
+  if (lower.includes("정장") || lower.includes("수트") || lower.includes("suit") || lower.includes("blazer")) {
+    detectedDirectives.push("ATTIRE: Dressed in an elegant tailored suit");
+  } else if (lower.includes("원피스") || lower.includes("드레스") || lower.includes("dress")) {
+    detectedDirectives.push("ATTIRE: Dressed in an elegant resort dress");
+  } else if (lower.includes("자켓") || lower.includes("코트") || lower.includes("jacket") || lower.includes("coat")) {
+    detectedDirectives.push("ATTIRE: Wearing a stylish jacket / coat");
+  } else if (lower.includes("반팔") || lower.includes("t-shirt") || lower.includes("shirt") || lower.includes("셔츠")) {
+    detectedDirectives.push("ATTIRE: Wearing a clean tailored shirt");
+  } else if (lower.includes("수영복") || lower.includes("비키니") || lower.includes("swimwear")) {
+    detectedDirectives.push("ATTIRE: Wearing stylish luxury resort swimwear");
+  }
+
+  // 5. 표정 & 포즈
+  if (lower.includes("웃") || lower.includes("미소") || lower.includes("smile") || lower.includes("happy") || lower.includes("laugh")) {
+    detectedDirectives.push("EXPRESSION: Warm, cheerful, natural smile with teeth gently showing");
+  } else if (lower.includes("시크") || lower.includes("진지") || lower.includes("serious") || lower.includes("chic") || lower.includes("confident")) {
+    detectedDirectives.push("EXPRESSION: Confident and chic calm expression looking at the camera");
+  }
+
+  if (lower.includes("전신") || lower.includes("발") || lower.includes("신발") || lower.includes("다리") || lower.includes("full body") || lower.includes("feet") || lower.includes("shoes")) {
+    detectedDirectives.push("FRAMING: Full body view showing head to toe with realistic footwear firmly on the ground");
+  }
+
+  // 6. 조명 & 분위기 & 날씨
+  if (lower.includes("노을") || lower.includes("석양") || lower.includes("황금") || lower.includes("sunset") || lower.includes("golden hour")) {
+    detectedDirectives.push("LIGHTING: Warm golden hour sunset illumination with rich glowing amber rays");
+  } else if (lower.includes("밝게") || lower.includes("화사") || lower.includes("맑") || lower.includes("bright") || lower.includes("daylight") || lower.includes("sunny")) {
+    detectedDirectives.push("LIGHTING: Bright, clean, vibrant daylight lighting");
+  } else if (lower.includes("야경") || lower.includes("밤") || lower.includes("night") || lower.includes("starry")) {
+    detectedDirectives.push("LIGHTING: Atmospheric evening night view with ambient lights");
+  } else if (lower.includes("눈") || lower.includes("snow") || lower.includes("winter")) {
+    detectedDirectives.push("ATMOSPHERE: Beautiful soft falling snow winter atmosphere");
+  } else if (lower.includes("비") || lower.includes("rain")) {
+    detectedDirectives.push("ATMOSPHERE: Romantic light rain moody atmosphere");
+  }
+
+  // Combine raw request with enriched directives so 100% of user request in any language is preserved
+  const fullInstruction = detectedDirectives.length > 0
+    ? `User specific request: "${rawText}". Execution directives: ${detectedDirectives.join("; ")}`
+    : `User specific request: "${rawText}"`;
 
   return {
     soloPrompt,
     extraNegative,
     idWeight,
-    userRequestInstruction: customFixPrompt ? `User refinement request: ${customFixPrompt.trim()}.` : "",
-    styleModsPrompt: styleMods.join(". "),
+    userRequestInstruction: fullInstruction,
+    styleModsPrompt: detectedDirectives.join(". "),
   };
 }
 

@@ -8,6 +8,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { auth, googleProvider } from "../lib/firebase";
+import { TRANSLATIONS, type Language } from "../lib/i18n";
 
 export interface UserProfileData {
   uid: string;
@@ -21,9 +22,15 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (user: UserProfileData) => void;
+  lang?: Language;
 }
 
-export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
+export default function AuthModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  lang = "en",
+}: AuthModalProps) {
   const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,6 +38,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   const [marketingConsent, setMarketingConsent] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
   // Prevent background scrolling on mobile when modal opens
   useEffect(() => {
@@ -52,11 +61,11 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
-      
+
       const profileData: UserProfileData = {
         uid: user.uid,
         email: user.email,
-        displayName: user.displayName || user.email?.split("@")[0] || "TripShot 회원",
+        displayName: user.displayName || user.email?.split("@")[0] || "TripShot User",
         photoURL: user.photoURL,
         marketingConsent: true,
       };
@@ -66,19 +75,27 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     } catch (err: unknown) {
       console.warn("Firebase Auth error:", err);
       const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes("CONFIGURATION_NOT_FOUND") || msg.includes("400") || msg.includes("popup-closed-by-user")) {
+      if (
+        msg.includes("CONFIGURATION_NOT_FOUND") ||
+        msg.includes("400") ||
+        msg.includes("popup-closed-by-user")
+      ) {
         // Fallback for seamless demo account creation when domain is not yet whitelisted in GCP
         const mockProfile: UserProfileData = {
           uid: "demo_" + Date.now(),
           email: "guest@tripshot.world",
-          displayName: "TripShot 게스트 회원",
+          displayName: "TripShot Guest",
           photoURL: null,
           marketingConsent: true,
         };
         onSuccess(mockProfile);
         onClose();
       } else {
-        setError("구글 로그인 중 오류가 발생했습니다. 이메일 로그인을 이용해 보세요.");
+        setError(
+          lang === "ko"
+            ? "구글 로그인 중 오류가 발생했습니다. 이메일 로그인을 이용해 보세요."
+            : "Error signing in with Google. Please try email login."
+        );
       }
     } finally {
       setLoading(false);
@@ -89,7 +106,11 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     e.preventDefault();
     setError(null);
     if (!email.trim() || !password.trim()) {
-      setError("이메일과 비밀번호를 모두 입력해 주세요.");
+      setError(
+        lang === "ko"
+          ? "이메일과 비밀번호를 모두 입력해 주세요."
+          : "Please enter both email and password."
+      );
       return;
     }
 
@@ -126,11 +147,23 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
       console.error(err);
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes("auth/user-not-found") || msg.includes("auth/wrong-password")) {
-        setError("이메일 또는 비밀번호가 올바르지 않습니다.");
+        setError(
+          lang === "ko"
+            ? "이메일 또는 비밀번호가 올바르지 않습니다."
+            : "Incorrect email or password."
+        );
       } else if (msg.includes("auth/email-already-in-use")) {
-        setError("이미 가입된 이메일 주소입니다. 로그인을 진행해 주세요.");
+        setError(
+          lang === "ko"
+            ? "이미 가입된 이메일 주소입니다. 로그인을 진행해 주세요."
+            : "Email is already registered. Please sign in."
+        );
       } else {
-        setError("인증 과정에서 오류가 발생했습니다. 다시 시도해 주세요.");
+        setError(
+          lang === "ko"
+            ? "인증 과정에서 오류가 발생했습니다. 다시 시도해 주세요."
+            : "Authentication error. Please try again."
+        );
       }
     } finally {
       setLoading(false);
@@ -148,16 +181,16 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           ✕
         </button>
 
-        {/* Title Header - 간결하고 스마트하게 개편 */}
+        {/* Title Header */}
         <div className="text-center mb-5 pr-4">
           <span className="inline-block text-[10px] font-extrabold uppercase tracking-wider text-sky-600 bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-full mb-1">
-            📱 PC & 모바일 동기화
+            📱 {t.deviceMobile} & {t.deviceDesktop}
           </span>
           <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-            {isSignUpMode ? "1초 회원가입" : "TripShot 로그인"}
+            {isSignUpMode ? t.authTitleSignUp : t.authTitleLogin}
           </h3>
-          <p className="text-slate-500 text-xs mt-1 font-medium">
-            로그인 시 구매하신 이용권 혜택이 모바일과 즉시 연동됩니다.
+          <p className="text-slate-500 text-xs mt-1 font-medium keep-all break-keep">
+            {t.authSyncNotice}
           </p>
         </div>
 
@@ -186,12 +219,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
             />
           </svg>
-          <span>Google 계정으로 1초 로그인</span>
+          <span>{t.authGoogleBtn}</span>
         </button>
 
         <div className="flex items-center my-4">
           <div className="flex-1 border-t border-slate-200" />
-          <span className="px-3 text-xs text-slate-400 font-bold">또는 이메일</span>
+          <span className="px-3 text-xs text-slate-400 font-bold">{t.authOrEmail}</span>
           <div className="flex-1 border-t border-slate-200" />
         </div>
 
@@ -206,11 +239,11 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           {isSignUpMode && (
             <div>
               <label className="block text-xs font-extrabold text-slate-700 mb-1">
-                이름 / 닉네임
+                {t.authNameLabel}
               </label>
               <input
                 type="text"
-                placeholder="예: 홍길동"
+                placeholder={t.authNamePlaceholder}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 focus:border-sky-500 rounded-2xl py-3 px-4 text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none transition-all"
@@ -220,12 +253,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
           <div>
             <label className="block text-xs font-extrabold text-slate-700 mb-1">
-              이메일 주소
+              {t.authEmailLabel}
             </label>
             <input
               type="email"
               required
-              placeholder="example@domain.com"
+              placeholder={t.authEmailPlaceholder}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 focus:border-sky-500 rounded-2xl py-3 px-4 text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none transition-all"
@@ -234,12 +267,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
           <div>
             <label className="block text-xs font-extrabold text-slate-700 mb-1">
-              비밀번호
+              {t.authPassLabel}
             </label>
             <input
               type="password"
               required
-              placeholder="비밀번호 6자리 이상"
+              placeholder={t.authPassPlaceholder}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 focus:border-sky-500 rounded-2xl py-3 px-4 text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none transition-all"
@@ -256,8 +289,11 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                 onChange={(e) => setMarketingConsent(e.target.checked)}
                 className="mt-0.5 rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer"
               />
-              <label htmlFor="marketingConsent" className="text-[11px] text-slate-500 font-medium leading-tight cursor-pointer">
-                [선택] 신규 명소 화보 출시 소식 및 혜택 뉴스레터/이메일 수신에 동의합니다.
+              <label
+                htmlFor="marketingConsent"
+                className="text-[11px] text-slate-500 font-medium leading-tight cursor-pointer keep-all break-keep"
+              >
+                {t.authMarketingConsent}
               </label>
             </div>
           )}
@@ -270,7 +306,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             {loading ? (
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              <span>{isSignUpMode ? "✨ 1초 회원가입 완료하기" : "🚀 로그인하기"}</span>
+              <span>{isSignUpMode ? `✨ ${t.authBtnSignUp}` : `🚀 ${t.authBtnLogin}`}</span>
             )}
           </button>
         </form>
@@ -283,11 +319,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               setIsSignUpMode(!isSignUpMode);
               setError(null);
             }}
-            className="text-xs font-bold text-sky-600 hover:text-indigo-600 transition-colors"
+            className="text-xs font-bold text-sky-600 hover:text-indigo-600 transition-colors cursor-pointer"
           >
-            {isSignUpMode
-              ? "이미 계정이 있으신가요? 로그인하기 ➔"
-              : "처음 방문하셨나요? 1초 회원가입하기 ➔"}
+            {isSignUpMode ? `${t.authSwitchToLogin} ➔` : `${t.authSwitchToSignUp} ➔`}
           </button>
         </div>
       </div>

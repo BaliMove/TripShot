@@ -14,12 +14,15 @@ import {
   type Gender,
 } from "../lib/styles";
 import { PRINT_SIZES, generatePhotoSheet, type PrintSize } from "../lib/photoSheet";
-import { detectUserDeviceAndLang, TRANSLATIONS, type Language } from "../lib/i18n";
+import {
+  detectUserDeviceAndLang,
+  TRANSLATIONS,
+  getTranslatedStyleInfo,
+  type Language,
+} from "../lib/i18n";
 import CompareSlider from "./CompareSlider";
 import PayPalModal, { type PlanType } from "./PayPalModal";
 import AuthModal, { UserProfileData } from "./AuthModal";
-
-
 
 interface ModelSuccessResult {
   success: true;
@@ -41,28 +44,28 @@ interface GenerationResult {
 
 const getLoadingMessage = (
   idx: number,
+  lang: Language,
   styleLabel?: string,
   categoryGroup?: "travel" | "studio"
 ) => {
-  const label = styleLabel ?? "화보";
-
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
   if (categoryGroup === "studio") {
     const studioMessages = [
-      "프리미엄 AI 인물 스튜디오 세팅 중... 📸",
-      `${label} 맞춤 전문 조명과 톤을 조정하고 있어요 ✨`,
-      `${label} 실내 스튜디오 배경과 의상을 정교하게 튜닝 중 💼`,
-      "이목구비와 얼굴 고유 특징을 100% 보존하는 중 👤",
-      "고품격 프로페셔널 화보 완성 직전! 🎨",
+      t.loadingStudio1,
+      t.loadingStudio2,
+      t.loadingStudio3,
+      t.loadingStudio4,
+      t.loadingStudio5,
     ];
     return studioMessages[idx % studioMessages.length];
   }
 
   const travelMessages = [
-    "1번 셀카 인물 고화질 스캔 중... 📸",
-    `${label} 명소 레이아웃을 맞추는 중이에요 🌅`,
-    `${label} 5성급 로케이션 조명을 매칭하고 있어요 ✨`,
-    "모든 인물의 고유한 얼룩/특징을 100% 보존하는 중 👤",
-    "인스타그램 최고 화질 인생샷 합성 완료 직전! 🎨",
+    t.loadingTravel1,
+    t.loadingTravel2,
+    t.loadingTravel3,
+    t.loadingTravel4,
+    t.loadingTravel5,
   ];
   return travelMessages[idx % travelMessages.length];
 };
@@ -311,6 +314,7 @@ export default function UploadCard({
 
   // Active Option Model State for Production (Option A: Flash Lite, Option B: Pro)
   const [activeOptionModel, setActiveOptionModel] = useState<"option_a" | "option_b">("option_a");
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState<boolean>(false);
 
   // Admin Mode Detection (admin=true query or localStorage)
   const isAdmin =
@@ -401,7 +405,7 @@ export default function UploadCard({
 
 
   // Auto-detected Device & Language State
-  const [lang, setLang] = useState<Language>("ko");
+  const [lang, setLang] = useState<Language>("en");
   const [isMobileDevice, setIsMobileDevice] = useState<boolean>(false);
 
   useEffect(() => {
@@ -410,7 +414,7 @@ export default function UploadCard({
     setIsMobileDevice(isMobile);
   }, []);
 
-  const t = TRANSLATIONS[lang] || TRANSLATIONS.ko;
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -740,10 +744,12 @@ export default function UploadCard({
       setIsLoading(false);
 
       if (typeof window !== "undefined") {
-        const resultSection = document.getElementById("result-display-section") || document.getElementById("upload-card-root");
-        if (resultSection) {
-          resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
+        setTimeout(() => {
+          const resultSection = document.getElementById("result-display-section") || document.getElementById("upload-card-root");
+          if (resultSection) {
+            resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 50);
       }
 
       // Increment free counter if BYOK key is not used
@@ -863,42 +869,58 @@ export default function UploadCard({
     }
   };
 
+  const dataUrlToBlob = (dataUrl: string): Blob => {
+    const parts = dataUrl.split(",");
+    const mimeMatch = parts[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : "image/png";
+    const byteString = atob(parts[1]);
+    let n = byteString.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = byteString.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+  };
+
   const triggerDownload = async (imageUrl: string, fileName?: string) => {
     try {
-      const defaultName = `tripshot_${usedStyleId || "photo"}.png`;
-      const nameToSave = fileName || defaultName;
-
-      setDownloadNotice(`✅ 다운로드 완료! ${nameToSave} 사진이 [다운로드] 폴더에 저장되었습니다.`);
-      setTimeout(() => setDownloadNotice(null), 4000);
-
-      // Handle Data URL directly
-      if (imageUrl.startsWith("data:")) {
-        const a = document.createElement("a");
-        a.href = imageUrl;
-        a.download = nameToSave;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        return;
+      const defaultName = `tripshot_${usedStyleId || "photo"}_${Date.now()}.png`;
+      let nameToSave = fileName || defaultName;
+      if (!nameToSave.toLowerCase().endsWith(".png") && !nameToSave.toLowerCase().endsWith(".jpg")) {
+        nameToSave += ".png";
       }
 
-      // Handle HTTP/HTTPS URLs by converting to Blob for reliable cross-origin downloading
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
+      let blob: Blob;
+      if (imageUrl.startsWith("data:")) {
+        blob = dataUrlToBlob(imageUrl);
+      } else {
+        const response = await fetch(imageUrl);
+        blob = await response.blob();
+      }
 
+      const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
+      a.style.display = "none";
       a.href = blobUrl;
       a.download = nameToSave;
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+
+      setTimeout(() => {
+        if (document.body.contains(a)) document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      }, 3000);
+
+      setDownloadNotice(
+        lang === "ko"
+          ? `✅ 다운로드 완료! [${nameToSave}] 사진이 저장되었습니다.`
+          : `✅ Download Complete! Saved as [${nameToSave}].`
+      );
+      setTimeout(() => setDownloadNotice(null), 4000);
     } catch (e) {
-      console.warn("Direct blob download failed, fallback to direct open:", e);
+      console.warn("Direct blob download failed, fallback:", e);
       const a = document.createElement("a");
       a.href = imageUrl;
-      a.target = "_blank";
       a.download = `tripshot_${usedStyleId || "photo"}.png`;
       document.body.appendChild(a);
       a.click();
@@ -970,61 +992,133 @@ export default function UploadCard({
     const currentGroup = currentCatDef?.group;
 
     const isCustomBg = tabMode === "custom_bg";
+    const selectedTrans = selectedStyle
+      ? getTranslatedStyleInfo(selectedStyle.id, selectedStyle.label, selectedStyle.description, lang)
+      : { label: "AI", description: "" };
+
     const currentStepText =
       progress < 25
-        ? isCustomBg ? "📸 1단계: 1번 셀카 이목구비 정밀 분석 중..." : "📸 1단계: 내 셀카 인물 구도 & 이목구비 스캔 중..."
+        ? isCustomBg
+          ? lang === "ko"
+            ? "📸 1단계: 1번 셀카 이목구비 정밀 분석 중..."
+            : "📸 Step 1: Scanning facial features and contours..."
+          : lang === "ko"
+          ? "📸 1단계: 내 셀카 인물 구도 & 이목구비 스캔 중..."
+          : "📸 Step 1: Scanning selfie lighting and proportions..."
         : progress < 55
-        ? isCustomBg ? "🌅 2단계: 2번 내 배경 사진 빛감 & 위치 스캔 중..." : "🏰 2단계: AI 화보 배경 프레임 레이아웃 배치 중..."
+        ? isCustomBg
+          ? lang === "ko"
+            ? "🌅 2단계: 2번 내 배경 사진 빛감 & 위치 스캔 중..."
+            : "🌅 Step 2: Analyzing custom background sunlight & perspective..."
+          : lang === "ko"
+          ? "🏰 2단계: AI 화보 배경 프레임 레이아웃 배치 중..."
+          : "🏰 Step 2: Compositing landmark perspective and angle..."
         : progress < 85
-        ? isCustomBg ? "✨ 3단계: AI 화보급 럭셔리 보정 & 합성 렌더링 중..." : "✨ 3단계: 5성급 리조트 라이팅 & 피부 톤 리터칭 중..."
-        : "🖌️ 4단계: 고화질 최종 화보 출력 준비 중 (마무리단계)...";
+        ? isCustomBg
+          ? lang === "ko"
+            ? "✨ 3단계: AI 화보급 럭셔리 보정 & 합성 렌더링 중..."
+            : "✨ Step 3: Blending authentic sunlight & fine-tuning colors..."
+          : lang === "ko"
+          ? "✨ 3단계: 5성급 리조트 라이팅 & 피부 톤 리터칭 중..."
+          : "✨ Step 3: Rendering realistic studio lighting & skin tones..."
+        : lang === "ko"
+        ? "🖌️ 4단계: 고화질 최종 화보 출력 준비 중 (마무리단계)..."
+        : "🖌️ Step 4: Finalizing high-resolution output portrait...";
 
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-        <div id="loading-section" className="w-full max-w-md bg-white rounded-3xl border border-sky-100 p-6 sm:p-8 shadow-2xl flex flex-col items-center justify-center relative overflow-hidden text-center">
-          {/* Animated Background Pulse Glow */}
-          <div className="absolute -top-20 -left-20 w-48 h-48 bg-sky-400/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute -bottom-20 -right-20 w-48 h-48 bg-amber-400/20 rounded-full blur-3xl animate-pulse" />
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
+        <div id="loading-section" className="w-full max-w-md bg-white rounded-3xl border border-sky-200/80 p-6 sm:p-8 shadow-2xl flex flex-col items-center justify-center relative overflow-hidden text-center">
+          {/* Animated Ambient Cosmic Pulse Glow */}
+          <div className="absolute -top-24 -left-24 w-56 h-56 bg-sky-400/25 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute -bottom-24 -right-24 w-56 h-56 bg-amber-400/25 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          {/* Central Spinning Graphic */}
-          <div className="relative w-20 h-20 mb-5 flex items-center justify-center">
-            <div className="absolute inset-0 rounded-full border-4 border-slate-100" />
-            <div className="absolute inset-0 rounded-full border-4 border-sky-500 border-t-amber-400 animate-spin" />
-            <div className="absolute inset-2 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white text-2xl shadow-md">
-              {isCustomBg ? "🖼️" : (selectedStyle?.emoji ?? "✨")}
+          {/* ✈️⏳ Central Time Machine Portal & Orbiting Airplane Animation */}
+          <div className="relative w-28 h-28 mb-5 flex items-center justify-center">
+            {/* Outer Pulsing Aura Ring */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-sky-400 via-indigo-500 to-amber-400 opacity-20 blur-md animate-ping" />
+            
+            {/* Orbit Track Ring */}
+            <div className="absolute inset-1 rounded-full border-2 border-dashed border-sky-300/60 animate-spin" style={{ animationDuration: "8s" }} />
+
+            {/* Orbiting Airplane Element */}
+            <div className="absolute inset-0 animate-spin" style={{ animationDuration: "4s" }}>
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl filter drop-shadow-md transform -rotate-45 hover:scale-125 transition-transform">
+                ✈️
+              </div>
+            </div>
+
+            {/* Orbiting Time Warp Sparks */}
+            <div className="absolute inset-0 animate-spin" style={{ animationDuration: "6s", animationDirection: "reverse" }}>
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-lg filter drop-shadow-sm">
+                ✨
+              </div>
+              <div className="absolute top-1/2 -right-2 -translate-y-1/2 text-base filter drop-shadow-sm">
+                ⭐
+              </div>
+            </div>
+
+            {/* Inner Glowing Time Machine Portal Core */}
+            <div className="relative w-16 h-16 rounded-full bg-gradient-to-tr from-sky-500 via-indigo-600 to-amber-400 p-1 shadow-xl flex items-center justify-center">
+              <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white text-2xl shadow-inner relative overflow-hidden">
+                {/* Time machine portal light rays */}
+                <div className="absolute inset-0 bg-gradient-to-t from-sky-500/40 via-transparent to-amber-400/40 animate-pulse" />
+                <span className="relative z-10 animate-bounce">
+                  {isCustomBg ? "🖼️" : (selectedStyle?.emoji ?? "⏳")}
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Live Progress Percentage Badge */}
-          <div className="mb-3 px-4 py-1.5 rounded-full bg-slate-900 text-white font-black text-xs sm:text-sm tracking-wider shadow-md flex items-center justify-center gap-2">
+          <div className="mb-3 px-4 py-1.5 rounded-full bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white font-black text-xs sm:text-sm tracking-wider shadow-md flex items-center justify-center gap-2 border border-sky-400/30">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span>AI 합성 진행률: <span className="text-amber-300 font-black text-sm sm:text-base">{progress}%</span></span>
+            <span>
+              {lang === "ko" ? "🚀 시공간 워프 진행률:" : "🚀 Time Warp Progress:"}{" "}
+              <span className="text-amber-300 font-black text-sm sm:text-base">{progress}%</span>
+            </span>
           </div>
 
-          {/* Dynamic Progress Bar Container */}
-          <div className="w-full bg-slate-100 h-3.5 sm:h-4 rounded-full overflow-hidden p-0.5 mb-5 border border-slate-200/80 shadow-inner">
+          {/* Dynamic Progress Bar with Flying Airplane Indicator */}
+          <div className="w-full relative mb-5">
+            {/* Flying Mini Jet along progress */}
             <div
-              className="bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 h-full rounded-full transition-all duration-500 shadow-sm"
-              style={{ width: `${progress}%` }}
-            />
+              className="absolute -top-5 text-sm transition-all duration-500 z-10 pointer-events-none transform -translate-x-1/2 flex items-center gap-0.5"
+              style={{ left: `${Math.max(5, Math.min(95, progress))}%` }}
+            >
+              <span className="filter drop-shadow-md">✈️</span>
+              <span className="text-[10px] opacity-75">💨</span>
+            </div>
+
+            <div className="w-full bg-slate-100 h-3.5 sm:h-4 rounded-full overflow-hidden p-0.5 border border-slate-200/80 shadow-inner">
+              <div
+                className="bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 h-full rounded-full transition-all duration-500 shadow-sm relative overflow-hidden"
+                style={{ width: `${progress}%` }}
+              >
+                <div className="absolute inset-0 bg-white/20 animate-pulse" />
+              </div>
+            </div>
           </div>
 
           {/* Step-by-Step Status Announcement Card */}
-          <div className="w-full p-4 rounded-2xl bg-gradient-to-r from-sky-50 via-indigo-50/50 to-amber-50/50 border border-sky-200/60 text-center mb-4 shadow-sm">
-            <p className="text-xs font-black text-sky-900 mb-1 animate-pulse">
-              {currentStepText}
+          <div className="w-full p-4 rounded-2xl bg-gradient-to-r from-sky-50 via-indigo-50/60 to-amber-50/60 border border-sky-200/80 text-center mb-4 shadow-sm">
+            <p className="text-xs font-black text-indigo-950 mb-1 animate-pulse flex items-center justify-center gap-1.5">
+              <span>{currentStepText}</span>
             </p>
             <p className="text-[11px] font-bold text-slate-600">
               {getLoadingMessage(
                 loadingMsgIdx,
-                isCustomBg ? "내 배경사진 합성" : selectedStyle?.label,
+                lang,
+                isCustomBg ? (lang === "ko" ? "내 배경사진 합성" : "Custom Background") : selectedTrans.label,
                 currentGroup
               )}
             </p>
           </div>
 
-          <p className="text-slate-400 text-[11px] text-center max-w-xs leading-relaxed font-medium">
-            💡 잠시만 기다려 주세요! AI가 1번 사진과 {isCustomBg ? "2번 배경 사진을" : "명소 배경을"} 최고의 명작 화보로 융합하고 있습니다.
+          <p className="text-slate-400 text-[11px] text-center max-w-xs leading-relaxed font-medium keep-all break-keep">
+            {lang === "ko"
+              ? "💡 타임머신이 작동 중입니다! 인물과 목적지 풍경을 최고의 명작 화보로 융합하고 있습니다."
+              : "💡 Time machine in flight! Rendering your travel masterpiece with authentic lighting."}
           </p>
         </div>
       </div>
@@ -1055,7 +1149,7 @@ export default function UploadCard({
     // ─────────────────────────── 2-A. Admin Mode View (isAdmin === true) ───────────────────────────
     if (isAdmin) {
       return (
-        <div className="w-full max-w-4xl mx-auto bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/80 p-6 sm:p-8 md:p-10 shadow-2xl shadow-slate-300/40 scroll-mt-24">
+        <div id="result-display-section" className="w-full max-w-4xl mx-auto bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/80 p-6 sm:p-8 md:p-10 shadow-2xl shadow-slate-300/40 scroll-mt-24">
           {/* Admin Production Control Switch Bar */}
           <div className="mb-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-wrap items-center justify-between gap-4 shadow-xl border border-indigo-900/40">
             <div className="flex items-center gap-2.5">
@@ -1168,16 +1262,16 @@ export default function UploadCard({
                     </div>
 
                     <div className="w-full flex gap-2 mb-2.5">
-                      <a
-                        href={card.data.imageUrl}
-                        download="tripshot-admin-download.png"
-                        className={`flex-1 text-white text-xs font-black py-3.5 px-4 rounded-2xl text-center flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md ${card.btnClass}`}
+                      <button
+                        type="button"
+                        onClick={() => card.data.success && triggerDownload(card.data.imageUrl, `tripshot_admin_${card.key}.png`)}
+                        className={`flex-1 text-white text-xs font-black py-3.5 px-4 rounded-2xl text-center flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md ${card.btnClass} cursor-pointer`}
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
                         다운로드
-                      </a>
+                      </button>
                     </div>
 
                     <button
@@ -1373,17 +1467,28 @@ export default function UploadCard({
     }
 
     // ─────────────────────────── 2-B. Consumer Mode View (isAdmin === false) ───────────────────────────
+    const usedTrans = getTranslatedStyleInfo(usedStyleId, usedStyle?.label || "AI", usedStyle?.description || "", lang);
+    const displayLabel = isCustomBgMode
+      ? (lang === "ko" ? "내 배경사진 합성" : "Custom Background")
+      : usedStyleId === "custom"
+      ? (lang === "ko" ? "커스텀 스타일" : "Custom Concept")
+      : usedTrans.label;
+
     return (
-      <div className="w-full max-w-xl mx-auto bg-white/95 backdrop-blur-md rounded-3xl border border-slate-100 p-6 sm:p-8 shadow-2xl shadow-slate-300/40 scroll-mt-24">
+      <div id="result-display-section" className="w-full max-w-xl mx-auto bg-white/95 backdrop-blur-md rounded-3xl border border-slate-100 p-6 sm:p-8 shadow-2xl shadow-slate-300/40 scroll-mt-24">
         <div className="text-center mb-6">
           <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black bg-gradient-to-r from-sky-500 to-indigo-600 text-white shadow-md shadow-sky-500/20 mb-3">
-            {isCustomBgMode ? "🖼️" : (usedStyle?.emoji ?? "✨")} {usedLabel} 완성!
+            {isCustomBgMode ? "🖼️" : (usedStyle?.emoji ?? "✨")} {displayLabel} {lang === "ko" ? "완성!" : "Ready!"}
           </span>
 
           <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            나만의 고품격 AI 화보
+            {lang === "ko" ? "나만의 고품격 AI 화보" : "Your AI Travel Masterpiece"}
           </h3>
-          <p className="text-xs text-slate-400 mt-1 font-medium">초고화질 AI 엔진으로 완성된 당신만의 여행 순간입니다</p>
+          <p className="text-xs text-slate-400 mt-1 font-medium keep-all break-keep">
+            {lang === "ko"
+              ? "초고화질 AI 엔진으로 완성된 당신만의 여행 순간입니다"
+              : "Crafted in 10 seconds with authentic lighting and exact facial preservation."}
+          </p>
         </div>
 
         {downloadNotice && (
@@ -1398,7 +1503,7 @@ export default function UploadCard({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={activeResult.imageUrl}
-                alt={`${usedLabel} 결과`}
+                alt={`${displayLabel} result`}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
             </div>
@@ -1412,34 +1517,35 @@ export default function UploadCard({
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
-                고화질 인생샷 다운로드 ➔
+                {lang === "ko" ? "고화질 인생샷 다운로드 ➔" : "Download HD Photo ➔"}
               </button>
-              <a
-                href={activeResult.imageUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-white border border-slate-200/90 hover:border-sky-400 hover:text-sky-600 text-slate-700 text-xs font-extrabold py-4 px-4 rounded-2xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm"
-                title="원본 이미지 크게 보기 및 직접 저장"
-              >
-                <span>👁️ 크게 보기</span>
-              </a>
               <button
-                onClick={() => activeResult.success && handleShare(activeResult.imageUrl, usedLabel)}
-                className="bg-white border border-slate-200/90 hover:border-sky-400 hover:text-sky-600 text-slate-700 text-xs font-extrabold py-4 px-4 rounded-2xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm"
-                title="공유하기"
+                type="button"
+                onClick={() => setIsFullscreenOpen(true)}
+                className="bg-white border border-slate-200/90 hover:border-sky-400 hover:text-sky-600 text-slate-700 text-xs font-extrabold py-4 px-4 rounded-2xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm cursor-pointer"
+                title={lang === "ko" ? "원본 이미지 크게 보기" : "View Fullscreen Image"}
+              >
+                <span>👁️ {lang === "ko" ? "크게 보기" : "View"}</span>
+              </button>
+              <button
+                onClick={() => activeResult.success && handleShare(activeResult.imageUrl, displayLabel)}
+                className="bg-white border border-slate-200/90 hover:border-sky-400 hover:text-sky-600 text-slate-700 text-xs font-extrabold py-4 px-4 rounded-2xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm cursor-pointer"
+                title={lang === "ko" ? "공유하기" : "Share"}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                 </svg>
-                공유
+                {lang === "ko" ? "공유" : "Share"}
               </button>
             </div>
           </div>
         ) : (
           <div className="w-full flex flex-col items-center justify-center p-8 border-2 border-dashed border-rose-200 rounded-3xl bg-rose-50/20 text-center mb-8">
-            <h4 className="text-xs font-extrabold text-rose-800 uppercase mb-1">생성 오류</h4>
+            <h4 className="text-xs font-extrabold text-rose-800 uppercase mb-1">
+              {lang === "ko" ? "생성 오류" : "Generation Error"}
+            </h4>
             <p className="text-xs font-bold text-rose-600 max-w-xs">
-              이미지 생성 실패
+              {lang === "ko" ? "이미지 생성 실패" : "Failed to generate image. Please try again."}
             </p>
           </div>
         )}
@@ -1452,69 +1558,70 @@ export default function UploadCard({
                 <span className="text-lg bg-slate-800 p-1.5 rounded-xl border border-slate-700">🪄</span>
                 <div>
                   <h4 className="text-sm font-black text-white flex flex-wrap items-center gap-1.5 sm:gap-2">
-                    <span>AI 사진 한 줄 마법 수정</span>
+                    <span>{lang === "ko" ? "AI 사진 한 줄 마법 수정" : "1-Line AI Refinement"}</span>
                     {freeFixCount > 0 ? (
                       <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-extrabold animate-pulse">
-                        🎁 무료 A/S 보정 혜택 (차감 0원)
+                        🎁 {lang === "ko" ? "무료 A/S 보정 혜택 (차감 0원)" : "Free 1x Refinement Included"}
                       </span>
                     ) : (
                       <span className="text-[10px] bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded-full font-semibold">
-                        1회당 1크레딧 차감
+                        {lang === "ko" ? "1회당 1크레딧 차감" : "1 credit per edit"}
                       </span>
                     )}
                   </h4>
-                  <p className="text-[11px] text-slate-400 font-medium">원하는 요청을 클릭하거나 적어주시면 얼굴을 보존하며 수정합니다</p>
+                  <p className="text-[11px] text-slate-400 font-medium keep-all break-keep">
+                    {lang === "ko"
+                      ? "원하는 요청을 클릭하거나 적어주시면 얼굴을 보존하며 수정합니다"
+                      : "Click quick tags or type instructions while preserving your exact face"}
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Quick Fix Preset Chips - 사용자 언어 환경에 맞게 자동 전환된 다국어 예시 */}
+            {/* Quick Fix Preset Chips */}
             <div className="flex flex-wrap gap-2 mb-3">
               <button
                 type="button"
                 onClick={() => {
-                  setCustomFixPrompt(t.chipSoloText || "다른 사람 없이 혼자만 나오게 해줘");
+                  setCustomFixPrompt(t.chipSoloText || "Remove other people, show only me solo");
                   setTimeout(() => customFixInputRef.current?.focus(), 50);
                 }}
                 className="text-xs bg-slate-800/90 hover:bg-sky-600 text-slate-200 hover:text-white border border-slate-700/80 px-3 py-1.5 rounded-xl font-extrabold transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm cursor-pointer"
-                title="클릭 시 입력창에 텍스트가 삽입됩니다 (추가 수정 가능)"
               >
-                <span>👤 {t.chipSoloText || "혼자만 나오게"}</span>
+                <span>👤 {t.chipSoloText}</span>
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  setCustomFixPrompt(t.chipResemblanceText || "내 원본 얼굴과 더 똑같이 해줘");
+                  setCustomFixPrompt(t.chipResemblanceText || "Make it resemble my original selfie face more closely");
                   setTimeout(() => customFixInputRef.current?.focus(), 50);
                 }}
                 className="text-xs bg-slate-800/90 hover:bg-sky-600 text-slate-200 hover:text-white border border-slate-700/80 px-3 py-1.5 rounded-xl font-extrabold transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm cursor-pointer"
-                title="클릭 시 입력창에 텍스트가 삽입됩니다 (추가 수정 가능)"
               >
-                <span>👦 {t.chipResemblanceText || "내 얼굴 더 똑같이"}</span>
+                <span>👦 {t.chipResemblanceText}</span>
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  setCustomFixPrompt(t.chipSunsetText || "배경을 따뜻한 노을빛으로 바꿔줘");
+                  setCustomFixPrompt(t.chipSunsetText || "Change the background lighting to warm sunset golden hour");
                   setTimeout(() => customFixInputRef.current?.focus(), 50);
                 }}
                 className="text-xs bg-slate-800/90 hover:bg-sky-600 text-slate-200 hover:text-white border border-slate-700/80 px-3 py-1.5 rounded-xl font-extrabold transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm cursor-pointer"
-                title="클릭 시 입력창에 텍스트가 삽입됩니다 (추가 수정 가능)"
               >
-                <span>🌅 {t.chipSunsetText || "노을 빛으로 변경"}</span>
+                <span>🌅 {t.chipSunsetText}</span>
               </button>
             </div>
 
-            <p className="text-[11px] text-amber-300/90 font-medium mb-3">
-              💡 예시 문구를 누르면 아래 입력창에 채워집니다. 원하는 요청을 자유롭게 덧붙여 적은 후 오른쪽 [수정 반영] 버튼을 눌러주세요!
-            </p>
-
-            {/* One-Line Input & Submit Button (Mobile Bulletproof 100% Width Fix) */}
+            {/* One-Line Input & Submit Button */}
             <div className="w-full max-w-full box-border overflow-hidden flex flex-col gap-2.5">
               <input
                 ref={customFixInputRef}
                 type="text"
-                placeholder="예: 혼자 나오게 해주고, 내 얼굴 더 닮게 해줘..."
+                placeholder={
+                  lang === "ko"
+                    ? "예: 혼자 나오게 해주고, 내 얼굴 더 닮게 해줘..."
+                    : "e.g. Remove background crowd, warm up sunset glow..."
+                }
                 value={customFixPrompt}
                 onChange={(e) => setCustomFixPrompt(e.target.value)}
                 onKeyDown={(e) => {
@@ -1531,7 +1638,7 @@ export default function UploadCard({
                 {isFixing ? (
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <span>🪄 수정 반영하기</span>
+                  <span>🪄 {lang === "ko" ? "수정 반영하기" : "Apply AI Refinement"}</span>
                 )}
               </button>
             </div>
@@ -1543,16 +1650,20 @@ export default function UploadCard({
           <div className="mb-8">
             <div className="text-center mb-4">
               <h4 className="text-lg font-black text-slate-900 tracking-tight">
-                비포 · 애프터 비교
+                {lang === "ko" ? "비포 · 애프터 비교" : "Before & After Comparison"}
               </h4>
-              <p className="text-xs text-slate-400 mt-0.5 font-medium">가운데 핸들을 좌우로 움직여 변신 모습을 확인하세요</p>
+              <p className="text-xs text-slate-400 mt-0.5 font-medium keep-all break-keep">
+                {lang === "ko"
+                  ? "가운데 핸들을 좌우로 움직여 변신 모습을 확인하세요"
+                  : "Slide the divider to inspect face fidelity & seamless blending"}
+              </p>
             </div>
             <div className="w-full max-w-sm sm:max-w-md mx-auto rounded-3xl overflow-hidden shadow-2xl border-4 border-white ring-4 ring-slate-100">
               <CompareSlider
                 beforeSrc={selfieBase64}
                 afterSrc={activeResult.imageUrl}
-                beforeLabel="원본 셀카"
-                afterLabel={usedLabel}
+                beforeLabel={lang === "ko" ? "원본 셀카" : "Original Selfie"}
+                afterLabel={displayLabel}
               />
             </div>
           </div>
@@ -1562,25 +1673,77 @@ export default function UploadCard({
         <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
             onClick={resetForNewStyle}
-            className="w-full sm:w-auto bg-slate-900 hover:bg-indigo-600 text-white font-extrabold py-3.5 px-7 rounded-2xl transition-all duration-200 active:scale-95 text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl shadow-slate-900/10"
+            className="w-full sm:w-auto bg-slate-900 hover:bg-indigo-600 text-white font-extrabold py-3.5 px-7 rounded-2xl transition-all duration-200 active:scale-95 text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl shadow-slate-900/10 cursor-pointer"
           >
-            🎨 같은 사진으로 다른 스타일 만들기
+            🎨 {lang === "ko" ? "같은 사진으로 다른 스타일 만들기" : "Try Another Style with Same Photo"}
           </button>
           <button
             onClick={resetAll}
-            className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-800 font-extrabold py-3.5 px-7 rounded-2xl transition-all duration-200 active:scale-95 text-xs sm:text-sm flex items-center justify-center gap-2 border border-slate-200/90 shadow-sm"
+            className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-800 font-extrabold py-3.5 px-7 rounded-2xl transition-all duration-200 active:scale-95 text-xs sm:text-sm flex items-center justify-center gap-2 border border-slate-200/90 shadow-sm cursor-pointer"
           >
-            📸 새 사진으로 업로드 시작
+            📸 {lang === "ko" ? "새 사진으로 업로드 시작" : "Upload a New Photo"}
           </button>
         </div>
+
+        {/* 🖼️ High-Resolution Fullscreen Lightbox Modal */}
+        {isFullscreenOpen && activeResult && activeResult.success && (
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-fade-in"
+            onClick={() => setIsFullscreenOpen(false)}
+          >
+            <div
+              className="relative max-w-4xl max-h-[92vh] w-full flex flex-col items-center justify-center select-none"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Top Bar Controls */}
+              <div className="w-full flex items-center justify-between text-white mb-3 px-2">
+                <span className="text-sm font-black flex items-center gap-2">
+                  <span>📸 {displayLabel}</span>
+                  <span className="text-[10px] bg-sky-500 text-white px-2.5 py-0.5 rounded-full font-black">HD 원본</span>
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => triggerDownload(activeResult.imageUrl, `tripshot_${usedStyleId}.png`)}
+                    className="bg-white/20 hover:bg-white/30 active:scale-95 text-white font-black text-xs py-1.5 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+                  >
+                    ⬇️ {lang === "ko" ? "다운로드" : "Download"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsFullscreenOpen(false)}
+                    className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center font-black text-sm transition-all cursor-pointer"
+                    title="닫기 (ESC)"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              {/* Image Preview Container */}
+              <div className="relative max-h-[80vh] rounded-2xl overflow-hidden shadow-2xl border border-white/20 bg-slate-950/40 flex items-center justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={activeResult.imageUrl}
+                  alt="Fullscreen Masterpiece"
+                  className="max-h-[78vh] w-auto max-w-full object-contain rounded-2xl shadow-2xl"
+                />
+              </div>
+
+              <p className="text-slate-400 text-xs mt-3 font-medium text-center">
+                {lang === "ko" ? "바깥 영역을 클릭하거나 닫기(✕)를 누르면 이전 화면으로 돌아갑니다." : "Click outside or press (✕) to close preview."}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
   // ─────────────────────────── 3. Form View ───────────────────────────
   return (
-    <div id="upload-card-root" className="w-full max-w-xl mx-auto bg-white/95 backdrop-blur-md rounded-3xl border border-slate-100 p-6 sm:p-8 shadow-2xl shadow-slate-200/50 scroll-mt-24">
-      {/* PC ↔ Mobile Realtime Account Sync Bar (Simplified & Customer Friendly) */}
+    <div id="upload-card-root" className="w-full max-w-xl mx-auto bg-white/95 backdrop-blur-md rounded-3xl border border-slate-100 p-5 sm:p-8 pb-20 sm:pb-8 shadow-2xl shadow-slate-200/50 scroll-mt-24">
+      {/* PC ↔ Mobile Realtime Account Sync Bar */}
       <div className="mb-4 p-2.5 sm:p-3 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950 border border-sky-400/30 text-white shadow-md flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
@@ -1591,10 +1754,10 @@ export default function UploadCard({
           ) : (
             <div className="flex flex-col">
               <span className="text-white font-extrabold text-xs sm:text-sm truncate">
-                📲 PC ↔ 모바일 이용권 연동
+                📲 {t.deviceMobile} ↔ {t.deviceDesktop}
               </span>
               <span className="text-[10px] text-slate-400 font-medium">
-                로그인 시 모든 디바이스 동기화
+                {lang === "ko" ? "로그인 시 모든 디바이스 동기화" : "Sync credits across devices on sign in"}
               </span>
             </div>
           )}
@@ -1604,76 +1767,72 @@ export default function UploadCard({
           onClick={() => setIsAuthModalOpen(true)}
           className="bg-gradient-to-r from-sky-500 to-amber-500 hover:brightness-110 active:scale-95 text-white font-black text-xs py-1.5 px-3 rounded-xl shadow-md whitespace-nowrap shrink-0 cursor-pointer"
         >
-          {userProfile ? "내 계정" : "🔑 로그인 / 연동"}
+          {userProfile ? (lang === "ko" ? "내 계정" : "My Account") : `🔑 ${t.navLogin}`}
         </button>
       </div>
-
 
       {/* Plan Simulation Toast Notification */}
       {planToast && (
         <div className="mb-4 p-3.5 rounded-2xl bg-gradient-to-r from-sky-600 via-indigo-600 to-amber-500 text-white text-xs font-black shadow-lg shadow-sky-500/25 flex items-center justify-between animate-bounce">
           <span>{planToast}</span>
-          <span className="bg-white/20 px-2 py-0.5 rounded-lg text-[10px]">시뮬레이션</span>
+          <span className="bg-white/20 px-2 py-0.5 rounded-lg text-[10px]">Simulation</span>
         </div>
       )}
-
 
       {/* Current Active Plan Interactive Bar - Click opens payment modal */}
       <div
         onClick={() => setIsPayModalOpen(true)}
-        title="클릭하여 요금제 변경 및 충전하기"
+        title="Click to recharge credits or change plan"
         className="flex items-center justify-between bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950 hover:from-slate-800 hover:to-indigo-900 border border-slate-700/80 hover:border-sky-400 text-white px-3.5 sm:px-4 py-2.5 rounded-2xl mb-5 text-xs font-bold shadow-md cursor-pointer transition-all active:scale-[0.99] group whitespace-nowrap"
       >
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-slate-400 text-[11px] sm:text-xs shrink-0">플랜:</span>
+          <span className="text-slate-400 text-[11px] sm:text-xs shrink-0">{lang === "ko" ? "플랜:" : "Plan:"}</span>
           <span className="bg-sky-500/20 text-sky-400 border border-sky-500/30 px-2 sm:px-2.5 py-0.5 rounded-full font-black uppercase text-[11px] sm:text-xs truncate group-hover:border-sky-300">
             {selectedPlan === "starter" && "⚡ Starter ($9)"}
-            {selectedPlan === "pro" && "⭐ Pro ($19/월)"}
-            {selectedPlan === "ultimate" && "👑 Ultimate VIP ($39/월)"}
-            {selectedPlan === "free" && "무료 체험"}
+            {selectedPlan === "pro" && "⭐ Pro ($19/mo)"}
+            {selectedPlan === "ultimate" && "👑 Ultimate VIP ($39/mo)"}
+            {selectedPlan === "free" && t.freeTrialBadge}
           </span>
         </div>
         <div className="flex items-center gap-1">
           <span className="text-[11px] sm:text-xs text-emerald-400 font-extrabold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full shrink-0">
-            {selectedPlan === "starter" && "잔여 10회"}
-            {selectedPlan === "pro" && "잔여 30회"}
-            {selectedPlan === "ultimate" && "잔여 100회"}
-            {selectedPlan === "free" && "잔여 2회"}
+            {selectedPlan === "starter" && (lang === "ko" ? "잔여 10회" : "10 Credits")}
+            {selectedPlan === "pro" && (lang === "ko" ? "잔여 30회" : "30 Credits")}
+            {selectedPlan === "ultimate" && (lang === "ko" ? "잔여 100회" : "100 Credits")}
+            {selectedPlan === "free" && (lang === "ko" ? "잔여 2회" : "2 Free Trials")}
           </span>
           <span className="text-[10px] font-black bg-sky-500 hover:bg-sky-400 text-slate-950 px-2 py-0.5 rounded-full shadow-sm">
-            💳 변경
+            💳 {lang === "ko" ? "변경" : "Change"}
           </span>
         </div>
       </div>
-
 
       {/* Mode Switcher Tabs */}
       <div className="flex bg-slate-100 p-1.5 rounded-2xl mb-6 gap-1">
         <button
           type="button"
           onClick={() => setTabMode("preset")}
-          className={`flex-1 py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 leading-tight ${
+          className={`flex-1 py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 leading-tight cursor-pointer ${
             tabMode === "preset"
               ? "bg-white text-sky-700 shadow-md font-extrabold"
               : "text-slate-500 hover:text-slate-700"
           }`}
         >
-          <span>🌴 명소 템플릿 선택</span>
+          <span>🌴 {lang === "ko" ? "명소 템플릿 선택" : "Select Landmark Style"}</span>
         </button>
         <button
           type="button"
           onClick={() => setTabMode("custom_bg")}
-          className={`flex-1 py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 leading-tight ${
+          className={`flex-1 py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 leading-tight cursor-pointer ${
             tabMode === "custom_bg"
               ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-md font-extrabold"
               : "text-slate-500 hover:text-slate-700"
           }`}
         >
-          <span>🖼️ 내 배경 사진 올리기</span>
-          <span className="text-[9px] bg-amber-400 text-slate-900 px-1.5 py-0.5 rounded-full font-black hidden sm:inline-block">마법보정</span>
+          <span>🖼️ {lang === "ko" ? "내 배경 사진 올리기" : "Upload Custom Backdrop"}</span>
+          <span className="text-[9px] bg-amber-400 text-slate-900 px-1.5 py-0.5 rounded-full font-black hidden sm:inline-block">AI Magic</span>
         </button>
       </div>
-
 
       {/* Selfie Upload Section */}
       <div className="mb-6">
@@ -1707,13 +1866,13 @@ export default function UploadCard({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={selfieBase64}
-                  alt="셀카 프리뷰"
+                  alt="Selfie preview"
                   className="w-full h-full object-cover"
                 />
                 <button
                   onClick={handleRemove}
-                  className="absolute inset-0 bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  title="사진 삭제"
+                  className="absolute inset-0 bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                  title={t.dropzoneRemove}
                 >
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1723,9 +1882,9 @@ export default function UploadCard({
               <p className="text-xs font-semibold text-slate-500 truncate max-w-xs mb-1">{fileName}</p>
               <button
                 onClick={handleRemove}
-                className="text-xs font-bold text-rose-500 hover:text-rose-600 underline underline-offset-2"
+                className="text-xs font-bold text-rose-500 hover:text-rose-600 underline underline-offset-2 cursor-pointer"
               >
-                다른 사진으로 변경
+                {t.dropzoneChange}
               </button>
             </div>
           ) : (
@@ -1735,11 +1894,11 @@ export default function UploadCard({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
-              <p className="text-sm font-bold text-slate-800 mb-1">
-                얼굴 셀카/인물 사진 업로드
+              <p className="text-sm font-bold text-slate-800 mb-1 keep-all break-keep">
+                {t.dropzoneTitle}
               </p>
-              <p className="text-xs text-slate-400 mb-1">
-                이목구비가 또렷한 상반신 사진 권장 (최대 10MB)
+              <p className="text-xs text-slate-400 mb-1 keep-all break-keep">
+                {t.dropzoneSub}
               </p>
             </div>
           )}
@@ -1750,7 +1909,7 @@ export default function UploadCard({
       {tabMode === "custom_bg" && (
         <div className="mb-6 bg-slate-50/80 p-5 rounded-2xl border border-sky-100">
           <label className="block text-sm font-bold text-slate-800 mb-2">
-            2. 내가 찍어온 배경 사진 업로드 (어둡거나 날씨 나쁜 사진 가능!)
+            2. {t.customBgUploadLabel}
           </label>
           <input
             type="file"
@@ -1775,144 +1934,118 @@ export default function UploadCard({
               <div className="flex flex-col items-center">
                 <div className="relative w-32 h-20 rounded-lg overflow-hidden border border-slate-200 mb-2 shadow-sm">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={customBgBase64} alt="배경 사진 프리뷰" className="w-full h-full object-cover" />
+                  <img src={customBgBase64} alt="Backdrop preview" className="w-full h-full object-cover" />
                 </div>
                 <span className="text-xs font-semibold text-slate-600">{customBgFileName}</span>
-                <span className="text-[11px] text-sky-600 font-bold underline mt-1">배경 사진 변경하기</span>
+                <span className="text-[11px] text-sky-600 font-bold underline mt-1">{t.dropzoneChange}</span>
               </div>
             ) : (
               <div className="text-center">
                 <span className="text-2xl mb-1 block">🌅</span>
-                <p className="text-xs font-bold text-slate-700 mb-0.5">내 여행지/장소 배경 사진 선택</p>
-                <p className="text-[11px] text-slate-400">AI가 배경 햇살을 5성급 리조트 화보처럼 자동 보정해드립니다.</p>
+                <p className="text-xs font-bold text-slate-700 mb-0.5">{t.customBgUploadLabel}</p>
+                <p className="text-[11px] text-slate-400 keep-all break-keep">
+                  {lang === "ko"
+                    ? "AI가 배경 햇살을 5성급 리조트 화보처럼 자동 보정해드립니다."
+                    : "AI automatically color grades and matches the golden hour sunlight."}
+                </p>
               </div>
             )}
           </div>
 
-          {/* Background Enhancement Intensity Switch */}
-          <div className="mt-4 pt-4 border-t border-slate-200/60">
-            <label className="block text-xs font-bold text-slate-700 mb-2">
-              ✨ AI 배경 보정 스타일 선택
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setEnhanceStyle("vibrant")}
-                className={`p-2.5 rounded-xl border text-left transition-all ${
-                  enhanceStyle === "vibrant"
-                    ? "border-sky-600 bg-white text-sky-700 font-bold shadow-sm ring-2 ring-sky-500/20"
-                    : "border-slate-200 bg-white/60 text-slate-600 hover:border-slate-300"
-                }`}
-              >
-                <div className="text-xs font-extrabold mb-0.5">🌟 화보급 럭셔리 보정</div>
-                <div className="text-[10px] text-slate-400">쨍하고 맑은 날씨 & 5성급 휴양지 빛감</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setEnhanceStyle("subtle")}
-                className={`p-2.5 rounded-xl border text-left transition-all ${
-                  enhanceStyle === "subtle"
-                    ? "border-sky-600 bg-white text-sky-700 font-bold shadow-sm ring-2 ring-sky-500/20"
-                    : "border-slate-200 bg-white/60 text-slate-600 hover:border-slate-300"
-                }`}
-              >
-                <div className="text-xs font-extrabold mb-0.5">🌿 자연스러운 리터칭</div>
-                <div className="text-[10px] text-slate-400">원본 배경의 분위기를 살린 톤 정리</div>
-              </button>
-            </div>
-          </div>
-
-          {/* 🚀 Prominent Generate Button (Desktop view only, Mobile uses Sticky Bottom Bar) */}
+          {/* 🚀 Prominent Generate Button */}
           <div className="mt-4 pt-2 hidden sm:block">
             <button
               type="button"
               onClick={handleSubmit}
               disabled={isLoading}
-              className="w-full relative group inline-flex items-center justify-center bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 hover:brightness-110 text-white font-black text-sm sm:text-base py-4.5 px-6 rounded-2xl transition-all duration-300 shadow-xl shadow-sky-500/30 active:scale-[0.98] cursor-pointer animate-pulse"
+              className="w-full relative group inline-flex items-center justify-center bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 hover:brightness-110 text-white font-black text-sm sm:text-base py-4.5 px-6 rounded-2xl transition-all duration-300 shadow-xl shadow-sky-500/30 active:scale-[0.98] cursor-pointer"
             >
               <span className="relative z-10 flex items-center justify-center gap-2 text-white drop-shadow-md">
                 <span className="text-sm sm:text-base font-black">
-                  ✨ 🖼️ 내 배경사진과 내 셀카 10초 만에 합치기
-                </span>
-                <span className="bg-white text-indigo-700 px-3 py-1 rounded-full text-xs font-black shadow-md">
-                  🚀 바로 클릭
+                  ✨ 🖼️ {t.btnGenerate}
                 </span>
               </span>
             </button>
           </div>
-
         </div>
       )}
 
       {/* Preset Mode Selection */}
       {tabMode === "preset" && (
-
-        /* Preset Category & Destination Picker (Preset Mode) */
         <div className="space-y-5 mb-4">
-          {/* Section 2: 여행 명소 배경 선택 */}
+          {/* Section 2: Travel Destinations */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="block text-sm font-extrabold text-slate-800 flex items-center gap-1.5">
-                <span>2. 명소 배경 선택</span>
-                <span className="text-[10px] font-bold text-sky-600 bg-sky-50 border border-sky-100 px-2 py-0.5 rounded-full">
-                  여행 스팟
-                </span>
+                <span>{t.selectTravelCategoryTitle}</span>
               </label>
               <button
                 type="button"
                 onClick={pickRandomFunStyle}
-                className="text-[11px] font-bold text-sky-600 bg-sky-50 hover:bg-sky-100 border border-sky-100 px-2.5 py-1 rounded-full transition-colors flex items-center gap-1"
+                className="text-[11px] font-bold text-sky-600 bg-sky-50 hover:bg-sky-100 border border-sky-100 px-2.5 py-1 rounded-full transition-colors flex items-center gap-1 cursor-pointer"
               >
-                🎲 무작위 명소 고르기
+                🎲 {lang === "ko" ? "무작위 명소 고르기" : "Random Spot"}
               </button>
             </div>
             <div className="grid grid-cols-3 gap-2 bg-slate-100/70 p-1.5 rounded-2xl">
               {TRAVEL_CATEGORIES.map((cat) => {
                 const isActive = category === cat.id;
+                const catLabel =
+                  cat.id === "extreme"
+                    ? t.tabExtreme
+                    : cat.id === "travel"
+                    ? t.tabTravel
+                    : t.tabCustomTravel;
+
                 return (
                   <button
                     key={cat.id}
                     type="button"
                     onClick={() => selectCategory(cat.id)}
-                    className={`rounded-xl py-2.5 px-2 text-center transition-all ${
+                    className={`rounded-xl py-2.5 px-2 text-center transition-all cursor-pointer ${
                       isActive
                         ? "bg-white text-sky-700 shadow-md font-black ring-2 ring-sky-500/20"
                         : "text-slate-600 hover:text-slate-900 font-bold hover:bg-white/50"
                     }`}
                   >
                     <span className="block text-lg leading-none mb-1">{cat.emoji}</span>
-                    <span className="block text-xs tracking-tight">{cat.label}</span>
+                    <span className="block text-xs tracking-tight">{catLabel}</span>
                   </button>
                 );
               })}
             </div>
           </div>
 
-
-          {/* Section 3: 스튜디오 & 컨셉 촬영 선택 */}
+          {/* Section 3: Studio & Concept Shoot */}
           <div>
             <label className="block text-sm font-extrabold text-slate-800 flex items-center gap-1.5 mb-2">
-              <span>3. 스튜디오 & 컨셉 촬영 선택</span>
-              <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full">
-                프로필 · 증명 · 이색 · 커스텀
-              </span>
+              <span>{t.selectStudioCategoryTitle}</span>
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-indigo-50/40 p-1.5 rounded-2xl border border-indigo-100/50">
               {STUDIO_CATEGORIES.map((cat) => {
                 const isActive = category === cat.id;
+                const catLabel =
+                  cat.id === "business"
+                    ? t.tabBusiness
+                    : cat.id === "id_photo"
+                    ? t.tabIdPhoto
+                    : cat.id === "concept"
+                    ? t.tabConcept
+                    : t.tabCustomStudio;
+
                 return (
                   <button
                     key={cat.id}
                     type="button"
                     onClick={() => selectCategory(cat.id)}
-                    className={`rounded-xl py-2.5 px-2 text-center transition-all ${
+                    className={`rounded-xl py-2.5 px-2 text-center transition-all cursor-pointer ${
                       isActive
                         ? "bg-slate-900 text-white shadow-md font-black ring-2 ring-indigo-500/30"
                         : "text-slate-600 hover:text-slate-900 font-bold hover:bg-white/60"
                     }`}
                   >
                     <span className="block text-lg leading-none mb-1">{cat.emoji}</span>
-                    <span className="block text-xs tracking-tight">{cat.label}</span>
+                    <span className="block text-xs tracking-tight">{catLabel}</span>
                   </button>
                 );
               })}
@@ -1926,171 +2059,117 @@ export default function UploadCard({
         <div id="style-picker-grid" className="mb-6 scroll-mt-20">
           {category === "custom" || category === "custom_travel" ? (
             <div>
-              <div className="flex flex-wrap gap-1.5 mb-2.5">
-                {(category === "custom_travel"
-                  ? [
-                      "🚀 우주선 타고 날아가는 모습",
-                      "🏜️ 이집트 피라미드 앞 석양",
-                      "🏰 유럽 고성 정원의 왕족 화보",
-                      "🛸 화성 탐사선 배경의 미래 사진",
-                    ]
-                  : [
-                      "🚀 우주비행사 슈트를 입고 은하수를 배경으로",
-                      "🎨 반 고흐 유화 스타일의 클래식 초상화",
-                      "🕵️‍♂️ 셜록 홈즈 감성의 빈티지 영국 탐정 룩",
-                      "👑 고풍스러운 궁전 배경의 로열 왕족 초상화",
-                    ]
-                ).map((sample) => (
-                  <button
-                    key={sample}
-                    type="button"
-                    onClick={() => setCustomPrompt(sample.replace(/^[^ ]+\s/, ""))}
-                    className="text-[11px] font-semibold text-sky-700 bg-sky-50/80 hover:bg-sky-100 border border-sky-100/80 px-2.5 py-1 rounded-full transition-all active:scale-95"
-                  >
-                    {sample}
-                  </button>
-                ))}
-              </div>
               <textarea
                 ref={customPromptRef}
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
                 maxLength={500}
                 rows={3}
-                placeholder={
-                  category === "custom_travel"
-                    ? "원하시는 여행지나 배경을 자유롭게 입력해 주세요 (예: 알프스 산 정상에서 헬기 타고 찍은 사진)"
-                    : "원하는 스타일과 컨셉을 자유롭게 글로 적어주세요 (예: 은하수를 배경으로 스페이스 슈트를 입고 촬영한 화보)"
-                }
+                placeholder={t.customPromptPlaceholder}
                 className="w-full rounded-2xl border-2 border-sky-200 bg-sky-50/10 p-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-sky-600 focus:bg-white focus:ring-4 focus:ring-sky-100 focus:outline-none transition-all resize-none shadow-inner"
               />
               <div className="flex justify-between items-center mt-1.5 px-1">
-                <p className="text-[11px] text-sky-600 font-semibold">
-                  ✨ 얼굴은 90% 이상 그대로 유지되며, 입력하신 여행지/배경으로 변환됩니다.
+                <p className="text-[11px] text-sky-600 font-semibold keep-all break-keep">
+                  ✨ {lang === "ko" ? "얼굴은 그대로 보존되며 입력하신 여행지/배경으로 변환됩니다." : "Your face is preserved 100% and seamlessly dressed in your custom scene."}
                 </p>
                 <span className="text-[11px] text-slate-400 font-bold">{customPrompt.length}/500</span>
               </div>
             </div>
           ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              {stylesInCategory.map((style) => {
+                const isSelected = selectedStyleId === style.id;
+                const bgImage = STYLE_PREVIEWS[style.id] || style.imageUrl || "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80";
+                const trans = getTranslatedStyleInfo(style.id, style.label, style.description, lang);
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-            {stylesInCategory.map((style) => {
-              const isSelected = selectedStyleId === style.id;
-              let bgImage = style.imageUrl || STYLE_PREVIEWS[style.id] || "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80";
-              if (style.id === "corporate" || style.id === "business_suit" || style.id === "business") {
-                bgImage = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80";
-              } else if (style.id === "studio") {
-                bgImage = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80";
-              } else if (style.id === "id_photo") {
-                bgImage = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80";
-              } else if (style.id === "passport") {
-                bgImage = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80";
-              } else if (style.id === "student") {
-                bgImage = "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?v=2026_STUDIO_V10&auto=format&fit=crop&w=800&q=80";
-              } else if (bgImage && !bgImage.includes("v=2026_STUDIO_V10")) {
-                bgImage = bgImage.includes("?") ? `${bgImage}&v=2026_STUDIO_V10` : `${bgImage}?v=2026_STUDIO_V10`;
-              }
+                return (
+                  <div
+                    key={style.id}
+                    onClick={() => setSelectedStyleId(style.id)}
+                    className={`group relative flex flex-col p-2.5 rounded-2xl cursor-pointer transition-all duration-300 border-2 select-none overflow-hidden ${
+                      isSelected
+                        ? "border-sky-500 ring-4 ring-sky-500/20 shadow-xl shadow-sky-500/10 bg-gradient-to-b from-sky-50/50 to-white scale-[1.02]"
+                        : "border-slate-200/90 hover:border-sky-400 hover:shadow-lg hover:scale-[1.01] bg-white"
+                    }`}
+                  >
+                    {/* Selected Indicator Check Mark */}
+                    {isSelected && (
+                      <div className="absolute top-2 right-2 z-10 w-5 h-5 rounded-full bg-sky-500 text-white flex items-center justify-center text-[10px] font-black shadow-md">
+                        ✓
+                      </div>
+                    )}
 
-              return (
-                <div
-                  key={style.id}
-                  onClick={() => setSelectedStyleId(style.id)}
-                  className={`group relative flex flex-col p-2.5 rounded-2xl cursor-pointer transition-all duration-300 border-2 select-none overflow-hidden ${
-                    isSelected
-                      ? "border-sky-500 ring-4 ring-sky-500/20 shadow-xl shadow-sky-500/10 bg-gradient-to-b from-sky-50/50 to-white scale-[1.02]"
-                      : "border-slate-200/90 hover:border-sky-400 hover:shadow-lg hover:scale-[1.01] bg-white"
-                  }`}
-                >
-                  {/* Selected Indicator Check Mark */}
-                  {isSelected && (
-                    <div className="absolute top-2 right-2 z-10 w-5 h-5 rounded-full bg-sky-500 text-white flex items-center justify-center text-[10px] font-black shadow-md">
-                      ✓
+                    {/* Photo Banner Box */}
+                    <div className="w-full h-28 sm:h-32 rounded-xl overflow-hidden relative mb-2 bg-slate-100 shadow-inner group-hover:shadow-md transition-all">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={bgImage}
+                        alt={trans.label}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-80" />
+
+                      <div className="absolute bottom-2 left-2 right-2 bg-slate-950/70 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-extrabold text-white border border-white/20 shadow-sm flex items-center justify-between">
+                        <span className="truncate">{style.emoji} {trans.label}</span>
+                      </div>
                     </div>
-                  )}
 
-                  {/* Photo Banner Box */}
-                  <div className="w-full h-28 sm:h-32 rounded-xl overflow-hidden relative mb-2 bg-slate-100 shadow-inner group-hover:shadow-md transition-all">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={bgImage}
-                      alt={style.label}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-80" />
-                    
-                    <div className="absolute bottom-2 left-2 right-2 bg-slate-950/70 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-extrabold text-white border border-white/20 shadow-sm flex items-center justify-between">
-                      <span className="truncate">{style.emoji} {style.label}</span>
-                    </div>
+                    <span className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 group-hover:text-sky-600 transition-colors">
+                      {trans.label}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-medium leading-tight line-clamp-2 mb-2 keep-all break-keep">
+                      {trans.description}
+                    </span>
+                    {style.thrillMeter && (
+                      <div className="flex flex-wrap gap-1 mt-auto">
+                        <span className="text-[9px] bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black px-2 py-0.5 rounded-full shadow-xs">
+                          ⚡ {style.thrillMeter}
+                        </span>
+                        <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200/80 font-bold px-1.5 py-0.5 rounded-full">
+                          100% Safe
+                        </span>
+                      </div>
+                    )}
                   </div>
+                );
+              })}
+            </div>
+          )}
 
-                  <span className="text-xs font-black text-slate-900 tracking-tight leading-tight mb-0.5 group-hover:text-sky-600 transition-colors">
-                    {style.label}
-                  </span>
-                  <span className="text-[10px] text-slate-500 font-medium leading-tight line-clamp-2 mb-2">
-                    {style.description}
-                  </span>
-                  {style.thrillMeter && (
-                    <div className="flex flex-wrap gap-1 mt-auto">
-                      <span className="text-[9px] bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black px-2 py-0.5 rounded-full shadow-xs">
-                        ⚡ {style.thrillMeter}
-                      </span>
-                      <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200/80 font-bold px-1.5 py-0.5 rounded-full">
-                        {style.dangerBadge || "100% Safe"}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          {/* 🚀 Instant Generate Button (Desktop) */}
+          <div className="mt-4 pt-3 hidden sm:block">
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isLoading}
+              className="w-full relative group inline-flex items-center justify-center bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 hover:brightness-110 text-white font-black text-sm sm:text-base py-4 px-6 rounded-2xl transition-all duration-300 shadow-xl shadow-sky-500/30 active:scale-[0.98] cursor-pointer"
+            >
+              <span className="relative z-10 flex items-center justify-center gap-2 text-white drop-shadow-md">
+                <span>
+                  ✨ 📸 {t.btnGenerate}
+                </span>
+              </span>
+            </button>
           </div>
-        )}
-
-        {/* 🚀 Instant Generate Button (Desktop view only, Mobile uses Sticky Bottom Bar) */}
-        <div className="mt-4 pt-3 hidden sm:block">
-
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className="w-full relative group inline-flex items-center justify-center bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 hover:brightness-110 text-white font-black text-sm sm:text-base py-4 px-6 rounded-2xl transition-all duration-300 shadow-xl shadow-sky-500/30 active:scale-[0.98] cursor-pointer"
-          >
-            <span className="relative z-10 flex items-center justify-center gap-2 text-white drop-shadow-md">
-              <span>
-                ✨ 📸 {selectedStyle?.label ?? "AI"} 화보 3초 만에 생성하기
-              </span>
-              <span className="bg-white/20 px-2.5 py-0.5 rounded-full text-xs font-extrabold text-amber-200">
-                🚀 바로 클릭
-              </span>
-            </span>
-          </button>
         </div>
-
-      </div>
-    )}
-
-
-
-
-
+      )}
 
       {/* Background Color Picker (ID photos & Studio styles) */}
       {(selectedStyle?.supportsBgColor || ["business", "id_photo"].includes(category)) && (
         <div className="mb-6 bg-indigo-50/30 p-4 rounded-2xl border border-indigo-100/60">
           <label className="block text-xs font-extrabold text-slate-700 mb-2 flex items-center gap-1.5">
-            <span>🎨 스튜디오 단색 배경색 선택</span>
-            <span className="text-[10px] font-bold text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-full">
-              증명·여권·정장
-            </span>
+            <span>{t.bgSelectTitle}</span>
           </label>
           <div className="flex gap-2.5">
             {BG_COLORS.map((bg) => {
               const isSelected = bgColor === bg.id;
+              const bgLabel = bg.id === "white" ? t.bgWhite : bg.id === "blue" ? t.bgBlue : t.bgGray;
               return (
                 <button
                   key={bg.id}
                   type="button"
                   onClick={() => setBgColor(bg.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all text-xs font-bold ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all text-xs font-bold cursor-pointer ${
                     isSelected
                       ? "border-indigo-600 bg-white text-indigo-700 shadow-sm ring-2 ring-indigo-500/20"
                       : "border-slate-200 bg-white/70 text-slate-500 hover:border-slate-300"
@@ -2100,7 +2179,7 @@ export default function UploadCard({
                     className="w-4 h-4 rounded-full border border-slate-300 shadow-inner"
                     style={{ backgroundColor: bg.swatch }}
                   />
-                  {bg.label}
+                  {bgLabel}
                 </button>
               );
             })}
@@ -2117,63 +2196,11 @@ export default function UploadCard({
         </div>
       )}
 
-
-
-      {/* Phase 4: BYOK Modal */}
-      {showByokModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-100 text-center relative">
-            <div className="text-4xl mb-3">✈️</div>
-            <h3 className="text-xl font-extrabold text-slate-900 mb-2">
-              무료 탑승권을 모두 사용하셨습니다
-            </h3>
-            <p className="text-xs text-slate-500 mb-6 leading-relaxed">
-              기본 무료 생성 2회를 모두 사용하셨습니다. 계속해서 나만의 여행 인생샷을 생성하려면 본인의 fal.ai API Key를 입력하거나 프리미엄 패스를 이용해 보세요.
-            </p>
-
-            {/* Option A: BYOK */}
-            <div className="bg-slate-50 p-4 rounded-2xl mb-4 text-left border border-slate-200/80">
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                🔑 개인 fal.ai API Key 입력 (BYOK)
-              </label>
-              <input
-                type="password"
-                placeholder="fal_key_..."
-                value={byokKey}
-                onChange={(e) => setByokKey(e.target.value)}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-sky-500 mb-2 font-mono"
-              />
-              <button
-                onClick={() => saveByokKey(byokKey)}
-                disabled={!byokKey.trim()}
-                className="w-full bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-bold text-xs py-2.5 rounded-xl transition-colors"
-              >
-                API Key 저장하고 생성 계속하기
-              </button>
-            </div>
-
-            {/* Option B: Premium Pass Placeholder */}
-            <button
-              disabled
-              className="w-full bg-slate-100 text-slate-400 font-bold text-xs py-3 rounded-2xl cursor-not-allowed mb-4 border border-slate-200"
-            >
-              💳 무제한 프리미엄 패스 (준비 중)
-            </button>
-
-            <button
-              onClick={() => setShowByokModal(false)}
-              className="w-full text-xs font-semibold text-slate-400 hover:text-slate-600 py-2"
-            >
-              닫기
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* PayPal Payment Modal Integration */}
       <PayPalModal
         isOpen={showPayPalModal || isPayModalOpen}
         selectedPlan={selectedPlan === "free" ? "pro" : (selectedPlan as PlanType)}
+        lang={lang}
         onClose={() => {
           setShowPayPalModal(false);
           setIsPayModalOpen(false);
@@ -2183,12 +2210,12 @@ export default function UploadCard({
       {/* Realtime PC ↔ Mobile Sync Auth Modal */}
       <AuthModal
         isOpen={isAuthModalOpen}
+        lang={lang}
         onClose={() => setIsAuthModalOpen(false)}
         onSuccess={handleAuthSuccess}
       />
 
       {/* Sticky Mobile Bottom CTA Bar */}
-
       <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 p-2 shadow-[0_-8px_25px_rgba(0,0,0,0.15)] animate-fadeIn">
         <button
           type="button"
@@ -2197,15 +2224,13 @@ export default function UploadCard({
           className="w-full bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 hover:brightness-110 active:scale-95 text-white font-black text-xs sm:text-sm py-3.5 px-4 rounded-xl shadow-lg shadow-sky-500/30 flex items-center justify-center gap-1.5 cursor-pointer"
         >
           <span className="truncate">
-            ✨ {tabMode === "custom_bg" ? "🖼️ 내 배경사진과 내 셀카 10초 만에 합치기" : `📸 ${selectedStyle?.label ?? "AI"} 화보 3초 만에 생성하기`}
+            ✨ 📸 {t.btnGenerate}
           </span>
           <span className="bg-white/20 text-amber-200 px-2 py-0.5 rounded-full text-[10px] font-black shrink-0">
-            🚀 바로 클릭
+            ➔
           </span>
         </button>
       </div>
-
-
     </div>
   );
 }

@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { TRANSLATIONS, type Language } from "../lib/i18n";
 
 interface CouponModalProps {
   isOpen: boolean;
   onClose: () => void;
   onApplyCoupon: (addedCredits: number, couponCode: string) => void;
+  lang?: Language;
 }
 
 // Valid Coupon Codes dictionary (Code -> Added Credits)
@@ -21,9 +23,12 @@ export default function CouponModal({
   isOpen,
   onClose,
   onApplyCoupon,
+  lang = "en",
 }: CouponModalProps) {
   const [code, setCode] = useState("");
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
   if (!isOpen) return null;
 
@@ -32,12 +37,16 @@ export default function CouponModal({
     const cleanCode = code.trim().toUpperCase();
 
     if (!cleanCode) {
-      setMessage({ text: "쿠폰 코드를 입력해 주세요. / Please enter a coupon code.", type: "error" });
+      setMessage({ text: t.couponErrorEmpty, type: "error" });
       return;
     }
 
-    const addedCredits = VALID_COUPONS[cleanCode] || 30;
-    
+    const addedCredits = VALID_COUPONS[cleanCode];
+    if (!addedCredits) {
+      setMessage({ text: t.couponErrorInvalid, type: "error" });
+      return;
+    }
+
     // Save used state for tracking
     const usedCoupons = JSON.parse(localStorage.getItem("tripshot_used_coupons") || "[]");
     if (!usedCoupons.includes(cleanCode)) {
@@ -45,8 +54,8 @@ export default function CouponModal({
       localStorage.setItem("tripshot_used_coupons", JSON.stringify(usedCoupons));
     }
 
-    setMessage({ text: `🎉 쿠폰 적용 완료! +${addedCredits}회 무료 크레딧이 지급되었습니다.`, type: "success" });
-    
+    setMessage({ text: t.couponSuccess, type: "success" });
+
     setTimeout(() => {
       onApplyCoupon(addedCredits, cleanCode);
       setCode("");
@@ -67,26 +76,26 @@ export default function CouponModal({
 
         <div className="text-center mb-5">
           <span className="inline-block text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full mb-1.5">
-            🎟️ BETA TEST COUPON
+            {t.couponBadge}
           </span>
           <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            무료 크레딧 쿠폰 등록
+            {t.couponTitle}
           </h3>
-          <p className="text-slate-500 text-xs mt-1 font-medium keep-all">
-            발급받으신 7일 베타 테스트 쿠폰 코드를 입력하시면 30회 무료 생성권이 즉시 충전됩니다.
+          <p className="text-slate-500 text-xs mt-1 font-medium keep-all break-keep">
+            {t.couponSub}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
-              COUPON CODE
+              {t.couponCodeLabel}
             </label>
             <input
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="쿠폰 코드를 입력하세요"
+              placeholder={t.couponPlaceholder}
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-extrabold tracking-widest text-center text-lg uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all placeholder:text-slate-400 placeholder:font-normal placeholder:tracking-normal placeholder:text-xs"
             />
           </div>
@@ -105,9 +114,9 @@ export default function CouponModal({
 
           <button
             type="submit"
-            className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-base rounded-2xl shadow-lg shadow-emerald-500/20 active:scale-[0.99] transition-all cursor-pointer"
+            className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-sm rounded-2xl shadow-lg shadow-emerald-500/20 active:scale-[0.99] transition-all cursor-pointer"
           >
-            🎟️ 30회 크레딧 받기
+            {t.couponBtnApply}
           </button>
         </form>
       </div>

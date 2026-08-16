@@ -47,11 +47,104 @@ const MASTER_STYLE_PROMPT_MAP = {
   passport: "official studio passport photo portrait, centered face, solid clean white background, formal suit jacket, 8k",
 };
 
+function parseCustomFixPrompt(customFixPrompt) {
+  if (!customFixPrompt || !customFixPrompt.trim()) {
+    return { enrichedDirective: "Enhance photorealistic quality and resemblance to original selfie", soloPrompt: "" };
+  }
+  const rawText = customFixPrompt.trim();
+  const lower = rawText.toLowerCase();
+  const directives = [];
+  let soloPrompt = "";
+
+  // 1. Face ID Lock (Multi-language)
+  if (
+    lower.includes("얼굴") || lower.includes("닮") || lower.includes("똑같이") || lower.includes("원본") || 
+    lower.includes("face") || lower.includes("resemble") || lower.includes("likeness") || lower.includes("identical") ||
+    lower.includes("顔") || lower.includes("似") || lower.includes("脸") || lower.includes("wajah")
+  ) {
+    directives.push("STRICT FACE ID LOCK: Exactly preserve the facial identity, eyes, nose, lips, facial bone structure, skin tone, and authentic smile from Image 1");
+  }
+
+  // 2. Remove other people (Multi-language)
+  if (
+    lower.includes("혼자") || lower.includes("1명") || lower.includes("지워") || lower.includes("다른 사람") || 
+    lower.includes("solo") || lower.includes("alone") || lower.includes("remove people") || lower.includes("no bystander") ||
+    lower.includes("一人") || lower.includes("其他人") || lower.includes("sendiri")
+  ) {
+    soloPrompt = "strictly a single solo person in focus, completely remove all other people, tourists, and background bystanders";
+    directives.push("REMOVE BACKGROUND PEOPLE: Erase all other people, show only the main subject");
+  }
+
+  // 3. Props / Hands
+  if (lower.includes("물병") || lower.includes("생수") || lower.includes("물") || lower.includes("bottle") || lower.includes("water bottle")) {
+    directives.push("PROP IN HAND: Hold a transparent bottled water in hand naturally with realistic fingers and grip");
+  } else if (lower.includes("커피") || lower.includes("음료") || lower.includes("잔") || lower.includes("coffee") || lower.includes("drink") || lower.includes("cup") || lower.includes("mug")) {
+    directives.push("PROP IN HAND: Hold a beverage cup / coffee in hand naturally");
+  } else if (lower.includes("카메라") || lower.includes("camera")) {
+    directives.push("PROP IN HAND: Hold a camera in hands naturally");
+  } else if (lower.includes("스마트폰") || lower.includes("핸드폰") || lower.includes("폰") || lower.includes("phone")) {
+    directives.push("PROP IN HAND: Hold a smartphone in hand naturally");
+  } else if (lower.includes("꽃") || lower.includes("flower") || lower.includes("bouquet")) {
+    directives.push("PROP IN HAND: Hold fresh flowers / bouquet in hand");
+  } else if (lower.includes("가방") || lower.includes("배낭") || lower.includes("bag") || lower.includes("backpack")) {
+    directives.push("ACCESSORY: Wear / carry a stylish travel bag or backpack");
+  }
+
+  // 4. Fashion / Accessories
+  if (lower.includes("선글라스") || lower.includes("sunglasses") || lower.includes("안경") || lower.includes("glasses")) {
+    directives.push("ACCESSORY: Wear stylish sunglasses/glasses naturally on the face");
+  }
+  if (lower.includes("모자") || lower.includes("hat") || lower.includes("cap") || lower.includes("beanie")) {
+    directives.push("ACCESSORY: Wear a stylish hat/cap on the head");
+  }
+  if (lower.includes("정장") || lower.includes("수트") || lower.includes("suit") || lower.includes("blazer")) {
+    directives.push("ATTIRE: Dressed in an elegant tailored suit");
+  } else if (lower.includes("원피스") || lower.includes("드레스") || lower.includes("dress")) {
+    directives.push("ATTIRE: Dressed in an elegant resort dress");
+  } else if (lower.includes("자켓") || lower.includes("코트") || lower.includes("jacket") || lower.includes("coat")) {
+    directives.push("ATTIRE: Wearing a stylish jacket / coat");
+  } else if (lower.includes("반팔") || lower.includes("t-shirt") || lower.includes("shirt") || lower.includes("셔츠")) {
+    directives.push("ATTIRE: Wearing a clean tailored shirt");
+  } else if (lower.includes("수영복") || lower.includes("비키니") || lower.includes("swimwear")) {
+    directives.push("ATTIRE: Wearing stylish luxury resort swimwear");
+  }
+
+  // 5. Expression & Pose
+  if (lower.includes("웃") || lower.includes("미소") || lower.includes("smile") || lower.includes("happy") || lower.includes("laugh")) {
+    directives.push("EXPRESSION: Warm, cheerful, natural smile with teeth gently showing");
+  } else if (lower.includes("시크") || lower.includes("진지") || lower.includes("serious") || lower.includes("chic") || lower.includes("confident")) {
+    directives.push("EXPRESSION: Confident and chic calm expression looking at the camera");
+  }
+
+  if (lower.includes("전신") || lower.includes("발") || lower.includes("신발") || lower.includes("다리") || lower.includes("full body") || lower.includes("feet") || lower.includes("shoes")) {
+    directives.push("FRAMING: Full body view showing head to toe with realistic footwear firmly on the ground");
+  }
+
+  // 6. Lighting & Environment
+  if (lower.includes("노을") || lower.includes("석양") || lower.includes("황금") || lower.includes("sunset") || lower.includes("golden hour")) {
+    directives.push("LIGHTING: Warm golden hour sunset illumination with rich glowing amber rays");
+  } else if (lower.includes("밝게") || lower.includes("화사") || lower.includes("맑") || lower.includes("bright") || lower.includes("daylight") || lower.includes("sunny")) {
+    directives.push("LIGHTING: Bright, clean, vibrant daylight lighting");
+  } else if (lower.includes("야경") || lower.includes("밤") || lower.includes("night") || lower.includes("starry")) {
+    directives.push("LIGHTING: Atmospheric evening night view with ambient lights");
+  } else if (lower.includes("눈") || lower.includes("snow") || lower.includes("winter")) {
+    directives.push("ATMOSPHERE: Beautiful soft falling snow winter atmosphere");
+  } else if (lower.includes("비") || lower.includes("rain")) {
+    directives.push("ATMOSPHERE: Romantic light rain moody atmosphere");
+  }
+
+  const enrichedDirective = directives.length > 0
+    ? `User specific request: "${rawText}". Execution directives: ${directives.join("; ")}`
+    : `User specific request: "${rawText}"`;
+
+  return { enrichedDirective, soloPrompt };
+}
+
 // Express /api/generate 100% Real Face + Full-Body/Wide Environmental Scenic Framing Endpoint
 app.post("/api/generate", async (req, res) => {
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
   try {
-    const { imageBase64, imageUrl, destination, styleId, stylePrompt, prompt, customPrompt, customBgBase64, rawCustomFixPrompt } = req.body || {};
+    const { imageBase64, imageUrl, destination, styleId, stylePrompt, prompt, customPrompt, customBgBase64, enhanceStyle, rawCustomFixPrompt, previousImageUrl } = req.body || {};
 
     // 1. Strict Validation - No Fake Data
     const userPhoto = imageBase64 || imageUrl;
@@ -71,46 +164,93 @@ app.post("/api/generate", async (req, res) => {
       });
     }
 
-    const rawKey = (styleId || destination || "corporate").toLowerCase().trim().replace(/[-\s]/g, "_");
-
-    // 2. Exact Prompt Priority: 1st: stylePrompt/prompt from Frontend -> 2nd: MASTER_STYLE_PROMPT_MAP -> 3rd: Fallback
-    let basePrompt = prompt || stylePrompt || MASTER_STYLE_PROMPT_MAP[rawKey];
-
-    if (!basePrompt || !basePrompt.trim()) {
-      basePrompt = `standing at ${rawKey.replace(/_/g, " ")}, full body or upper body view showing clothes, breathtaking wide scenic travel background, professional outdoor travel photography`;
-    }
-
-    if (customPrompt && customPrompt.trim()) {
-      basePrompt = `${customPrompt.trim()}, wide scenic background`;
-    }
-
-    const isStudioConcept = 
-      ["corporate", "business_suit", "business", "studio", "id_photo", "passport", "student"].includes(rawKey) ||
-      basePrompt.toLowerCase().includes("studio") || basePrompt.toLowerCase().includes("passport") || basePrompt.toLowerCase().includes("business") || basePrompt.toLowerCase().includes("white background") || basePrompt.toLowerCase().includes("suit");
-
-    let finalPrompt = "";
-    if (isStudioConcept) {
-      finalPrompt = `A high-end professional indoor studio headshot portrait naturally integrating the person from Image 1, wearing a sophisticated dark navy business suit and tie, perfectly fitted suit jacket, clean professional studio lighting, standing indoors against a solid pure white or soft light gray studio wall background, 8k resolution, photorealistic studio photography, NO outdoor trees, NO outdoor lakes, NO mountains`;
-    } else {
-      finalPrompt = `A photorealistic travel portrait naturally integrating the person from Image 1, medium shot showing upper body and natural posture, ${basePrompt}, cinematic lighting, photorealistic 8k, epic scenic travel background`;
-    }
-
-    // 3. Google Gemini 3.1 Flash Lite 100% Primary Vision Engine (Identical to local localhost:3001)
-    const { GoogleGenAI } = require("@google/genai");
-    const ai = new GoogleGenAI({ apiKey: geminiApiKey });
-
+    // Parse Selfie Base64
     let rawSelfieBase64 = userPhoto;
     let selfieMime = "image/jpeg";
     const selfieMatch = userPhoto.match(/^data:(image\/\w+);base64,(.+)$/);
     if (selfieMatch && selfieMatch.length === 3) {
       selfieMime = selfieMatch[1];
       rawSelfieBase64 = selfieMatch[2];
+    } else if (userPhoto.includes("base64,")) {
+      rawSelfieBase64 = userPhoto.split("base64,")[1];
     }
 
-    const inputs = [
-      { type: "text", text: finalPrompt },
-      { type: "image", data: rawSelfieBase64, mime_type: selfieMime }
-    ];
+    // Parse Custom Background Base64 if present
+    let rawBgBase64 = null;
+    let bgMime = "image/jpeg";
+    if (customBgBase64) {
+      const bgMatch = customBgBase64.match(/^data:(image\/\w+);base64,(.+)$/);
+      if (bgMatch && bgMatch.length === 3) {
+        bgMime = bgMatch[1];
+        rawBgBase64 = bgMatch[2];
+      } else if (customBgBase64.includes("base64,")) {
+        rawBgBase64 = customBgBase64.split("base64,")[1];
+      }
+    }
+
+    // Parse Previous Image Base64 for Image-to-Image refinement
+    let rawPrevImageBase64 = null;
+    let prevMime = "image/png";
+    if (previousImageUrl) {
+      const prevMatch = previousImageUrl.match(/^data:(image\/\w+);base64,(.+)$/);
+      if (prevMatch && prevMatch.length === 3) {
+        prevMime = prevMatch[1];
+        rawPrevImageBase64 = prevMatch[2];
+      } else if (previousImageUrl.includes("base64,")) {
+        rawPrevImageBase64 = previousImageUrl.split("base64,")[1];
+      }
+    }
+
+    const rawKey = (styleId || destination || "corporate").toLowerCase().trim().replace(/[-\s]/g, "_");
+
+    let finalPrompt = "";
+    if (customBgBase64) {
+      const fixAddon = rawCustomFixPrompt ? ` User fix request: ${rawCustomFixPrompt.trim()}.` : "";
+      if (enhanceStyle === "vibrant") {
+        finalPrompt = `A photorealistic travel portrait seamlessly integrating ALL person(s) / people from Image 1 (preserve exact number of people and facial identities from Image 1 whether solo or group of 2, 3+ people) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface (do not cut off feet floating in air). Wearing sophisticated resort wear matching their style, automatically enhance background lighting into a luxury 5-star resort sunny aesthetic with vibrant colors, cinematic lighting, 8k photo quality, preserving exact facial identity of all individuals from Image 1 with id_weight: 0.90.${fixAddon} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image.`;
+      } else {
+        finalPrompt = `A photorealistic travel portrait naturally integrating ALL person(s) / people from Image 1 (preserve exact number of people and facial identities from Image 1 whether solo or group of 2, 3+ people) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface (do not cut off feet floating in air). Wearing sophisticated resort wear, matching scene lighting and natural color tones, 8k quality, preserving exact facial identity of all individuals from Image 1 with id_weight: 0.90.${fixAddon} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image.`;
+      }
+    } else {
+      let basePrompt = prompt || stylePrompt || MASTER_STYLE_PROMPT_MAP[rawKey];
+      if (!basePrompt || !basePrompt.trim()) {
+        basePrompt = `standing at ${rawKey.replace(/_/g, " ")}, full body or upper body view showing clothes, breathtaking wide scenic travel background, professional outdoor travel photography`;
+      }
+      if (customPrompt && customPrompt.trim()) {
+        basePrompt = `${customPrompt.trim()}, wide scenic background`;
+      }
+
+      const isStudioConcept = 
+        ["corporate", "business_suit", "business", "studio", "id_photo", "passport", "student"].includes(rawKey) ||
+        basePrompt.toLowerCase().includes("studio") || basePrompt.toLowerCase().includes("passport") || basePrompt.toLowerCase().includes("business") || basePrompt.toLowerCase().includes("white background") || basePrompt.toLowerCase().includes("suit");
+
+      if (isStudioConcept) {
+        finalPrompt = `A high-end professional indoor studio headshot portrait naturally integrating the person from Image 1, wearing a sophisticated dark navy business suit and tie, perfectly fitted suit jacket, clean professional studio lighting, standing indoors against a solid pure white or soft light gray studio wall background, 8k resolution, photorealistic studio photography, NO outdoor trees, NO outdoor lakes, NO mountains`;
+      } else {
+        const fixAddon = rawCustomFixPrompt ? ` User refinement request: ${rawCustomFixPrompt.trim()}.` : "";
+        finalPrompt = `A photorealistic travel photo naturally integrating the person from Image 1 (preserving all individuals and exact number of people): ${basePrompt}. Preserve the person's exact facial features, eyes, nose, mouth, jawline, facial proportions, and natural smile from Image 1 with id_weight: 0.70 while naturally placing them in the new scene.${fixAddon} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image.`;
+      }
+    }
+
+    if (rawPrevImageBase64) {
+      const { enrichedDirective, soloPrompt } = parseCustomFixPrompt(rawCustomFixPrompt);
+      finalPrompt = `CRITICAL MANDATORY INSTRUCTION:
+1. FACE IDENTITY LOCK: You MUST preserve the 100% exact facial identity, eyes, nose, lips, jawline, skin tone, gender, and likeness from Image 1 (the ORIGINAL USER SELFIE). Do NOT change the person into a different person or ethnicity.
+2. BACKGROUND & POSE: Keep the background scene, overall composition, lighting, and body pose from Image 2 (previous image).
+3. TARGET MODIFICATION & PROPS: Apply the user's specific requested changes with high fidelity: ${enrichedDirective}. ${soloPrompt ? `Ensure: ${soloPrompt}.` : ""} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image.`;
+    }
+
+    // 3. Google Gemini 3.1 Flash Lite 100% Primary Vision Engine
+    const { GoogleGenAI } = require("@google/genai");
+    const ai = new GoogleGenAI({ apiKey: geminiApiKey });
+
+    const inputs = [{ type: "text", text: finalPrompt }];
+    inputs.push({ type: "image", data: rawSelfieBase64, mime_type: selfieMime });
+    if (rawPrevImageBase64) {
+      inputs.push({ type: "image", data: rawPrevImageBase64, mime_type: prevMime });
+    } else if (rawBgBase64) {
+      inputs.push({ type: "image", data: rawBgBase64, mime_type: bgMime });
+    }
 
     const callModel = async (modelName) => {
       const startTime = Date.now();

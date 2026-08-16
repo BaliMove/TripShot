@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
-import { buildPrompt, getStyle, NO_TEXT_INSTRUCTION, type BgColor, type Gender } from "../../lib/styles";
+import { buildPrompt, getStyle, parseCustomFixPrompt, NO_TEXT_INSTRUCTION, type BgColor, type Gender } from "../../lib/styles";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -122,11 +122,13 @@ export async function POST(req: NextRequest) {
 
     // If previousImageUrl exists, apply strict Face Identity Locking from Image 1 (Original Selfie)
     if (rawPrevImageBase64) {
-      const fixText = rawCustomFixPrompt?.trim() || "Enhance resemblance to original selfie";
+      const parsedFix = parseCustomFixPrompt(rawCustomFixPrompt || "Enhance resemblance to original selfie");
+      const enrichedFixDirective = parsedFix.userRequestInstruction || parsedFix.styleModsPrompt || rawCustomFixPrompt?.trim() || "Enhance resemblance to original selfie";
+
       prompt = `CRITICAL MANDATORY INSTRUCTION:
 1. FACE IDENTITY LOCK: You MUST preserve the 100% exact facial identity, eyes, nose, lips, jawline, skin tone, gender, and likeness from Image 1 (the ORIGINAL USER SELFIE). Do NOT change the person into a different person or ethnicity.
 2. BACKGROUND & POSE: Keep the background scene, overall composition, lighting, and body pose from Image 2 (previous image).
-3. MODIFICATION: Apply ONLY the requested refinement on the person while keeping the face 100% identical to Image 1: ${fixText}. ${NO_TEXT_INSTRUCTION}`;
+3. TARGET MODIFICATION & PROPS: Apply the user's specific requested changes with high fidelity: ${enrichedFixDirective}. ${parsedFix.soloPrompt ? `Ensure: ${parsedFix.soloPrompt}.` : ""} ${NO_TEXT_INSTRUCTION}`;
     }
 
     const ai = new GoogleGenAI({ apiKey });

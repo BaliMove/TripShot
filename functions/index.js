@@ -146,7 +146,23 @@ function parseCustomFixPrompt(customFixPrompt) {
 app.post("/api/generate", async (req, res) => {
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
   try {
-    const { imageBase64, imageUrl, destination, styleId, stylePrompt, prompt, customPrompt, customBgBase64, enhanceStyle, rawCustomFixPrompt, previousImageUrl, bgColor } = req.body || {};
+    const {
+      imageBase64,
+      imageUrl,
+      destination,
+      styleId,
+      stylePrompt,
+      prompt,
+      customPrompt,
+      customBgBase64,
+      enhanceStyle,
+      customFixPrompt,
+      rawCustomFixPrompt,
+      previousImageUrl,
+      bgColor
+    } = req.body || {};
+
+    const effectiveFixPrompt = (customFixPrompt || rawCustomFixPrompt || "").trim();
 
     // 1. Strict Validation - No Fake Data
     const userPhoto = imageBase64 || imageUrl;
@@ -207,7 +223,7 @@ app.post("/api/generate", async (req, res) => {
 
     let finalPrompt = "";
     if (customBgBase64) {
-      const fixAddon = rawCustomFixPrompt ? ` User fix request: ${rawCustomFixPrompt.trim()}.` : "";
+      const fixAddon = effectiveFixPrompt ? ` User fix request: ${effectiveFixPrompt}.` : "";
       finalPrompt = `A photorealistic travel portrait naturally integrating the primary subject(s) from Image 1 (focus on the clear main foreground person, strictly ignoring any cut-off background bystanders on the edges) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface. Wearing sophisticated resort wear matching their style, 8k photo quality, strictly preserving exact facial identity and features of the main subject from Image 1 with id_weight: 0.95.${fixAddon} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image. CRITICAL NEGATIVE: extra people, unwanted women, random companions, cropped bystanders, altered face, morphed features.`;
     } else {
       let basePrompt = "";
@@ -229,15 +245,15 @@ app.post("/api/generate", async (req, res) => {
         basePrompt += `. Background: ${bgStr}.`;
       }
 
-      const fixAddon = rawCustomFixPrompt ? ` User refinement request: ${rawCustomFixPrompt.trim()}.` : "";
+      const fixAddon = effectiveFixPrompt ? ` User refinement request: ${effectiveFixPrompt}.` : "";
       finalPrompt = `A photorealistic photo naturally integrating the primary subject from Image 1: ${basePrompt}. STRICT SUBJECT & FACE IDENTITY LOCK: Focus exclusively on the clear primary foreground subject from Image 1. Preserve 100% exact facial features, eyes, nose, mouth, jawline, skin tone, facial proportions, and authentic expressions of the main subject with id_weight: 0.95. Strictly DO NOT hallucinate extra people, random women, or companions from cropped background bystanders or edges of Image 1.${fixAddon} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image. CRITICAL NEGATIVE: extra people, extra women, random companions, bystanders, crowds, altered face, distorted face, changed ethnicity, morphed features.`;
     }
 
     if (rawPrevImageBase64) {
-      const { enrichedDirective, soloPrompt } = parseCustomFixPrompt(rawCustomFixPrompt);
-      finalPrompt = `CRITICAL MANDATORY INSTRUCTION:
+      const { enrichedDirective, soloPrompt } = parseCustomFixPrompt(effectiveFixPrompt);
+      finalPrompt = `CRITICAL MANDATORY INSTRUCTION FOR IMAGE MODIFICATION & REFINEMENT:
 1. FACE IDENTITY LOCK: You MUST preserve the 100% exact facial identity, eyes, nose, lips, jawline, skin tone, gender, and likeness of the primary main subject from Image 1 (the ORIGINAL USER SELFIE/PHOTO) with id_weight: 0.99. Do NOT change the person into a different person or ethnicity.
-2. BACKGROUND & POSE: Keep the background scene, overall composition, lighting, and body poses from Image 2 (previous image).
+2. BACKGROUND & POSE: Keep the background scene, overall composition, lighting, and body poses from Image 2 (previous generated image).
 3. TARGET MODIFICATION & PROPS: Apply the user's specific requested changes with high fidelity: ${enrichedDirective}. ${soloPrompt ? `Ensure: ${soloPrompt}.` : "Strictly do not generate extra random people, women, or companions unless explicitly requested."} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image. CRITICAL NEGATIVE: extra women, extra bystanders, unwanted companions, altered faces, morphed features.`;
     }
 

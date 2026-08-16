@@ -98,11 +98,7 @@ export async function POST(req: NextRequest) {
     let prompt = "";
     if (customBgBase64) {
       const fixAddon = rawCustomFixPrompt ? ` User fix request: ${rawCustomFixPrompt.trim()}.` : "";
-      if (enhanceStyle === "vibrant") {
-        prompt = `A photorealistic travel portrait seamlessly integrating ALL person(s) / people from Image 1 (preserve exact number of people and 100% identical facial identities from Image 1 whether solo or group of 2, 3+ people) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface (do not cut off feet floating in air). Wearing sophisticated resort wear matching their style, automatically enhance background lighting into a luxury 5-star resort sunny aesthetic with vibrant colors, cinematic lighting, 8k photo quality, strictly preserving exact facial identity of all individuals from Image 1 with id_weight: 0.95.${fixAddon} ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: altered face, morphed features, changed ethnicity.`;
-      } else {
-        prompt = `A photorealistic travel portrait naturally integrating ALL person(s) / people from Image 1 (preserve exact number of people and 100% identical facial identities from Image 1 whether solo or group of 2, 3+ people) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface (do not cut off feet floating in air). Wearing sophisticated resort wear, matching scene lighting and natural color tones, 8k quality, strictly preserving exact facial identity of all individuals from Image 1 with id_weight: 0.95.${fixAddon} ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: altered face, morphed features, changed ethnicity.`;
-      }
+      prompt = `A photorealistic travel portrait naturally integrating the primary subject(s) from Image 1 (focus on the clear main foreground person, strictly ignoring any cut-off background bystanders on the edges) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface. Wearing sophisticated resort wear matching their style, 8k photo quality, strictly preserving exact facial identity of the main subject from Image 1 with id_weight: 0.95.${fixAddon} ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: extra people, extra women, random companions, cropped bystanders, altered face, morphed features.`;
     } else {
       prompt = buildPrompt({
         styleId,
@@ -118,9 +114,9 @@ export async function POST(req: NextRequest) {
       const enrichedFixDirective = parsedFix.userRequestInstruction || parsedFix.styleModsPrompt || rawCustomFixPrompt?.trim() || "Enhance resemblance to original selfie";
 
       prompt = `CRITICAL MANDATORY INSTRUCTION:
-1. FACE IDENTITY LOCK: You MUST preserve the 100% exact facial identity, eyes, nose, lips, jawline, skin tone, gender, and likeness of ALL individuals from Image 1 (the ORIGINAL USER SELFIE/PHOTO) with id_weight: 0.99. Do NOT change any person into a different person or ethnicity.
+1. FACE IDENTITY LOCK: You MUST preserve the 100% exact facial identity, eyes, nose, lips, jawline, skin tone, gender, and likeness of the primary main subject from Image 1 (the ORIGINAL USER SELFIE/PHOTO) with id_weight: 0.99. Do NOT change the person into a different person or ethnicity.
 2. BACKGROUND & POSE: Keep the background scene, overall composition, lighting, and body poses from Image 2 (previous image).
-3. TARGET MODIFICATION & PROPS: Apply the user's specific requested changes with high fidelity: ${enrichedFixDirective}. ${parsedFix.soloPrompt ? `Ensure: ${parsedFix.soloPrompt}.` : ""} ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: altered faces, morphed features.`;
+3. TARGET MODIFICATION & PROPS: Apply the user's specific requested changes with high fidelity: ${enrichedFixDirective}. ${parsedFix.soloPrompt ? `Ensure: ${parsedFix.soloPrompt}.` : "Strictly do not generate extra random people, women, or companions unless explicitly requested."} ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: extra women, extra bystanders, unwanted companions, altered faces, morphed features.`;
     }
 
     const ai = new GoogleGenAI({ apiKey });

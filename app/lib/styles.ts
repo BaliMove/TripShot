@@ -677,18 +677,30 @@ export function parseCustomFixPrompt(customFixPrompt: string) {
     detectedDirectives.push("STRICT FACE ID LOCK: Exactly preserve the facial identity, eyes, nose, lips, facial bone structure, skin tone, and authentic smile from Image 1");
   }
 
-  // 2. 다른 사람 제거 / 혼자만
+  // 2. 특정 캐릭터 추가 (스파이더맨, 히어로 등)
+  if (lower.includes("스파이더맨") || lower.includes("spider-man") || lower.includes("spiderman")) {
+    detectedDirectives.push("ADD SPIDER-MAN: Add ONLY Spider-Man in his classic superhero suit standing naturally posing next to the main subject. Strictly do NOT add any other extra people, random women, companions, or bystanders.");
+    soloPrompt = "strictly only the main subject from Image 1 and Spider-Man, no other companions or background people";
+    extraNegative = ", extra people, extra women, random companions, bystanders, pedestrians, tourists, double people";
+  } else if (lower.includes("아이언맨") || lower.includes("ironman") || lower.includes("iron man")) {
+    detectedDirectives.push("ADD IRON MAN: Add ONLY Iron Man in his metallic armor suit next to the main subject.");
+    soloPrompt = "strictly only the main subject from Image 1 and Iron Man, no other companions";
+    extraNegative = ", extra people, extra women, random companions, bystanders";
+  }
+
+  // 3. 다른 사람 제거 / 배타적 추가 (~만 / only / solo)
   if (
     lower.includes("혼자") || lower.includes("1명") || lower.includes("지워") || lower.includes("다른 사람") || 
     lower.includes("solo") || lower.includes("alone") || lower.includes("remove people") || lower.includes("no bystander") ||
+    lower.includes("만 ") || lower.includes("만 추가") || lower.includes("만 해") || lower.includes("only") ||
     lower.includes("一人") || lower.includes("其他人") || lower.includes("sendiri")
   ) {
-    soloPrompt = "strictly a single solo person in focus, completely remove all other people, tourists, and background bystanders";
-    extraNegative = ", crowd, extra people, bystanders, pedestrians, tourists, double people";
-    detectedDirectives.push("REMOVE BACKGROUND PEOPLE: Erase all other people, show only the main subject");
+    soloPrompt = "strictly only the primary foreground subject (and any explicitly requested character), completely remove and ignore all other cropped people, bystanders, and strangers";
+    extraNegative = ", crowd, extra people, bystanders, pedestrians, tourists, double people, unwanted companions";
+    detectedDirectives.push("REMOVE BACKGROUND & CROPPED PEOPLE: Erase all other people or partially cropped figures from Image 1, show only the main subject");
   }
 
-  // 3. 소품 / 손 동작 (물병, 음료, 카메라, 폰, 꽃 등)
+  // 4. 소품 / 손 동작 (물병, 음료, 카메라, 폰, 꽃 등)
   if (lower.includes("물병") || lower.includes("생수") || lower.includes("물") || lower.includes("bottle") || lower.includes("water bottle")) {
     detectedDirectives.push("PROP IN HAND: Hold a transparent bottled water in hand naturally with realistic fingers and grip");
   } else if (lower.includes("커피") || lower.includes("음료") || lower.includes("잔") || lower.includes("coffee") || lower.includes("drink") || lower.includes("cup") || lower.includes("mug")) {
@@ -703,7 +715,7 @@ export function parseCustomFixPrompt(customFixPrompt: string) {
     detectedDirectives.push("ACCESSORY: Wear / carry a stylish travel bag or backpack");
   }
 
-  // 4. 착용 액세서리 / 헤어 / 의상
+  // 5. 착용 액세서리 / 헤어 / 의상
   if (lower.includes("선글라스") || lower.includes("sunglasses") || lower.includes("안경") || lower.includes("glasses")) {
     detectedDirectives.push("ACCESSORY: Wear stylish sunglasses/glasses naturally on the face");
   }
@@ -722,7 +734,7 @@ export function parseCustomFixPrompt(customFixPrompt: string) {
     detectedDirectives.push("ATTIRE: Wearing stylish luxury resort swimwear");
   }
 
-  // 5. 표정 & 포즈
+  // 6. 표정 & 포즈
   if (lower.includes("웃") || lower.includes("미소") || lower.includes("smile") || lower.includes("happy") || lower.includes("laugh")) {
     detectedDirectives.push("EXPRESSION: Warm, cheerful, natural smile with teeth gently showing");
   } else if (lower.includes("시크") || lower.includes("진지") || lower.includes("serious") || lower.includes("chic") || lower.includes("confident")) {
@@ -733,7 +745,7 @@ export function parseCustomFixPrompt(customFixPrompt: string) {
     detectedDirectives.push("FRAMING: Full body view showing head to toe with realistic footwear firmly on the ground");
   }
 
-  // 6. 조명 & 분위기 & 날씨
+  // 7. 조명 & 분위기 & 날씨
   if (lower.includes("노을") || lower.includes("석양") || lower.includes("황금") || lower.includes("sunset") || lower.includes("golden hour")) {
     detectedDirectives.push("LIGHTING: Warm golden hour sunset illumination with rich glowing amber rays");
   } else if (lower.includes("밝게") || lower.includes("화사") || lower.includes("맑") || lower.includes("bright") || lower.includes("daylight") || lower.includes("sunny")) {
@@ -776,11 +788,11 @@ export function buildPrompt(opts: {
 
   let base = "";
   if ((styleId === "custom" || styleId === "custom_travel") && customPrompt) {
-    base = `A photorealistic travel photo naturally integrating ALL person(s) / people from Image 1 (preserve exact group size and facial identities of all people in Image 1) into the scene: ${customPrompt.trim()}, cinematic lighting, 8k resolution, highly detailed.`;
+    base = `A photorealistic photo naturally integrating the primary foreground person(s) from Image 1 into the scene (focus strictly on the clear primary subject, automatically ignoring and removing any cut-off bystanders or background strangers seated on the edges of Image 1): ${customPrompt.trim()}, cinematic lighting, 8k resolution, highly detailed.`;
   } else if (["bali_swing", "borobudur", "paris", "santorini"].includes(styleId)) {
     base = getTravelPrompt(styleId);
   } else {
-    base = style ? `A photorealistic travel photo of person(s) from Image 1 (preserving all individuals and exact number of people): ${style.prompt}` : `Professional photorealistic travel photo preserving all individuals from Image 1.`;
+    base = style ? `A photorealistic travel photo of the primary subject from Image 1 (focus on the main foreground subject, ignoring background bystanders): ${style.prompt}` : `Professional photorealistic photo preserving the primary subject from Image 1.`;
   }
 
 

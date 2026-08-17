@@ -664,6 +664,8 @@ export default function UploadCard({
 
     setIsLoading(true);
     setError(null);
+    setPreviousImageUrl(null);
+    setCustomFixPrompt("");
 
     // 35s failsafe timer to allow AI image generation & real-time progress bar to run smoothly
     const failsafeTimer = setTimeout(() => {
@@ -1002,7 +1004,23 @@ export default function UploadCard({
   const resetForNewStyle = () => {
     setResult(null);
     setError(null);
-    // keep the selfie — user just wants a different style
+    setPreviousImageUrl(null);
+    setCustomFixPrompt("");
+    setCustomPrompt("");
+    setCustomBgBase64(null);
+    setCustomBgFileName(null);
+    setFreeFixCount(1);
+    if (bgFileInputRef.current) {
+      bgFileInputRef.current.value = "";
+    }
+    if (typeof window !== "undefined") {
+      setTimeout(() => {
+        const el = document.getElementById("upload-card-root") || document.getElementById("style-picker-container");
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 50);
+    }
   };
 
   const resetAll = () => {
@@ -1010,9 +1028,25 @@ export default function UploadCard({
     setSelfieBase64(null);
     setFileName(null);
     setError(null);
+    setPreviousImageUrl(null);
+    setCustomFixPrompt("");
     setCustomPrompt("");
+    setCustomBgBase64(null);
+    setCustomBgFileName(null);
+    setFreeFixCount(1);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+    if (bgFileInputRef.current) {
+      bgFileInputRef.current.value = "";
+    }
+    if (typeof window !== "undefined") {
+      setTimeout(() => {
+        const el = document.getElementById("upload-card-root");
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 50);
     }
   };
 

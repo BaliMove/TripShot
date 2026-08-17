@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
     let prompt = "";
     if (customBgBase64) {
       const fixAddon = rawCustomFixPrompt ? ` User fix request: ${rawCustomFixPrompt.trim()}.` : "";
-      prompt = `A photorealistic travel portrait naturally integrating the primary subject(s) from Image 1 (focus on the clear main foreground person, strictly ignoring any cut-off background bystanders on the edges) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface. Wearing sophisticated resort wear matching their style, 8k photo quality, strictly preserving exact facial identity of the main subject from Image 1 with id_weight: 0.95.${fixAddon} ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: extra people, extra women, random companions, cropped bystanders, altered face, morphed features.`;
+      prompt = `A photorealistic travel portrait naturally integrating ALL person(s) from Image 1 (detect every person, whether solo, couple, or entire group/family) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface. Wearing sophisticated resort wear matching their style, 8k photo quality, strictly preserving exact individual facial identities and features of all subjects from Image 1 with id_weight: 0.99.${fixAddon} ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: different people, random strangers, altered faces, morphed features.`;
     } else {
       prompt = buildPrompt({
         styleId,

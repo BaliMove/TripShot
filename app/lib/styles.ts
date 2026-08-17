@@ -586,7 +586,7 @@ export const STYLES: StyleDef[] = [
 ];
 
 export const DEFAULT_IDENTITY_NOTE =
-  "STRICT FACE IDENTITY LOCK: Preserve 100% exact facial identity, eyes, nose, mouth, jawline, skin tone, facial proportions, and authentic expressions of ALL individuals from Image 1 with id_weight: 0.95. Photorealistic professional 8k quality.";
+  "STRICT FACE & GROUP IDENTITY LOCK: Detect and preserve EVERY person present in Image 1 (whether 1 person, a couple of 2 people, or a group/family of 3, 4, 5+ people). Preserve 100% exact facial identities, eyes, nose, mouth, jawline, skin tone, facial proportions, age, gender, and authentic expressions of all individuals from Image 1 with id_weight: 0.99. Photorealistic professional 8k quality. Strictly DO NOT replace people with random strangers, stock models, or an unrelated couple.";
 
 export const NO_TEXT_INSTRUCTION =
   "CRITICAL: Absolutely NO text, NO watermarks, NO fonts, NO writings, NO instagram UI, NO social media overlay, NO username, NO comments, NO logo, NO frame, NO captions, NO buttons. Pure photorealistic photo only.";
@@ -598,7 +598,7 @@ export function getStyle(id: string): StyleDef | undefined {
 /** Smart neutral travel prompt generator matching traveler(s) automatically */
 export function getTravelPrompt(destination: string): string {
   const SMART_GEAR =
-    "a traveler naturally integrated into the scene, wearing sophisticated climate-appropriate resort/adventure travel gear matching their style";
+    "the traveler(s) from Image 1 naturally integrated together into the scene, wearing sophisticated climate-appropriate resort/adventure travel gear matching their style";
 
   const BASE_PROMPTS = {
     // ⚡ 익스트림 10대 명소 (글로벌)
@@ -628,23 +628,23 @@ export function getTravelPrompt(destination: string): string {
     // 🌴 힐링 / 랜드마크 명소
     bali_swing: `A photorealistic travel shot of ${SMART_GEAR}, sitting on a giant jungle swing in Bali, lush green tropical canopy background, golden hour rim lighting, 8k resolution.`,
     borobudur: `A photorealistic travel photo of ${SMART_GEAR}, standing peacefully at Borobudur temple in Indonesia during a mystical misty sunrise, cinematic lighting, highly detailed.`,
-    paris: `A stylish travel photo of ${SMART_GEAR}, standing in front of the Eiffel Tower in Paris, soft daylight, spring cherry blossoms, 50mm lens depth of field.`,
+    paris: `A photorealistic travel photo of ${SMART_GEAR}, standing together with iconic Eiffel Tower in Paris visible in background, warm golden hour sunset glow, authentic travel vacation photography, 8k.`,
     santorini: `A picturesque travel photo of ${SMART_GEAR}, relaxing on a white terrace in Santorini Greece, Aegean sea background, warm Mediterranean sunset.`,
 
     // 💼 비즈니스 / 🪪 증명·여권 / 🎭 컨셉·재미
-    business: "A sharp professional studio headshot of a traveler wearing a tailored navy business suit, clean modern office background, soft studio lighting",
-    corporate: "A sharp professional studio headshot of a traveler wearing a tailored navy business suit, clean modern office background, soft studio lighting",
-    id_photo: "A clean formal ID passport photo of a traveler, front-facing neutral expression, wearing formal dark attire against a solid light gray studio background, high clarity",
+    business: "A sharp professional studio headshot wearing a tailored navy business suit, clean modern office background, soft studio lighting",
+    corporate: "A sharp professional studio headshot wearing a tailored navy business suit, clean modern office background, soft studio lighting",
+    id_photo: "A clean formal ID passport photo, front-facing neutral expression, wearing formal dark attire against a solid light gray studio background, high clarity",
     passport: "A passport-compliant photo: face directly forward at camera, neutral expression, plain pure white background, head centered, tidy hair",
-    concept: "An imaginative creative concept photo of a traveler wearing an astronaut suit inside a futuristic spaceship with nebula background, cinematic sci-fi lighting",
-    astronaut: "An imaginative creative concept photo of a traveler wearing an astronaut suit inside a futuristic spaceship with nebula background, cinematic sci-fi lighting",
+    concept: "An imaginative creative concept photo wearing an astronaut suit inside a futuristic spaceship with nebula background, cinematic sci-fi lighting",
+    astronaut: "An imaginative creative concept photo wearing an astronaut suit inside a futuristic spaceship with nebula background, cinematic sci-fi lighting",
   };
 
   return BASE_PROMPTS[destination as keyof typeof BASE_PROMPTS] || BASE_PROMPTS.trolltunga;
 }
 
 export const DOUBLE_FACE_NEGATIVE =
-  "CRITICAL NEGATIVE: floating head, severed head, extra face, double face, two heads, cloned face, floating body parts, multiple people, extra limbs, distorted face";
+  "CRITICAL NEGATIVE: different faces, morphed faces, random strangers, swapped people, stock models, floating head, severed head, extra limbs, distorted face";
 
 export const STUDIO_NEGATIVE =
   "CRITICAL NEGATIVE: casual clothes, t-shirt, hoodie, sweater, outdoor background, natural landscape, original clothes, floating head, text, watermark, font, writing, logo, blurry, distorted face, double face";

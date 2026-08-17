@@ -119,7 +119,7 @@ function parseCustomFixPrompt(customFixPrompt) {
     directives.push("ATTIRE: Wearing stylish luxury resort swimwear");
   }
 
-  // 5. Expression & Pose
+  // 6. Expression & Pose
   if (lower.includes("웃") || lower.includes("미소") || lower.includes("smile") || lower.includes("happy") || lower.includes("laugh")) {
     directives.push("EXPRESSION: Warm, cheerful, natural smile with teeth gently showing");
   } else if (lower.includes("시크") || lower.includes("진지") || lower.includes("serious") || lower.includes("chic") || lower.includes("confident")) {
@@ -130,19 +130,21 @@ function parseCustomFixPrompt(customFixPrompt) {
     directives.push("FRAMING: Full body view showing head to toe with realistic footwear firmly on the ground");
   }
 
-  // 6. Lighting & Environment
-  if (lower.includes("노을") || lower.includes("sunset") || lower.includes("석양")) {
+  // 7. Lighting & Atmosphere
+  if (lower.includes("노을") || lower.includes("sunset") || lower.includes("석양") || lower.includes("golden hour")) {
     directives.push("LIGHTING: Warm golden hour sunset illumination with rich glowing amber rays");
+  } else if (lower.includes("밝게") || lower.includes("bright") || lower.includes("화사")) {
+    directives.push("LIGHTING: Make overall lighting brighter, cleaner, and more vibrant with soft natural illumination");
   }
 
   const enrichedDirective = directives.length > 0
-    ? `User specific request: "${rawText}". Execution directives: ${directives.join("; ")}`
+    ? directives.join(". ")
     : `User specific request: "${rawText}"`;
 
   return { enrichedDirective, soloPrompt };
 }
 
-// Express /api/generate 100% Real Face + Full-Body/Wide Environmental Scenic Framing Endpoint
+// Express /api/generate 100% Real Face + Multi-Person/Group & Full-Body Environmental Framing Endpoint
 app.post("/api/generate", async (req, res) => {
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
   try {
@@ -169,7 +171,7 @@ app.post("/api/generate", async (req, res) => {
     if (!userPhoto) {
       return res.status(400).json({
         success: false,
-        error: "실제 셀카 사진을 먼저 업로드해 주세요."
+        error: "실제 사진을 먼저 업로드해 주세요."
       });
     }
 
@@ -224,11 +226,15 @@ app.post("/api/generate", async (req, res) => {
     let finalPrompt = "";
     if (customBgBase64) {
       const fixAddon = effectiveFixPrompt ? ` User fix request: ${effectiveFixPrompt}.` : "";
-      finalPrompt = `A photorealistic travel portrait naturally integrating the primary subject(s) from Image 1 (focus on the clear main foreground person, strictly ignoring any cut-off background bystanders on the edges) into the provided custom background photo (Image 2). Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface. Wearing sophisticated resort wear matching their style, 8k photo quality, strictly preserving exact facial identity and features of the main subject from Image 1 with id_weight: 0.95.${fixAddon} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image. CRITICAL NEGATIVE: extra people, unwanted women, random companions, cropped bystanders, altered face, morphed features.`;
+      finalPrompt = `A photorealistic travel portrait naturally integrating ALL person(s) present in Image 1 into the provided custom background photo (Image 2).
+CRITICAL MANDATORY INSTRUCTIONS:
+1. DETECT AND PRESERVE ALL REAL PEOPLE FROM IMAGE 1: Whether Image 1 contains a single person, a couple (2 people), or a group/family (3, 4, 5+ people), detect EVERY person and place all of them together naturally into the scene. Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface.
+2. STRICT 100% FACE IDENTITY LOCK: For every person present in Image 1, preserve their exact individual facial features, eyes, nose, mouth, jawline, skin tone, facial proportions, age, gender, and likeness with id_weight: 0.99.
+3. DO NOT REPLACE WITH RANDOM STOCK MODELS: Absolutely DO NOT generate unknown random models or a stranger couple. Keep the exact people from Image 1.${fixAddon} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image. CRITICAL NEGATIVE: different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity.`;
     } else {
       let basePrompt = "";
       if ((rawKey === "custom" || rawKey === "custom_travel" || (customPrompt && customPrompt.trim())) && customPrompt) {
-        basePrompt = `A photorealistic photo naturally integrating the primary foreground person(s) from Image 1 into the scene (focus strictly on the clear main subject, automatically ignoring and removing any cut-off bystanders or background strangers seated on the edges of Image 1): ${customPrompt.trim()}, cinematic lighting, 8k resolution, highly detailed`;
+        basePrompt = `naturally integrated into the scene: ${customPrompt.trim()}, cinematic lighting, 8k resolution, highly detailed`;
       } else if (MASTER_STYLE_PROMPT_MAP[rawKey]) {
         basePrompt = MASTER_STYLE_PROMPT_MAP[rawKey];
       } else if (prompt || stylePrompt) {
@@ -246,7 +252,11 @@ app.post("/api/generate", async (req, res) => {
       }
 
       const fixAddon = effectiveFixPrompt ? ` User refinement request: ${effectiveFixPrompt}.` : "";
-      finalPrompt = `A photorealistic photo naturally integrating the primary subject from Image 1: ${basePrompt}. STRICT SUBJECT & FACE IDENTITY LOCK: Focus exclusively on the clear primary foreground subject from Image 1. Preserve 100% exact facial features, eyes, nose, mouth, jawline, skin tone, facial proportions, and authentic expressions of the main subject with id_weight: 0.95. Strictly DO NOT hallucinate extra people, random women, or companions from cropped background bystanders or edges of Image 1.${fixAddon} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image. CRITICAL NEGATIVE: extra people, extra women, random companions, bystanders, crowds, altered face, distorted face, changed ethnicity, morphed features.`;
+      finalPrompt = `A photorealistic travel photography naturally integrating ALL person(s) present in Image 1 into the scene: ${basePrompt}.
+CRITICAL MANDATORY INSTRUCTIONS:
+1. PRESERVE ALL REAL PEOPLE FROM IMAGE 1: Detect and preserve EVERY real human subject present in Image 1 (whether a solo person, a couple of 2 people, or a group/family of 3, 4, 5+ people). Place all subjects together naturally in the scene with flattering natural poses, showing full body or 3/4 framing.
+2. STRICT 100% FACE IDENTITY LOCK: For each and every person from Image 1, preserve their exact individual facial features, eyes, nose, mouth, jawline, skin tone, facial proportions, age, gender, and authentic likeness with id_weight: 0.99.
+3. DO NOT REPLACE WITH RANDOM STOCK MODELS: Absolutely DO NOT generate generic stock models, unknown strangers, or a random couple. The people in the output MUST be the exact same people from Image 1.${fixAddon} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image. CRITICAL NEGATIVE: different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity.`;
     }
 
     if (rawPrevImageBase64) {

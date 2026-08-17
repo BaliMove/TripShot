@@ -810,10 +810,10 @@ export default function UploadCard({
             targetModel: editTargetModel,
             customBgBase64: tabMode === "custom_bg" ? customBgBase64 : undefined,
             enhanceStyle: tabMode === "custom_bg" ? enhanceStyle : undefined,
-            destination: selectedStyleId,
-            styleId: selectedStyleId,
+            destination: usedStyleId || selectedStyleId,
+            styleId: usedStyleId || selectedStyleId,
             bgColor,
-            customPrompt: selectedStyleId === "custom" ? customPrompt.trim() : undefined,
+            customPrompt: (usedStyleId === "custom" || selectedStyleId === "custom") ? customPrompt.trim() : undefined,
             customFixPrompt: promptToUse.trim(),
           }),
         });
@@ -823,7 +823,7 @@ export default function UploadCard({
           data = await response.json();
         } else {
           const fallbackImg =
-            STYLE_PREVIEWS[selectedStyleId] ||
+            STYLE_PREVIEWS[usedStyleId || selectedStyleId] ||
             targetPrevUrl ||
             "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80";
           data = {
@@ -833,7 +833,7 @@ export default function UploadCard({
         }
       } catch (err: unknown) {
         const fallbackImg =
-          STYLE_PREVIEWS[selectedStyleId] ||
+          STYLE_PREVIEWS[usedStyleId || selectedStyleId] ||
           targetPrevUrl ||
           "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80";
         data = {
@@ -844,10 +844,18 @@ export default function UploadCard({
 
 
       if (data.lite || data.pro) {
+        const nextLite = data.lite ?? result?.lite;
+        const nextPro = data.pro ?? result?.pro;
         setResult({
-          lite: data.lite ?? result?.lite,
-          pro: data.pro ?? result?.pro,
+          lite: nextLite,
+          pro: nextPro,
         });
+
+        // Update previousImageUrl to the newly refined image
+        const newUrl = editTargetModel === "flash_lite" ? nextLite?.imageUrl : nextPro?.imageUrl;
+        if (newUrl) {
+          setPreviousImageUrl(newUrl);
+        }
 
         // 🎁 1회 생성당 1회 무료 A/S 마법 보정 혜택 (무료 보정 남아있으면 크레딧 차감 0개!)
         if (!byokKey) {

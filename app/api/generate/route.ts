@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Parse Previous Image Base64 for Image-to-Image refinement
+    // Parse Previous Image Base64 for Image-to-Image refinement (Data URL or Remote URL)
     let rawPrevImageBase64: string | null = null;
     let prevMime = "image/png";
     if (previousImageUrl) {
@@ -92,6 +92,18 @@ export async function POST(req: NextRequest) {
         rawPrevImageBase64 = prevMatch[2];
       } else if (previousImageUrl.includes("base64,")) {
         rawPrevImageBase64 = previousImageUrl.split("base64,")[1];
+      } else if (previousImageUrl.startsWith("http://") || previousImageUrl.startsWith("https://")) {
+        try {
+          const fetchRes = await fetch(previousImageUrl);
+          if (fetchRes.ok) {
+            const arrayBuffer = await fetchRes.arrayBuffer();
+            rawPrevImageBase64 = Buffer.from(arrayBuffer).toString("base64");
+            const cType = fetchRes.headers.get("content-type");
+            if (cType) prevMime = cType;
+          }
+        } catch (e) {
+          console.warn("[API Route] Could not fetch previousImageUrl as binary buffer:", e);
+        }
       }
     }
 
@@ -106,17 +118,18 @@ export async function POST(req: NextRequest) {
         customPrompt: rawCustomPrompt,
         customFixPrompt: rawCustomFixPrompt,
       });
-    }
 
-    // If previousImageUrl exists, apply strict Face Identity Locking from Image 1 (Original Selfie)
-    if (rawPrevImageBase64) {
-      const parsedFix = parseCustomFixPrompt(rawCustomFixPrompt || "Enhance resemblance to original selfie");
-      const enrichedFixDirective = parsedFix.userRequestInstruction || parsedFix.styleModsPrompt || rawCustomFixPrompt?.trim() || "Enhance resemblance to original selfie";
+      // If previousImageUrl exists, apply strict Face Identity Locking while maintaining theme
+      if (rawPrevImageBase64) {
+        const parsedFix = parseCustomFixPrompt(rawCustomFixPrompt || "Enhance resemblance to original selfie");
+        const enrichedFixDirective = parsedFix.userRequestInstruction || parsedFix.styleModsPrompt || rawCustomFixPrompt?.trim() || "Enhance resemblance to original selfie";
 
-      prompt = `CRITICAL MANDATORY INSTRUCTION:
-1. FACE IDENTITY LOCK: You MUST preserve the 100% exact facial identity, eyes, nose, lips, jawline, skin tone, gender, and likeness of the primary main subject from Image 1 (the ORIGINAL USER SELFIE/PHOTO) with id_weight: 0.99. Do NOT change the person into a different person or ethnicity.
-2. BACKGROUND & POSE: Keep the background scene, overall composition, lighting, and body poses from Image 2 (previous image).
-3. TARGET MODIFICATION & PROPS: Apply the user's specific requested changes with high fidelity: ${enrichedFixDirective}. ${parsedFix.soloPrompt ? `Ensure: ${parsedFix.soloPrompt}.` : "Strictly do not generate extra random people, women, or companions unless explicitly requested."} ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: extra women, extra bystanders, unwanted companions, altered faces, morphed features.`;
+        prompt = `CRITICAL MANDATORY INSTRUCTION FOR IMAGE MODIFICATION & REFINEMENT:
+1. THEME & ENVIRONMENT TRANSFORMATION: Seamlessly integrate the subject(s) into the target theme: ${prompt}.
+2. STRICT 100% FACE IDENTITY LOCK: Preserve 100% exact facial identity, eyes, nose, lips, jawline, facial bone structure, skin tone, and likeness of the real person from Image 1 (the ORIGINAL USER SELFIE/PHOTO) with id_weight: 0.99.
+3. TARGET MODIFICATION & USER FIXES: Apply the user's specific requested changes with high precision: ${enrichedFixDirective}. ${parsedFix.soloPrompt ? `Ensure: ${parsedFix.soloPrompt}.` : ""}
+4. AUTHENTIC HIGH-END COMPOSITION: Keep the styled travel/concept outfit and scenic backdrop from the theme while perfecting the user's face to match Image 1 authentically. ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: unchanged raw room background, unstyled clothes, different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity.`;
+      }
     }
 
     const ai = new GoogleGenAI({ apiKey });

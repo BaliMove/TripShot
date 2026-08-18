@@ -903,54 +903,71 @@ export default function UploadCard({
     }
   };
 
-  const dataUrlToBlob = (dataUrl: string): Blob => {
+  const dataUrlToBlob = (dataUrl: string): { blob: Blob; ext: string } => {
     const parts = dataUrl.split(",");
+    const rawBase64 = parts[1] || "";
     let mime = "image/png";
-    const mimeMatch = parts[0].match(/:(.*?);/);
-    if (mimeMatch && mimeMatch[1]) {
-      mime = mimeMatch[1];
-    } else if (parts[1]?.startsWith("/9j/")) {
+    let ext = "png";
+
+    if (rawBase64.startsWith("/9j/")) {
       mime = "image/jpeg";
+      ext = "jpg";
+    } else if (rawBase64.startsWith("iVBORw")) {
+      mime = "image/png";
+      ext = "png";
+    } else if (rawBase64.startsWith("UklGR")) {
+      mime = "image/webp";
+      ext = "webp";
+    } else {
+      const mimeMatch = parts[0].match(/:(.*?);/);
+      if (mimeMatch && mimeMatch[1]) {
+        mime = mimeMatch[1];
+        if (mime.includes("jpeg") || mime.includes("jpg")) ext = "jpg";
+        else if (mime.includes("webp")) ext = "webp";
+        else ext = "png";
+      }
     }
-    const byteString = atob(parts[1]);
-    let n = byteString.length;
+
+    const byteString = atob(rawBase64);
+    const n = byteString.length;
     const u8arr = new Uint8Array(n);
-    while (n--) {
-      u8arr[n] = byteString.charCodeAt(n);
+    for (let i = 0; i < n; i++) {
+      u8arr[i] = byteString.charCodeAt(i);
     }
-    return new Blob([u8arr], { type: mime });
+    return { blob: new Blob([u8arr], { type: mime }), ext };
   };
 
-  const directDownloadFallback = (imageUrl: string, nameToSave: string) => {
+  const directDownloadFallback = (imageUrl: string, requestedName?: string) => {
     try {
+      let finalName = requestedName || `tripshot_${usedStyleId || "photo"}.png`;
+      let downloadUrl = imageUrl;
+      let blobToRevoke: string | null = null;
+
       if (imageUrl.startsWith("data:")) {
-        const blob = dataUrlToBlob(imageUrl);
-        const blobUrl = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = blobUrl;
-        a.download = nameToSave;
-        a.setAttribute("download", nameToSave);
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-          if (document.body.contains(a)) document.body.removeChild(a);
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
-        }, 1000);
-      } else {
-        const a = document.createElement("a");
-        a.href = imageUrl;
-        a.download = nameToSave;
-        a.setAttribute("download", nameToSave);
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-          if (document.body.contains(a)) document.body.removeChild(a);
-        }, 1000);
+        const { blob, ext } = dataUrlToBlob(imageUrl);
+        blobToRevoke = URL.createObjectURL(blob);
+        downloadUrl = blobToRevoke;
+        
+        // Ensure extension matches actual binary type to guarantee 100% Windows/Mac opening
+        const baseNameWithoutExt = finalName.replace(/\.[^/.]+$/, "");
+        finalName = `${baseNameWithoutExt}.${ext}`;
       }
+
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = finalName;
+      a.setAttribute("download", finalName);
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        if (document.body.contains(a)) document.body.removeChild(a);
+        if (blobToRevoke) URL.revokeObjectURL(blobToRevoke);
+      }, 1500);
+
       setDownloadNotice(
         lang === "ko"
-          ? `✅ 다운로드 완료! [${nameToSave}] 사진이 저장되었습니다.`
-          : `✅ Download Complete! Saved as [${nameToSave}].`
+          ? `✅ 다운로드 완료! [${finalName}] 사진이 저장되었습니다.`
+          : `✅ Download Complete! Saved as [${finalName}].`
       );
       setTimeout(() => setDownloadNotice(null), 4000);
     } catch (err) {
@@ -963,12 +980,9 @@ export default function UploadCard({
       const now = new Date();
       const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}_${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}${String(now.getSeconds()).padStart(2, "0")}`;
       const defaultName = `tripshot_${usedStyleId || "photo"}_${dateStr}.png`;
-      let nameToSave = fileName || defaultName;
-      if (!nameToSave.toLowerCase().endsWith(".png") && !nameToSave.toLowerCase().endsWith(".jpg")) {
-        nameToSave += ".png";
-      }
+      const nameToSave = fileName || defaultName;
 
-      // 🖼️ Canvas Re-Encoding Pipeline: Guarantees 100% genuine standard PNG binary format for Windows/Mac/iOS/Android
+      // 🖼️ Canvas Re-Encoding Pipeline: Converts any base64/URL into 100% genuine standard PNG binary format
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.onload = () => {

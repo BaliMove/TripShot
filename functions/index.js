@@ -23,20 +23,20 @@ const MASTER_STYLE_PROMPT_MAP = {
   jacobs_well: "diving into Jacob's Well underwater cave pool in Texas, crystal clear deep blue water, underwater rays, 8k",
 
   // Indonesia & Bali Spots
-  kelingking: "standing at the iconic T-Rex shaped cliff edge at Kelingking Beach Nusa Penida, turquoise ocean and white beach below, dramatic high angle, golden hour, 8k resolution",
-  devils_tears: "standing on the rocky blowhole cliff edge at Devil's Tears Nusa Lembongan, massive ocean wave crashing dramatically into mist in background, sunset spray, cinematic lighting",
-  bromo: "standing on the volcanic rim of active Mount Bromo crater in East Java, smoking caldera and vast sea of sand below, mystical sunrise light rays, photorealistic",
-  ijen: "standing near the turquoise acidic crater lake of Kawah Ijen volcano, glowing blue sulfur flames through mystical morning fog, dramatic atmospheric lighting",
-  tumpak_sewu: "standing prominently in the scenic foreground at Tumpak Sewu waterfall canyon in East Java, surrounded by the massive 120m curtain of cascading water, dramatic mist and lush tropical canopy",
-  jomblang: "standing inside the dark cavern of Jomblang Cave Yogyakarta, magnificent beam of heavenly sunlight piercing down from the sinkhole roof, ethereal dust particles, magical atmosphere",
-  timang: "riding a wooden rope gondola over crashing ocean waves at Timang Beach Yogyakarta, jagged rock island background, thrilling action angle",
-  rinjani: "sitting at the high altitude crater rim ridge of Mount Rinjani Lombok, deep blue Segara Anak crater lake and volcano cone below, sea of clouds, epic mountain panorama",
-  sipiso_piso: "standing on a cliff edge overlooking Sipiso-piso Waterfall in North Sumatra, a 120m vertical plunge waterfall cascading down a lush green gorge, Lake Toba in distance",
-  wanagiri: "sitting on a giant woven bird nest platform protruding over Lake Buyan at Wanagiri Hidden Hills Bali, misty tropical lake panorama, romantic morning atmosphere",
-  bali_swing: "sitting on a giant jungle swing in Bali, lush green tropical background, cinematic lighting, 8k",
-  borobudur: "standing at Borobudur temple in Indonesia during a magical golden sunrise, ancient stupas, misty background, highly detailed",
-  paris: "in front of Eiffel Tower in Paris, golden hour lighting, cinematic style, 8k",
-  santorini: "standing on white dome balconies in Santorini Greece during sunset, Aegean sea background, 8k",
+  kelingking: "prominently in the foreground at the iconic T-Rex shaped cliff edge at Kelingking Beach Nusa Penida, turquoise ocean and white beach below in background, dramatic high angle, golden hour, 8k resolution",
+  devils_tears: "prominently in the foreground on the rocky blowhole cliff edge at Devil's Tears Nusa Lembongan, massive ocean wave crashing dramatically into mist in background, sunset spray, cinematic lighting",
+  bromo: "prominently in the foreground on the volcanic rim of active Mount Bromo crater in East Java, smoking caldera and vast sea of sand visible behind, mystical sunrise light rays, photorealistic",
+  ijen: "prominently in the foreground near the turquoise acidic crater lake of Kawah Ijen volcano, glowing blue sulfur flames and morning fog in background, dramatic atmospheric lighting",
+  tumpak_sewu: "prominently in the scenic foreground at Tumpak Sewu waterfall canyon in East Java, with the massive 120m curtain of cascading water and dramatic mist rising directly behind them, lush tropical canopy",
+  jomblang: "prominently in the foreground inside the cavern of Jomblang Cave Yogyakarta, magnificent beam of heavenly sunlight piercing down from the sinkhole roof in background, ethereal dust particles, magical atmosphere",
+  timang: "prominently featured riding a wooden rope gondola over crashing ocean waves at Timang Beach Yogyakarta, jagged rock island in background, thrilling action angle",
+  rinjani: "prominently in the scenic foreground at the crater rim ridge of Mount Rinjani Lombok, with deep blue Segara Anak crater lake and volcano cone visible directly behind them, sea of clouds, epic mountain panorama, 8k",
+  sipiso_piso: "prominently in the foreground overlooking Sipiso-piso Waterfall in North Sumatra, 120m vertical plunge waterfall and Lake Toba in background, lush green gorge",
+  wanagiri: "prominently in the foreground on a giant woven bird nest platform over Lake Buyan at Wanagiri Hidden Hills Bali, misty tropical lake panorama in background, romantic morning atmosphere",
+  bali_swing: "prominently featured sitting on a giant jungle swing in Bali, lush green tropical background, cinematic lighting, 8k",
+  borobudur: "prominently in the foreground at Borobudur temple in Indonesia with ancient stupas and misty sunrise in background, highly detailed",
+  paris: "prominently in the foreground in Paris with the iconic Eiffel Tower glowing in the background, golden hour lighting, cinematic style, 8k",
+  santorini: "prominently in the foreground on white dome balconies in Santorini Greece with the Aegean sea sunset in background, 8k",
 
   // Studio & ID Photo Concepts
   corporate: "masterpiece studio portrait of a person wearing a sharp formal navy blue business suit jacket, white shirt, elegant modern office glass background, professional corporate headshot, photorealistic 8k",
@@ -238,12 +238,12 @@ app.post("/api/generate", async (req, res) => {
     let finalPrompt = "";
     if (customBgBase64) {
       const fixAddon = effectiveFixPrompt ? ` User fix request: ${effectiveFixPrompt}.` : "";
-      finalPrompt = `A photorealistic high-end masterpiece portrait naturally integrating ALL person(s) present in Image 1 into the provided background photo (Image 2).
+      finalPrompt = `A photorealistic high-end masterpiece travel portrait integrating ALL person(s) present in Image 1 into the provided background photo (Image 2).
 CRITICAL MANDATORY INSTRUCTIONS:
-1. DETECT & PRESERVE EVERY REAL PERSON: Whether Image 1 contains a single person, a couple, or a group/family (3, 4, 5+ people), detect and include EVERY individual together in a unified, natural group composition.
-2. PROMINENT SUBJECT FRAMING (NO TINY BODIES): Position all subjects prominently in the foreground or midground (Medium to Full Shot occupying 50%-75% of the frame height). DO NOT shrink people into tiny unidentifiable background figures. Ensure large, crystal-clear, high-resolution faces for every person.
-3. EXACT 1:1 FACIAL FEATURE & IDENTITY LOCK: For each and every person from Image 1, transfer and preserve their EXACT real-life facial features with 100% precision (id_weight: 0.99). Match specific eye shape, eyelid fold, eyebrows, nose structure, smile/teeth, cheekbones, jawline, wrinkles/age lines, hairstyle, hairline, skin tone, and eyeglasses. DO NOT morph, generalize, or replace with generic AI stock faces.
-4. AUTHENTIC LIGHTING & FEET GROUNDING: Match lighting and shadows seamlessly, with realistic footwear firmly standing on the ground surface.${fixAddon} Do not render any visible text, watermark, logos, or letters. CRITICAL NEGATIVE: different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity, tiny unidentifiable people.`;
+1. DETECT & PRESERVE EVERY REAL PERSON: Whether Image 1 contains a single person, a couple, or a large group/family (3 to 12+ people), detect and include EVERY individual together in a unified, natural group composition.
+2. CLOSE/MEDIUM GROUP FRAMING (LARGE DETAILED FACES): Use a Medium Group Portrait composition (waist-up to chest-up) where the subjects prominently occupy 65%-80% of the vertical frame. Position faces in the upper-mid area so each face is large, crystal-clear, and high-resolution. DO NOT shrink people into tiny distant figures.
+3. 1:1 EXACT FACIAL FEATURE & EXPRESSION RECONSTRUCTION: Reconstruct the EXACT real-life face of EVERY single person in Image 1 with 100% precision (id_weight: 0.99). Replicate their exact eyelid shape, eye width, eyebrows, nose structure, smile/teeth, cheekbones, jawline, wrinkles, age, skin complexion, hair style, and eyeglasses. Absolutely DO NOT generalize, morph, or replace with generic AI faces.
+4. AUTHENTIC LIGHTING & COMPOSITION: Flattering natural photography lighting seamlessly matching the background.${fixAddon} Do not render any visible text, watermark, logos, or letters. CRITICAL NEGATIVE: different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity, tiny unidentifiable people, distant shrunk figures.`;
     } else {
       let basePrompt = "";
       if ((rawKey === "custom" || rawKey === "custom_travel" || (customPrompt && customPrompt.trim())) && customPrompt) {
@@ -253,7 +253,7 @@ CRITICAL MANDATORY INSTRUCTIONS:
       } else if (prompt || stylePrompt) {
         basePrompt = prompt || stylePrompt;
       } else {
-        basePrompt = `standing at ${rawKey.replace(/_/g, " ")}, full body or medium full view showing clothes, breathtaking scenic travel background, professional travel photography`;
+        basePrompt = `standing prominently at ${rawKey.replace(/_/g, " ")}, medium full view showing clothes, breathtaking scenic travel background, professional travel photography`;
       }
 
       // Studio background color customization (if provided)
@@ -267,16 +267,16 @@ CRITICAL MANDATORY INSTRUCTIONS:
       const fixAddon = effectiveFixPrompt ? ` User refinement request: ${effectiveFixPrompt}.` : "";
       finalPrompt = `A photorealistic travel photography masterpiece seamlessly integrating ALL person(s) present in Image 1 into the scene: ${basePrompt}.
 CRITICAL MANDATORY INSTRUCTIONS:
-1. DETECT & PRESERVE EVERY REAL PERSON: Detect and include EVERY individual subject present in Image 1 (whether 1 person, 2 people, or a family/group of 3~12+ people). Place all subjects together with natural, cohesive poses.
-2. PROMINENT SUBJECT FRAMING (LARGE CLEAR FACES): Position the subjects prominently in the foreground / midground (Medium-Full Group Shot framing, occupying 50%-75% of vertical frame). DO NOT shrink people into tiny distant dots. Every person's face must be large, well-lit, and high-resolution.
-3. STRICT 1:1 FACIAL FEATURE & EXPRESSION LOCK: Transfer and preserve the EXACT real-life facial features of EVERY single person in Image 1 (id_weight: 0.99). Reconstruct each person's exact eye shape, eyelids, nose bridge, lips, smile curvature, teeth, jawline, facial proportions, age, skin complexion, hair style, and glasses. Absolutely DO NOT generalize, morph, or replace with generic AI faces.
-4. PROFESSIONAL LIGHTING & COMPOSITION: Flattering natural travel photography illumination with authentic contact shadows.${fixAddon} Do not render any visible text, watermark, logos, or letters. CRITICAL NEGATIVE: different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity, tiny unidentifiable people.`;
+1. DETECT & PRESERVE EVERY REAL PERSON: Detect and include EVERY individual subject present in Image 1 (whether 1 person, 2 people, or a large family/group of 3~12+ people). Place all subjects together in a cohesive, natural group portrait.
+2. CLOSE/MEDIUM GROUP FRAMING (LARGE DETAILED FACES): Use a Medium Group Portrait composition (waist-up to chest-up framing occupying 65%-80% of vertical frame height). Position heads prominently in the upper-to-middle half of the image so each face is large, well-lit, and sharply defined. The scenic landscape must serve as the backdrop behind the prominent group. DO NOT shrink people into tiny distant figures at the bottom.
+3. 1:1 EXACT FACIAL FEATURE & EXPRESSION RECONSTRUCTION: Transfer and preserve the EXACT real-life facial features of EVERY single person in Image 1 (id_weight: 0.99). Reconstruct each person's exact eye shape, eyelids, nose bridge, lips, smile curvature, teeth, jawline, facial proportions, age, skin complexion, hair style, and glasses. Absolutely DO NOT generalize, morph, or replace with generic AI faces.
+4. PROFESSIONAL LIGHTING & CONTACT SHADOWS: Flattering natural travel photography illumination.${fixAddon} Do not render any visible text, watermark, logos, or letters. CRITICAL NEGATIVE: different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity, tiny unidentifiable people, distant shrunk figures.`;
 
       if (rawPrevImageBase64) {
         const { enrichedDirective, soloPrompt } = parseCustomFixPrompt(effectiveFixPrompt);
         finalPrompt = `CRITICAL MANDATORY INSTRUCTION FOR IMAGE MODIFICATION & REFINEMENT:
 1. THEME & ENVIRONMENT: Seamlessly place the subject(s) into the target theme: ${basePrompt}.
-2. STRICT 1:1 EXACT FACE ID LOCK: Preserve 100% exact facial identity, eyes, nose, lips, jawline, facial bone structure, skin tone, and authentic likeness of EVERY real person from Image 1 (ORIGINAL USER PHOTO) with id_weight: 0.99. Keep faces large, clear, and prominently framed.
+2. STRICT 1:1 EXACT FACE ID LOCK: Preserve 100% exact facial identity, eyes, nose, lips, jawline, facial bone structure, skin tone, and authentic likeness of EVERY real person from Image 1 (ORIGINAL USER PHOTO) with id_weight: 0.99. Keep faces large, clear, and prominently framed (65%-80% frame height).
 3. USER REQUESTED MODIFICATIONS: Apply the user's specific requested changes with high precision: ${enrichedDirective}. ${soloPrompt ? `Ensure: ${soloPrompt}.` : ""}
 4. AUTHENTIC HIGH-END COMPOSITION: Maintain the styled travel/concept attire and scenic backdrop while perfecting each person's face to match Image 1 authentically. Do not render any visible text, watermark, logos, or letters. CRITICAL NEGATIVE: unchanged raw room background, unstyled clothes, different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity, tiny people.`;
       }

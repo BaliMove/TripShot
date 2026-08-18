@@ -110,12 +110,12 @@ export async function POST(req: NextRequest) {
     let prompt = "";
     if (customBgBase64) {
       const fixAddon = rawCustomFixPrompt ? ` User fix request: ${rawCustomFixPrompt.trim()}.` : "";
-      prompt = `A photorealistic high-end masterpiece portrait naturally integrating ALL person(s) present in Image 1 into the provided background photo (Image 2).
+      prompt = `A photorealistic high-end masterpiece travel portrait integrating ALL person(s) present in Image 1 into the provided background photo (Image 2).
 CRITICAL MANDATORY INSTRUCTIONS:
-1. DETECT & PRESERVE EVERY REAL PERSON: Whether Image 1 contains a single person, a couple, or a group/family (3~12+ people), detect and include EVERY individual together in a unified, natural group composition.
-2. PROMINENT SUBJECT FRAMING (NO TINY BODIES): Position all subjects prominently in the foreground or midground (Medium to Full Shot occupying 50%-75% of the frame height). DO NOT shrink people into tiny unidentifiable background figures. Ensure large, crystal-clear, high-resolution faces for every person.
-3. EXACT 1:1 FACIAL FEATURE & IDENTITY LOCK: For each and every person from Image 1, transfer and preserve their EXACT real-life facial features with 100% precision (id_weight: 0.99). Match specific eye shape, eyelid fold, eyebrows, nose structure, smile/teeth, cheekbones, jawline, wrinkles/age lines, hairstyle, hairline, skin tone, and eyeglasses. DO NOT morph, generalize, or replace with generic AI stock faces.
-4. AUTHENTIC LIGHTING & FEET GROUNDING: Match lighting and shadows seamlessly, with realistic footwear firmly standing on the ground surface.${fixAddon} ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity, tiny unidentifiable people.`;
+1. DETECT & PRESERVE EVERY REAL PERSON: Whether Image 1 contains a single person, a couple, or a large group/family (3 to 12+ people), detect and include EVERY individual together in a unified, natural group composition.
+2. CLOSE/MEDIUM GROUP FRAMING (LARGE DETAILED FACES): Use a Medium Group Portrait composition (waist-up to chest-up) where the subjects prominently occupy 65%-80% of the vertical frame. Position faces in the upper-mid area so each face is large, crystal-clear, and high-resolution. DO NOT shrink people into tiny distant figures.
+3. 1:1 EXACT FACIAL FEATURE & EXPRESSION RECONSTRUCTION: Reconstruct the EXACT real-life face of EVERY single person in Image 1 with 100% precision (id_weight: 0.99). Replicate their exact eyelid shape, eye width, eyebrows, nose structure, smile/teeth, cheekbones, jawline, wrinkles, age, skin complexion, hair style, and eyeglasses. Absolutely DO NOT generalize, morph, or replace with generic AI faces.
+4. AUTHENTIC LIGHTING & COMPOSITION: Flattering natural photography lighting seamlessly matching the background.${fixAddon} ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity, tiny unidentifiable people, distant shrunk figures.`;
     } else {
       prompt = buildPrompt({
         styleId,
@@ -131,7 +131,7 @@ CRITICAL MANDATORY INSTRUCTIONS:
 
         prompt = `CRITICAL MANDATORY INSTRUCTION FOR IMAGE MODIFICATION & REFINEMENT:
 1. THEME & ENVIRONMENT: Seamlessly place the subject(s) into the target theme: ${prompt}.
-2. STRICT 1:1 EXACT FACE ID LOCK: Preserve 100% exact facial identity, eyes, nose, lips, jawline, facial bone structure, skin tone, and authentic likeness of EVERY real person from Image 1 (ORIGINAL USER PHOTO) with id_weight: 0.99. Keep faces large, clear, and prominently framed.
+2. STRICT 1:1 EXACT FACE ID LOCK: Preserve 100% exact facial identity, eyes, nose, lips, jawline, facial bone structure, skin tone, and authentic likeness of EVERY real person from Image 1 (ORIGINAL USER PHOTO) with id_weight: 0.99. Keep faces large, clear, and prominently framed (65%-80% frame height).
 3. USER REQUESTED MODIFICATIONS: Apply the user's specific requested changes with high precision: ${enrichedFixDirective}. ${parsedFix.soloPrompt ? `Ensure: ${parsedFix.soloPrompt}.` : ""}
 4. AUTHENTIC HIGH-END COMPOSITION: Maintain the styled travel/concept attire and scenic backdrop while perfecting each person's face to match Image 1 authentically. ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: unchanged raw room background, unstyled clothes, different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity, tiny people.`;
       }

@@ -23,20 +23,20 @@ const MASTER_STYLE_PROMPT_MAP = {
   jacobs_well: "diving into Jacob's Well underwater cave pool in Texas, crystal clear deep blue water, underwater rays, 8k",
 
   // Indonesia & Bali Spots
-  kelingking: "A solo traveler naturally integrated into the scene, sitting on the narrow edge of the iconic T-Rex shaped cliff at Kelingking Beach Nusa Penida, turquoise ocean and white beach far below, dramatic high angle shot, golden hour, 8k resolution",
-  devils_tears: "A solo traveler naturally integrated into the scene, standing on the rocky blowhole cliff edge at Devil's Tears Nusa Lembongan, massive ocean wave crashing dramatically into mist in background, sunset spray, cinematic lighting",
-  bromo: "A solo traveler naturally integrated into the scene, standing on the narrow volcanic rim of active Mount Bromo crater in East Java, smoking caldera and vast sea of sand below, mystical sunrise light rays, photorealistic",
-  ijen: "A solo traveler naturally integrated into the scene, standing near the turquoise acidic crater lake of Kawah Ijen volcano, glowing blue sulfur flames through mystical morning fog, dramatic atmospheric lighting",
-  tumpak_sewu: "A solo traveler naturally integrated into the scene, standing at the bottom of Tumpak Sewu waterfall canyon in East Java, surrounded by a massive 120m curtain of cascading water, dramatic mist and lush tropical canopy",
-  jomblang: "A solo traveler naturally integrated into the scene, standing inside the dark cavern of Jomblang Cave Yogyakarta, magnificent beam of heavenly sunlight piercing down from the sinkhole roof, ethereal dust particles, magical atmosphere",
-  timang: "A solo traveler naturally integrated into the scene, riding a primitive wooden cable car over violent crashing ocean waves at Timang Beach Yogyakarta, jagged rock island background, thrilling action angle",
-  rinjani: "A solo traveler naturally integrated into the scene, sitting at the high altitude crater rim ridge of Mount Rinjani Lombok, deep blue Segara Anak crater lake and volcano cone below, sea of clouds, epic mountain panorama",
-  sipiso_piso: "A solo traveler naturally integrated into the scene, standing on a cliff edge overlooking Sipiso-piso Waterfall in North Sumatra, a 120m vertical plunge waterfall cascading down a lush green gorge, Lake Toba in distance",
-  wanagiri: "A solo traveler naturally integrated into the scene, sitting on a giant woven bird nest platform protruding over Lake Buyan at Wanagiri Hidden Hills Bali, misty tropical lake panorama, romantic morning atmosphere",
-  bali_swing: "A stunning travel photo sitting on a giant jungle swing in Bali, lush green tropical background, cinematic lighting, 8k",
-  borobudur: "A breathtaking travel portrait standing at Borobudur temple in Indonesia during a magical golden sunrise, ancient stupas, misty background, highly detailed",
-  paris: "A romantic travel portrait in front of Eiffel Tower in Paris, golden hour lighting, cinematic style, 8k",
-  santorini: "A picturesque travel photo standing on white dome balconies in Santorini Greece during sunset, Aegean sea background, 8k",
+  kelingking: "standing at the iconic T-Rex shaped cliff edge at Kelingking Beach Nusa Penida, turquoise ocean and white beach below, dramatic high angle, golden hour, 8k resolution",
+  devils_tears: "standing on the rocky blowhole cliff edge at Devil's Tears Nusa Lembongan, massive ocean wave crashing dramatically into mist in background, sunset spray, cinematic lighting",
+  bromo: "standing on the volcanic rim of active Mount Bromo crater in East Java, smoking caldera and vast sea of sand below, mystical sunrise light rays, photorealistic",
+  ijen: "standing near the turquoise acidic crater lake of Kawah Ijen volcano, glowing blue sulfur flames through mystical morning fog, dramatic atmospheric lighting",
+  tumpak_sewu: "standing prominently in the scenic foreground at Tumpak Sewu waterfall canyon in East Java, surrounded by the massive 120m curtain of cascading water, dramatic mist and lush tropical canopy",
+  jomblang: "standing inside the dark cavern of Jomblang Cave Yogyakarta, magnificent beam of heavenly sunlight piercing down from the sinkhole roof, ethereal dust particles, magical atmosphere",
+  timang: "riding a wooden rope gondola over crashing ocean waves at Timang Beach Yogyakarta, jagged rock island background, thrilling action angle",
+  rinjani: "sitting at the high altitude crater rim ridge of Mount Rinjani Lombok, deep blue Segara Anak crater lake and volcano cone below, sea of clouds, epic mountain panorama",
+  sipiso_piso: "standing on a cliff edge overlooking Sipiso-piso Waterfall in North Sumatra, a 120m vertical plunge waterfall cascading down a lush green gorge, Lake Toba in distance",
+  wanagiri: "sitting on a giant woven bird nest platform protruding over Lake Buyan at Wanagiri Hidden Hills Bali, misty tropical lake panorama, romantic morning atmosphere",
+  bali_swing: "sitting on a giant jungle swing in Bali, lush green tropical background, cinematic lighting, 8k",
+  borobudur: "standing at Borobudur temple in Indonesia during a magical golden sunrise, ancient stupas, misty background, highly detailed",
+  paris: "in front of Eiffel Tower in Paris, golden hour lighting, cinematic style, 8k",
+  santorini: "standing on white dome balconies in Santorini Greece during sunset, Aegean sea background, 8k",
 
   // Studio & ID Photo Concepts
   corporate: "masterpiece studio portrait of a person wearing a sharp formal navy blue business suit jacket, white shirt, elegant modern office glass background, professional corporate headshot, photorealistic 8k",
@@ -238,11 +238,12 @@ app.post("/api/generate", async (req, res) => {
     let finalPrompt = "";
     if (customBgBase64) {
       const fixAddon = effectiveFixPrompt ? ` User fix request: ${effectiveFixPrompt}.` : "";
-      finalPrompt = `A photorealistic travel portrait naturally integrating ALL person(s) present in Image 1 into the provided custom background photo (Image 2).
+      finalPrompt = `A photorealistic high-end masterpiece portrait naturally integrating ALL person(s) present in Image 1 into the provided background photo (Image 2).
 CRITICAL MANDATORY INSTRUCTIONS:
-1. DETECT AND PRESERVE ALL REAL PEOPLE FROM IMAGE 1: Whether Image 1 contains a single person, a couple (2 people), or a group/family (3, 4, 5+ people), detect EVERY person and place all of them together naturally into the scene. Show full body or natural 3/4 framing with visible photorealistic shoes/footwear firmly standing on the ground surface.
-2. STRICT 100% FACE IDENTITY LOCK: For every person present in Image 1, preserve their exact individual facial features, eyes, nose, mouth, jawline, skin tone, facial proportions, age, gender, and likeness with id_weight: 0.99.
-3. DO NOT REPLACE WITH RANDOM STOCK MODELS: Absolutely DO NOT generate unknown random models or a stranger couple. Keep the exact people from Image 1.${fixAddon} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image. CRITICAL NEGATIVE: different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity.`;
+1. DETECT & PRESERVE EVERY REAL PERSON: Whether Image 1 contains a single person, a couple, or a group/family (3, 4, 5+ people), detect and include EVERY individual together in a unified, natural group composition.
+2. PROMINENT SUBJECT FRAMING (NO TINY BODIES): Position all subjects prominently in the foreground or midground (Medium to Full Shot occupying 50%-75% of the frame height). DO NOT shrink people into tiny unidentifiable background figures. Ensure large, crystal-clear, high-resolution faces for every person.
+3. EXACT 1:1 FACIAL FEATURE & IDENTITY LOCK: For each and every person from Image 1, transfer and preserve their EXACT real-life facial features with 100% precision (id_weight: 0.99). Match specific eye shape, eyelid fold, eyebrows, nose structure, smile/teeth, cheekbones, jawline, wrinkles/age lines, hairstyle, hairline, skin tone, and eyeglasses. DO NOT morph, generalize, or replace with generic AI stock faces.
+4. AUTHENTIC LIGHTING & FEET GROUNDING: Match lighting and shadows seamlessly, with realistic footwear firmly standing on the ground surface.${fixAddon} Do not render any visible text, watermark, logos, or letters. CRITICAL NEGATIVE: different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity, tiny unidentifiable people.`;
     } else {
       let basePrompt = "";
       if ((rawKey === "custom" || rawKey === "custom_travel" || (customPrompt && customPrompt.trim())) && customPrompt) {
@@ -252,7 +253,7 @@ CRITICAL MANDATORY INSTRUCTIONS:
       } else if (prompt || stylePrompt) {
         basePrompt = prompt || stylePrompt;
       } else {
-        basePrompt = `standing at ${rawKey.replace(/_/g, " ")}, full body or upper body view showing clothes, breathtaking wide scenic travel background, professional outdoor travel photography`;
+        basePrompt = `standing at ${rawKey.replace(/_/g, " ")}, full body or medium full view showing clothes, breathtaking scenic travel background, professional travel photography`;
       }
 
       // Studio background color customization (if provided)
@@ -264,19 +265,20 @@ CRITICAL MANDATORY INSTRUCTIONS:
       }
 
       const fixAddon = effectiveFixPrompt ? ` User refinement request: ${effectiveFixPrompt}.` : "";
-      finalPrompt = `A photorealistic travel photography naturally integrating ALL person(s) present in Image 1 into the scene: ${basePrompt}.
+      finalPrompt = `A photorealistic travel photography masterpiece seamlessly integrating ALL person(s) present in Image 1 into the scene: ${basePrompt}.
 CRITICAL MANDATORY INSTRUCTIONS:
-1. PRESERVE ALL REAL PEOPLE FROM IMAGE 1: Detect and preserve EVERY real human subject present in Image 1 (whether a solo person, a couple of 2 people, or a group/family of 3, 4, 5+ people). Place all subjects together naturally in the scene with flattering natural poses, showing full body or 3/4 framing.
-2. STRICT 100% FACE IDENTITY LOCK: For each and every person from Image 1, preserve their exact individual facial features, eyes, nose, mouth, jawline, skin tone, facial proportions, age, gender, and authentic likeness with id_weight: 0.99.
-3. DO NOT REPLACE WITH RANDOM STOCK MODELS: Absolutely DO NOT generate generic stock models, unknown strangers, or a random couple. The people in the output MUST be the exact same people from Image 1.${fixAddon} Do not render any visible text, words, watermark, logos, or letters anywhere in the output image. CRITICAL NEGATIVE: different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity.`;
+1. DETECT & PRESERVE EVERY REAL PERSON: Detect and include EVERY individual subject present in Image 1 (whether 1 person, 2 people, or a family/group of 3~12+ people). Place all subjects together with natural, cohesive poses.
+2. PROMINENT SUBJECT FRAMING (LARGE CLEAR FACES): Position the subjects prominently in the foreground / midground (Medium-Full Group Shot framing, occupying 50%-75% of vertical frame). DO NOT shrink people into tiny distant dots. Every person's face must be large, well-lit, and high-resolution.
+3. STRICT 1:1 FACIAL FEATURE & EXPRESSION LOCK: Transfer and preserve the EXACT real-life facial features of EVERY single person in Image 1 (id_weight: 0.99). Reconstruct each person's exact eye shape, eyelids, nose bridge, lips, smile curvature, teeth, jawline, facial proportions, age, skin complexion, hair style, and glasses. Absolutely DO NOT generalize, morph, or replace with generic AI faces.
+4. PROFESSIONAL LIGHTING & COMPOSITION: Flattering natural travel photography illumination with authentic contact shadows.${fixAddon} Do not render any visible text, watermark, logos, or letters. CRITICAL NEGATIVE: different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity, tiny unidentifiable people.`;
 
       if (rawPrevImageBase64) {
         const { enrichedDirective, soloPrompt } = parseCustomFixPrompt(effectiveFixPrompt);
         finalPrompt = `CRITICAL MANDATORY INSTRUCTION FOR IMAGE MODIFICATION & REFINEMENT:
-1. THEME & ENVIRONMENT TRANSFORMATION: Seamlessly place the subject(s) into the target theme: ${basePrompt}.
-2. STRICT 100% FACE IDENTITY LOCK: Preserve 100% exact facial identity, eyes, nose, lips, jawline, facial bone structure, skin tone, and likeness of the real person from Image 1 (the ORIGINAL USER SELFIE/PHOTO) with id_weight: 0.99.
-3. TARGET MODIFICATION & USER FIXES: Apply the user's specific requested changes with high precision: ${enrichedDirective}. ${soloPrompt ? `Ensure: ${soloPrompt}.` : ""}
-4. AUTHENTIC HIGH-END COMPOSITION: Keep the styled travel/concept outfit and scenic backdrop from the theme while perfecting the user's face to match Image 1 authentically. Do not render any visible text, words, watermark, logos, or letters anywhere in the output image. CRITICAL NEGATIVE: unchanged raw room background, unstyled clothes, different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity.`;
+1. THEME & ENVIRONMENT: Seamlessly place the subject(s) into the target theme: ${basePrompt}.
+2. STRICT 1:1 EXACT FACE ID LOCK: Preserve 100% exact facial identity, eyes, nose, lips, jawline, facial bone structure, skin tone, and authentic likeness of EVERY real person from Image 1 (ORIGINAL USER PHOTO) with id_weight: 0.99. Keep faces large, clear, and prominently framed.
+3. USER REQUESTED MODIFICATIONS: Apply the user's specific requested changes with high precision: ${enrichedDirective}. ${soloPrompt ? `Ensure: ${soloPrompt}.` : ""}
+4. AUTHENTIC HIGH-END COMPOSITION: Maintain the styled travel/concept attire and scenic backdrop while perfecting each person's face to match Image 1 authentically. Do not render any visible text, watermark, logos, or letters. CRITICAL NEGATIVE: unchanged raw room background, unstyled clothes, different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity, tiny people.`;
       }
     }
 

@@ -277,7 +277,7 @@ export const STYLES: StyleDef[] = [
     thrillMeter: "THRILL 99%",
     dangerBadge: "100% Safe AI",
     prompt:
-      "A solo traveler naturally integrated into the scene, sitting on the narrow edge of the iconic T-Rex shaped cliff at Kelingking Beach Nusa Penida, turquoise ocean and white beach far below, dramatic high angle shot, golden hour, 8k resolution",
+      "standing prominently in the scenic foreground at the iconic T-Rex shaped cliff edge at Kelingking Beach Nusa Penida, turquoise ocean and white beach below, dramatic high angle, golden hour, 8k resolution",
   },
   {
     id: "devils_tears",
@@ -289,7 +289,7 @@ export const STYLES: StyleDef[] = [
     thrillMeter: "THRILL 98%",
     dangerBadge: "100% Safe AI",
     prompt:
-      "A solo traveler naturally integrated into the scene, standing on the rocky blowhole cliff edge at Devil's Tears Nusa Lembongan, massive ocean wave crashing dramatically into mist in background, sunset spray, cinematic lighting",
+      "standing on the rocky blowhole cliff edge at Devil's Tears Nusa Lembongan, massive ocean wave crashing dramatically into mist in background, sunset spray, cinematic lighting",
   },
   {
     id: "bromo",
@@ -301,7 +301,7 @@ export const STYLES: StyleDef[] = [
     thrillMeter: "THRILL 97%",
     dangerBadge: "100% Safe AI",
     prompt:
-      "A solo traveler naturally integrated into the scene, standing on the narrow volcanic rim of active Mount Bromo crater in East Java, smoking caldera and vast sea of sand below, mystical sunrise light rays, photorealistic",
+      "standing on the volcanic rim of active Mount Bromo crater in East Java, smoking caldera and vast sea of sand below, mystical sunrise light rays, photorealistic",
   },
   {
     id: "ijen",
@@ -313,7 +313,7 @@ export const STYLES: StyleDef[] = [
     thrillMeter: "THRILL 96%",
     dangerBadge: "100% Safe AI",
     prompt:
-      "A solo traveler naturally integrated into the scene, standing near the turquoise acidic crater lake of Kawah Ijen volcano, glowing blue sulfur flames through mystical morning fog, dramatic atmospheric lighting",
+      "standing near the turquoise acidic crater lake of Kawah Ijen volcano, glowing blue sulfur flames through mystical morning fog, dramatic atmospheric lighting",
   },
   {
     id: "tumpak_sewu",
@@ -325,7 +325,7 @@ export const STYLES: StyleDef[] = [
     thrillMeter: "THRILL 95%",
     dangerBadge: "100% Safe AI",
     prompt:
-      "A solo traveler naturally integrated into the scene, standing at the bottom of Tumpak Sewu waterfall canyon in East Java, surrounded by a massive 120m curtain of cascading water, dramatic mist and lush tropical canopy",
+      "standing prominently in the scenic foreground at Tumpak Sewu waterfall canyon in East Java, surrounded by the massive 120m curtain of cascading water, dramatic mist and lush tropical canopy",
   },
   {
     id: "jomblang",
@@ -337,7 +337,7 @@ export const STYLES: StyleDef[] = [
     thrillMeter: "THRILL 94%",
     dangerBadge: "100% Safe AI",
     prompt:
-      "A solo traveler naturally integrated into the scene, standing inside the dark cavern of Jomblang Cave Yogyakarta, magnificent beam of heavenly sunlight piercing down from the sinkhole roof, ethereal dust particles, magical atmosphere",
+      "standing inside the dark cavern of Jomblang Cave Yogyakarta, magnificent beam of heavenly sunlight piercing down from the sinkhole roof, ethereal dust particles, magical atmosphere",
   },
   {
     id: "timang",
@@ -349,7 +349,7 @@ export const STYLES: StyleDef[] = [
     thrillMeter: "THRILL 96%",
     dangerBadge: "100% Safe AI",
     prompt:
-      "A solo traveler naturally integrated into the scene, riding a primitive wooden cable car over violent crashing ocean waves at Timang Beach Yogyakarta, jagged rock island background, thrilling action angle",
+      "riding a wooden rope gondola over crashing ocean waves at Timang Beach Yogyakarta, jagged rock island background, thrilling action angle",
   },
   {
     id: "rinjani",
@@ -361,7 +361,7 @@ export const STYLES: StyleDef[] = [
     thrillMeter: "THRILL 97%",
     dangerBadge: "100% Safe AI",
     prompt:
-      "A solo traveler naturally integrated into the scene, sitting at the high altitude crater rim ridge of Mount Rinjani Lombok, deep blue Segara Anak crater lake and volcano cone below, sea of clouds, epic mountain panorama",
+      "sitting at the high altitude crater rim ridge of Mount Rinjani Lombok, deep blue Segara Anak crater lake and volcano cone below, sea of clouds, epic mountain panorama",
   },
   {
     id: "sipiso_piso",
@@ -373,7 +373,7 @@ export const STYLES: StyleDef[] = [
     thrillMeter: "THRILL 93%",
     dangerBadge: "100% Safe AI",
     prompt:
-      "A solo traveler naturally integrated into the scene, standing on a cliff edge overlooking Sipiso-piso Waterfall in North Sumatra, a 120m vertical plunge waterfall cascading down a lush green gorge, Lake Toba in distance",
+      "standing on a cliff edge overlooking Sipiso-piso Waterfall in North Sumatra, a 120m vertical plunge waterfall cascading down a lush green gorge, Lake Toba in distance",
   },
   {
     id: "wanagiri",
@@ -385,7 +385,7 @@ export const STYLES: StyleDef[] = [
     thrillMeter: "THRILL 92%",
     dangerBadge: "100% Safe AI",
     prompt:
-      "A solo traveler naturally integrated into the scene, sitting on a giant woven bird nest platform protruding over Lake Buyan at Wanagiri Hidden Hills Bali, misty tropical lake panorama, romantic morning atmosphere",
+      "sitting on a giant woven bird nest platform protruding over Lake Buyan at Wanagiri Hidden Hills Bali, misty tropical lake panorama, romantic morning atmosphere",
   },
 
   // ───────── 세계 명소 여행 (TripShot.world) ─────────
@@ -586,7 +586,7 @@ export const STYLES: StyleDef[] = [
 ];
 
 export const DEFAULT_IDENTITY_NOTE =
-  "STRICT FACE & GROUP IDENTITY LOCK: Detect and preserve EVERY person present in Image 1 (whether 1 person, a couple of 2 people, or a group/family of 3, 4, 5+ people). Preserve 100% exact facial identities, eyes, nose, mouth, jawline, skin tone, facial proportions, age, gender, and authentic expressions of all individuals from Image 1 with id_weight: 0.99. Photorealistic professional 8k quality. Strictly DO NOT replace people with random strangers, stock models, or an unrelated couple.";
+  "STRICT 1:1 FACIAL DETAIL & GROUP IDENTITY LOCK: Detect and preserve EVERY person present in Image 1 (whether 1 person, a couple of 2, or a large group/family of 3~12+ people). Position all subjects prominently in the foreground or midground in a Medium-Full Group Shot framing (occupying 50%-75% of the vertical frame) so each face is large, well-lit, and ultra-high resolution. Preserve 100% exact real-life facial features, eyes, eyelids, nose structure, smile/teeth, cheekbones, jawline, wrinkles, age, hairstyle, hairline, skin tone, and eyeglasses of all individuals with id_weight: 0.99. Photorealistic 8k travel portrait. Strictly DO NOT replace people with random strangers, generic stock models, or an unrelated couple.";
 
 export const NO_TEXT_INSTRUCTION =
   "CRITICAL: Absolutely NO text, NO watermarks, NO fonts, NO writings, NO instagram UI, NO social media overlay, NO username, NO comments, NO logo, NO frame, NO captions, NO buttons. Pure photorealistic photo only.";
@@ -598,7 +598,7 @@ export function getStyle(id: string): StyleDef | undefined {
 /** Smart neutral travel prompt generator matching traveler(s) automatically */
 export function getTravelPrompt(destination: string): string {
   const SMART_GEAR =
-    "the traveler(s) from Image 1 naturally integrated together into the scene, wearing sophisticated climate-appropriate resort/adventure travel gear matching their style";
+    "the traveler(s) from Image 1 prominently featured in the scenic foreground together, wearing sophisticated climate-appropriate resort/adventure travel gear matching their style";
 
   const BASE_PROMPTS = {
     // ⚡ 익스트림 10대 명소 (글로벌)
@@ -614,16 +614,16 @@ export function getTravelPrompt(destination: string): string {
     jacobs_well: `A surreal diving photo of ${SMART_GEAR}, diving into Jacob's Well underwater cave pool in Texas, crystal clear deep blue water, underwater rays, 8k.`,
 
     // 🇮🇩 인도네시아 10대 아찔 명소
-    kelingking: "A solo traveler naturally integrated into the scene, sitting on the narrow edge of the iconic T-Rex shaped cliff at Kelingking Beach Nusa Penida, turquoise ocean and white beach far below, dramatic high angle shot, golden hour, 8k resolution",
-    devils_tears: "A solo traveler naturally integrated into the scene, standing on the rocky blowhole cliff edge at Devil's Tears Nusa Lembongan, massive ocean wave crashing dramatically into mist in background, sunset spray, cinematic lighting",
-    bromo: "A solo traveler naturally integrated into the scene, standing on the narrow volcanic rim of active Mount Bromo crater in East Java, smoking caldera and vast sea of sand below, mystical sunrise light rays, photorealistic",
-    ijen: "A solo traveler naturally integrated into the scene, standing near the turquoise acidic crater lake of Kawah Ijen volcano, glowing blue sulfur flames through mystical morning fog, dramatic atmospheric lighting",
-    tumpak_sewu: "A solo traveler naturally integrated into the scene, standing at the bottom of Tumpak Sewu waterfall canyon in East Java, surrounded by a massive 120m curtain of cascading water, dramatic mist and lush tropical canopy",
-    jomblang: "A solo traveler naturally integrated into the scene, standing inside the dark cavern of Jomblang Cave Yogyakarta, magnificent beam of heavenly sunlight piercing down from the sinkhole roof, ethereal dust particles, magical atmosphere",
-    timang: "A solo traveler naturally integrated into the scene, riding a primitive wooden cable car over violent crashing ocean waves at Timang Beach Yogyakarta, jagged rock island background, thrilling action angle",
-    rinjani: "A solo traveler naturally integrated into the scene, sitting at the high altitude crater rim ridge of Mount Rinjani Lombok, deep blue Segara Anak crater lake and volcano cone below, sea of clouds, epic mountain panorama",
-    sipiso_piso: "A solo traveler naturally integrated into the scene, standing on a cliff edge overlooking Sipiso-piso Waterfall in North Sumatra, a 120m vertical plunge waterfall cascading down a lush green gorge, Lake Toba in distance",
-    wanagiri: "A solo traveler naturally integrated into the scene, sitting on a giant woven bird nest platform protruding over Lake Buyan at Wanagiri Hidden Hills Bali, misty tropical lake panorama, romantic morning atmosphere",
+    kelingking: `A photorealistic travel photo of ${SMART_GEAR}, standing at the iconic T-Rex shaped cliff edge at Kelingking Beach Nusa Penida, turquoise ocean and white beach below, dramatic high angle, golden hour, 8k resolution`,
+    devils_tears: `A photorealistic travel photo of ${SMART_GEAR}, standing on the rocky blowhole cliff edge at Devil's Tears Nusa Lembongan, massive ocean wave crashing dramatically into mist in background, sunset spray, cinematic lighting`,
+    bromo: `A photorealistic travel photo of ${SMART_GEAR}, standing on the volcanic rim of active Mount Bromo crater in East Java, smoking caldera and vast sea of sand below, mystical sunrise light rays, photorealistic`,
+    ijen: `A photorealistic travel photo of ${SMART_GEAR}, standing near the turquoise acidic crater lake of Kawah Ijen volcano, glowing blue sulfur flames through mystical morning fog, dramatic atmospheric lighting`,
+    tumpak_sewu: `A photorealistic travel photo of ${SMART_GEAR}, standing prominently in the scenic foreground at Tumpak Sewu waterfall canyon in East Java, surrounded by the massive 120m curtain of cascading water, dramatic mist and lush tropical canopy`,
+    jomblang: `A photorealistic travel photo of ${SMART_GEAR}, standing inside the dark cavern of Jomblang Cave Yogyakarta, magnificent beam of heavenly sunlight piercing down from the sinkhole roof, ethereal dust particles, magical atmosphere`,
+    timang: `A photorealistic travel photo of ${SMART_GEAR}, riding a wooden rope gondola over crashing ocean waves at Timang Beach Yogyakarta, jagged rock island background, thrilling action angle`,
+    rinjani: `A photorealistic travel photo of ${SMART_GEAR}, sitting at the high altitude crater rim ridge of Mount Rinjani Lombok, deep blue Segara Anak crater lake and volcano cone below, sea of clouds, epic mountain panorama`,
+    sipiso_piso: `A photorealistic travel photo of ${SMART_GEAR}, standing on a cliff edge overlooking Sipiso-piso Waterfall in North Sumatra, a 120m vertical plunge waterfall cascading down a lush green gorge, Lake Toba in distance`,
+    wanagiri: `A photorealistic travel photo of ${SMART_GEAR}, sitting on a giant woven bird nest platform protruding over Lake Buyan at Wanagiri Hidden Hills Bali, misty tropical lake panorama, romantic morning atmosphere`,
 
     // 🌴 힐링 / 랜드마크 명소
     bali_swing: `A photorealistic travel shot of ${SMART_GEAR}, sitting on a giant jungle swing in Bali, lush green tropical canopy background, golden hour rim lighting, 8k resolution.`,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, ChangeEvent } from "react";
+import { createPortal } from "react-dom";
 import {
   BG_COLORS,
   CATEGORIES,
@@ -315,6 +316,29 @@ export default function UploadCard({
   // Active Option Model State for Production (Option A: Flash Lite, Option B: Pro)
   const [activeOptionModel, setActiveOptionModel] = useState<"option_a" | "option_b">("option_a");
   const [isFullscreenOpen, setIsFullscreenOpen] = useState<boolean>(false);
+  const [isMounted, setIsMounted] = useState<boolean>(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Lock body scroll and handle ESC key when Lightbox modal is open
+  useEffect(() => {
+    if (isFullscreenOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          setIsFullscreenOpen(false);
+        }
+      };
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    }
+  }, [isFullscreenOpen]);
 
   // Admin Mode Detection (admin=true query or localStorage)
   const isAdmin =
@@ -1757,34 +1781,35 @@ export default function UploadCard({
           </button>
         </div>
 
-        {/* 🖼️ High-Resolution Fullscreen Lightbox Modal */}
-        {isFullscreenOpen && activeResult && activeResult.success && (
+        {/* 🖼️ High-Resolution Fullscreen Lightbox Modal (Portal to body for 100% Fixed Viewport Positioning) */}
+        {isMounted && isFullscreenOpen && activeResult && activeResult.success && typeof document !== "undefined" && createPortal(
           <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-fade-in"
+            className="fixed inset-0 top-0 left-0 w-screen h-[100dvh] z-[999999] flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl p-3 sm:p-6 select-none animate-fadeIn"
+            style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100dvh", zIndex: 999999 }}
             onClick={() => setIsFullscreenOpen(false)}
           >
             <div
-              className="relative max-w-4xl max-h-[92vh] w-full flex flex-col items-center justify-center select-none"
+              className="relative max-w-4xl w-full h-full max-h-[96dvh] flex flex-col items-center justify-between my-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Top Bar Controls */}
-              <div className="w-full flex items-center justify-between text-white mb-3 px-2">
-                <span className="text-sm font-black flex items-center gap-2">
-                  <span>📸 {displayLabel}</span>
-                  <span className="text-[10px] bg-sky-500 text-white px-2.5 py-0.5 rounded-full font-black">HD 원본</span>
+              <div className="w-full flex items-center justify-between text-white py-2.5 px-4 bg-slate-900/90 backdrop-blur-md rounded-2xl border border-white/10 mb-2 sm:mb-3 shadow-2xl">
+                <span className="text-xs sm:text-sm font-black flex items-center gap-2 truncate">
+                  <span className="truncate">📸 {displayLabel}</span>
+                  <span className="shrink-0 text-[10px] bg-gradient-to-r from-sky-500 to-indigo-600 text-white px-2.5 py-0.5 rounded-full font-black shadow-sm">HD 원본</span>
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   <button
                     type="button"
                     onClick={() => triggerDownload(activeResult.imageUrl, `tripshot_${usedStyleId}.png`)}
-                    className="bg-white/20 hover:bg-white/30 active:scale-95 text-white font-black text-xs py-1.5 px-3.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+                    className="bg-sky-500 hover:bg-sky-400 active:scale-95 text-white font-black text-xs py-1.5 px-3 sm:px-4 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-lg shadow-sky-500/20"
                   >
                     ⬇️ {lang === "ko" ? "다운로드" : "Download"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsFullscreenOpen(false)}
-                    className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center font-black text-sm transition-all cursor-pointer"
+                    className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-black text-sm transition-all cursor-pointer border border-white/10"
                     title="닫기 (ESC)"
                   >
                     ✕
@@ -1792,21 +1817,25 @@ export default function UploadCard({
                 </div>
               </div>
 
-              {/* Image Preview Container */}
-              <div className="relative max-h-[80vh] rounded-2xl overflow-hidden shadow-2xl border border-white/20 bg-slate-950/40 flex items-center justify-center">
+              {/* Image Preview Container (Centered in Viewport) */}
+              <div className="relative flex-1 w-full min-h-0 rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-slate-950 flex items-center justify-center p-1">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={activeResult.imageUrl}
                   alt="Fullscreen Masterpiece"
-                  className="max-h-[78vh] w-auto max-w-full object-contain rounded-2xl shadow-2xl"
+                  className="max-h-full max-w-full w-auto h-auto object-contain rounded-xl shadow-2xl"
                 />
               </div>
 
-              <p className="text-slate-400 text-xs mt-3 font-medium text-center">
-                {lang === "ko" ? "바깥 영역을 클릭하거나 닫기(✕)를 누르면 이전 화면으로 돌아갑니다." : "Click outside or press (✕) to close preview."}
-              </p>
+              {/* Bottom Close Hint */}
+              <div className="w-full text-center py-2">
+                <p className="text-slate-400 text-[11px] sm:text-xs font-medium">
+                  {lang === "ko" ? "바깥 어두운 영역을 클릭하거나 닫기(✕)를 누르면 이전 화면으로 돌아갑니다." : "Click outside or press (✕) to close preview."}
+                </p>
+              </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     );

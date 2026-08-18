@@ -158,9 +158,18 @@ export async function POST(req: NextRequest) {
       const timeSec = ((Date.now() - startTime) / 1000).toFixed(1);
 
       if (interaction?.output_image?.data) {
+        const rawData = interaction.output_image.data;
+        let mime = interaction.output_image.mime_type || "image/png";
+        if (rawData.startsWith("/9j/")) {
+          mime = "image/jpeg";
+        } else if (rawData.startsWith("iVBORw")) {
+          mime = "image/png";
+        } else if (rawData.startsWith("UklGR")) {
+          mime = "image/webp";
+        }
         return {
           success: true,
-          imageUrl: `data:image/png;base64,${interaction.output_image.data}`,
+          imageUrl: `data:${mime};base64,${rawData}`,
           timeSec
         };
       }

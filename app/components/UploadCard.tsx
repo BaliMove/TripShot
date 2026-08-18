@@ -905,8 +905,13 @@ export default function UploadCard({
 
   const dataUrlToBlob = (dataUrl: string): Blob => {
     const parts = dataUrl.split(",");
+    let mime = "image/png";
     const mimeMatch = parts[0].match(/:(.*?);/);
-    const mime = mimeMatch ? mimeMatch[1] : "image/png";
+    if (mimeMatch && mimeMatch[1]) {
+      mime = mimeMatch[1];
+    } else if (parts[1]?.startsWith("/9j/")) {
+      mime = "image/jpeg";
+    }
     const byteString = atob(parts[1]);
     let n = byteString.length;
     const u8arr = new Uint8Array(n);
@@ -914,6 +919,43 @@ export default function UploadCard({
       u8arr[n] = byteString.charCodeAt(n);
     }
     return new Blob([u8arr], { type: mime });
+  };
+
+  const directDownloadFallback = (imageUrl: string, nameToSave: string) => {
+    try {
+      if (imageUrl.startsWith("data:")) {
+        const blob = dataUrlToBlob(imageUrl);
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = nameToSave;
+        a.setAttribute("download", nameToSave);
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          if (document.body.contains(a)) document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+        }, 1000);
+      } else {
+        const a = document.createElement("a");
+        a.href = imageUrl;
+        a.download = nameToSave;
+        a.setAttribute("download", nameToSave);
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          if (document.body.contains(a)) document.body.removeChild(a);
+        }, 1000);
+      }
+      setDownloadNotice(
+        lang === "ko"
+          ? `✅ 다운로드 완료! [${nameToSave}] 사진이 저장되었습니다.`
+          : `✅ Download Complete! Saved as [${nameToSave}].`
+      );
+      setTimeout(() => setDownloadNotice(null), 4000);
+    } catch (err) {
+      console.error("Direct download fallback failed:", err);
+    }
   };
 
   const triggerDownload = (imageUrl: string, fileName?: string) => {
@@ -926,69 +968,57 @@ export default function UploadCard({
         nameToSave += ".png";
       }
 
-      // Convert any image source (Data URL or Remote URL) to standard binary Blob
-      if (imageUrl.startsWith("data:")) {
-        const blob = dataUrlToBlob(imageUrl);
-        const blobUrl = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = blobUrl;
-        a.download = nameToSave;
-        a.setAttribute("download", nameToSave);
-        document.body.appendChild(a);
-        a.click();
+      // 🖼️ Canvas Re-Encoding Pipeline: Guarantees 100% genuine standard PNG binary format for Windows/Mac/iOS/Android
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          const width = img.naturalWidth || img.width || 1024;
+          const height = img.naturalHeight || img.height || 1024;
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob((blob) => {
+              if (blob) {
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = blobUrl;
+                a.download = nameToSave;
+                a.setAttribute("download", nameToSave);
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                  if (document.body.contains(a)) document.body.removeChild(a);
+                  setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+                }, 1000);
 
-        setTimeout(() => {
-          if (document.body.contains(a)) document.body.removeChild(a);
-          // Keep Blob URL alive for 30s to ensure Chrome finishes writing to disk
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
-        }, 1000);
-      } else {
-        fetch(imageUrl)
-          .then((res) => res.blob())
-          .then((blob) => {
-            const blobUrl = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = blobUrl;
-            a.download = nameToSave;
-            a.setAttribute("download", nameToSave);
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => {
-              if (document.body.contains(a)) document.body.removeChild(a);
-              setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
-            }, 1000);
-          })
-          .catch((err) => {
-            console.warn("Fetch blob fallback:", err);
-            const a = document.createElement("a");
-            a.href = imageUrl;
-            a.download = nameToSave;
-            a.setAttribute("download", nameToSave);
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => {
-              if (document.body.contains(a)) document.body.removeChild(a);
-            }, 1000);
-          });
-      }
-
-      setDownloadNotice(
-        lang === "ko"
-          ? `✅ 다운로드 완료! [${nameToSave}] 사진이 저장되었습니다.`
-          : `✅ Download Complete! Saved as [${nameToSave}].`
-      );
-      setTimeout(() => setDownloadNotice(null), 4000);
+                setDownloadNotice(
+                  lang === "ko"
+                    ? `✅ 다운로드 완료! [${nameToSave}] 사진이 저장되었습니다.`
+                    : `✅ Download Complete! Saved as [${nameToSave}].`
+                );
+                setTimeout(() => setDownloadNotice(null), 4000);
+                return;
+              }
+              directDownloadFallback(imageUrl, nameToSave);
+            }, "image/png");
+            return;
+          }
+        } catch (e) {
+          console.warn("Canvas blob conversion error, falling back:", e);
+        }
+        directDownloadFallback(imageUrl, nameToSave);
+      };
+      img.onerror = () => {
+        directDownloadFallback(imageUrl, nameToSave);
+      };
+      img.src = imageUrl;
     } catch (e) {
       console.warn("Download exception fallback:", e);
-      const a = document.createElement("a");
-      a.href = imageUrl;
-      a.download = `tripshot_${usedStyleId || "photo"}.png`;
-      a.setAttribute("download", `tripshot_${usedStyleId || "photo"}.png`);
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        if (document.body.contains(a)) document.body.removeChild(a);
-      }, 1000);
+      directDownloadFallback(imageUrl, fileName || `tripshot_${usedStyleId || "photo"}.png`);
     }
   };
 

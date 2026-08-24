@@ -1625,6 +1625,16 @@ export default function UploadCard({
                 >
                   <span>👟 신발까지 보이게</span>
                 </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomFixPrompt("배경에서 불필요한 개체와 잡동사니를 깔끔하게 삭제해줘");
+                    handleCustomFix("배경에서 불필요한 개체와 잡동사니를 깔끔하게 삭제해줘");
+                  }}
+                  className="text-xs bg-slate-800/90 hover:bg-sky-600 text-slate-200 hover:text-white border border-slate-700/80 px-3.5 py-2 rounded-xl font-extrabold transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm"
+                >
+                  <span>🧹 불필요한 개체 삭제</span>
+                </button>
               </div>
 
 
@@ -1841,6 +1851,16 @@ export default function UploadCard({
                 className="text-xs bg-slate-800/90 hover:bg-sky-600 text-slate-200 hover:text-white border border-slate-700/80 px-3 py-1.5 rounded-xl font-extrabold transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm cursor-pointer"
               >
                 <span>🌅 {t.chipSunsetText}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomFixPrompt(t.chipRemoveObjectsText || "Remove unwanted background objects and clutter");
+                  setTimeout(() => customFixInputRef.current?.focus(), 50);
+                }}
+                className="text-xs bg-slate-800/90 hover:bg-sky-600 text-slate-200 hover:text-white border border-slate-700/80 px-3 py-1.5 rounded-xl font-extrabold transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm cursor-pointer"
+              >
+                <span>🧹 {t.chipRemoveObjectsText}</span>
               </button>
             </div>
 

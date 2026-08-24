@@ -99,6 +99,20 @@ function parseCustomFixPrompt(customFixPrompt) {
     directives.push("REMOVE BACKGROUND & CROPPED PEOPLE: Erase all other people or partially cropped figures from Image 1, show only the main subject");
   }
 
+  // 3-B. Remove Unwanted Objects & Background Inpainting
+  if (
+    lower.includes("개체 삭제") || lower.includes("개체 지워") || lower.includes("사물 삭제") || lower.includes("사물 지워") ||
+    lower.includes("물건 지워") || lower.includes("물건 삭제") || lower.includes("물체 삭제") || lower.includes("물체 지워") ||
+    lower.includes("불필요한") || lower.includes("장애물") || lower.includes("지우개") || lower.includes("쓰레기 지워") ||
+    lower.includes("remove object") || lower.includes("remove clutter") || lower.includes("erase item") || 
+    lower.includes("clean background") || lower.includes("delete obstacle") || lower.includes("オブジェクト削除") || 
+    lower.includes("消除物体") || lower.includes("hapus objek")
+  ) {
+    directives.push(
+      "OBJECT REMOVAL & CLEAN BACKGROUND INPAINTING: Seamlessly remove, erase, and inpaint over any distracting background objects, unwanted clutter, trash, powerlines, stray items, foreign obstacles, and photobombers. Fill the removed areas with organic, clean, and harmonized background environment matching the surrounding natural scenery and lighting."
+    );
+  }
+
   // 4. Props / Hands
   if (lower.includes("물병") || lower.includes("생수") || lower.includes("물") || lower.includes("bottle") || lower.includes("water bottle")) {
     directives.push("PROP IN HAND: Hold a transparent bottled water in hand naturally with realistic fingers and grip");

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { buildPrompt, getStyle, parseCustomFixPrompt, NO_TEXT_INSTRUCTION, type BgColor, type Gender } from "../../lib/styles";
+import { buildPersonalizedLearningPrompt, type UserPreferences } from "../../lib/preferenceMemory";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -42,6 +43,8 @@ export async function POST(req: NextRequest) {
     const rawCustomFixPrompt: string | undefined = body.customFixPrompt;
     const previousImageUrl: string | undefined = body.previousImageUrl;
     const targetModel: "flash_lite" | "pro" | undefined = body.targetModel;
+    const facePreserveMode: boolean = body.facePreserveMode !== false; // Default true for 100% face likeness
+    const userPreferences: UserPreferences | undefined = body.userPreferences;
 
     if (!imageBase64) {
       return NextResponse.json(
@@ -109,13 +112,15 @@ export async function POST(req: NextRequest) {
 
     let prompt = "";
     if (customBgBase64) {
-      const fixAddon = rawCustomFixPrompt ? ` User fix request: ${rawCustomFixPrompt.trim()}.` : "";
-      prompt = `A photorealistic high-end masterpiece travel portrait integrating ALL person(s) present in Image 1 into the provided background photo (Image 2).
+      const fixAddon = rawCustomFixPrompt ? ` User modification instruction: ${rawCustomFixPrompt.trim()}.` : "";
+      const customPromptAddon = rawCustomPrompt ? ` Custom style/scene direction: ${rawCustomPrompt.trim()}.` : "";
+      prompt = `(masterpiece, best quality:1.2), RAW photo, 8k uhd, 85mm lens portrait masterpiece seamlessly integrating ALL person(s) present in Image 1 (Indoor/Casual Portrait) naturally into the scenic/extreme destination backdrop in Image 2 (Scenic/Extreme Landscape Background).
 CRITICAL MANDATORY INSTRUCTIONS:
-1. DETECT & PRESERVE EVERY REAL PERSON: Whether Image 1 contains a single person, a couple, or a large group/family (3 to 12+ people), detect and include EVERY individual together in a unified, natural group composition.
-2. CLOSE/MEDIUM GROUP FRAMING (LARGE DETAILED FACES): Use a Medium Group Portrait composition (waist-up to chest-up) where the subjects prominently occupy 65%-80% of the vertical frame. Position faces in the upper-mid area so each face is large, crystal-clear, and high-resolution. DO NOT shrink people into tiny distant figures.
-3. 1:1 EXACT FACIAL FEATURE & EXPRESSION RECONSTRUCTION: Reconstruct the EXACT real-life face of EVERY single person in Image 1 with 100% precision (id_weight: 0.99). Replicate their exact eyelid shape, eye width, eyebrows, nose structure, smile/teeth, cheekbones, jawline, wrinkles, age, skin complexion, hair style, and eyeglasses. Absolutely DO NOT generalize, morph, or replace with generic AI faces.
-4. AUTHENTIC LIGHTING & COMPOSITION: Flattering natural photography lighting seamlessly matching the background.${fixAddon} ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity, tiny unidentifiable people, distant shrunk figures.`;
+1. 100% UNTOUCHED REAL FACE ID LOCK (IP-Adapter FaceID Fidelity, id_weight: 0.999): Every person's authentic facial bone structure, eyes, double eyelids, nose bridge, mouth, smile, teeth, expressions, eyeglasses, hairline, and skin texture with visible pores from Image 1 MUST be preserved 100% authentically with zero hallucination. DO NOT change the face into a generic stock model.
+2. NATURAL PROPORTIONS & GOLDEN-RATIO SCENIC HARMONY: Place the person(s) naturally within the breathtaking location of Image 2. CRITICAL: Strictly DO NOT enlarge or zoom in on the head into an oversized face headshot. Maintain realistic anatomical human proportions (head-to-body ratio 1:7 to 1:8, Medium Shot / Waist-Up occupying 45%-60% of vertical frame height) harmoniously balanced with the magnificent landscape panorama.
+3. EDGE INPAINTING & FEATHER BLENDING: Seamless edge blending, sharp hair strands integration, matching ambient lighting, directional rim light, and natural contact shadows so the subjects look 100% organically photographed at the real location.
+4. MULTI-PERSON REGIONAL SPLIT [SEP] & ANTI-BLEED: Detect and count every individual from Image 1 (e.g. 1, 2, 4+ people). Process each person with distinct regional identity lock [Person 1] [SEP] [Person 2] without feature bleeding, duplicate faces, or swapped identities.
+5. FASHION & STYLING: Elegantly adapt the person's clothing to match travel/outdoor adventure aesthetic while maintaining true personal identity.${customPromptAddon}${fixAddon} ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: (worst quality, low quality:1.3), halo artifact around head, hard cutout edges, mismatched lighting, unnatural seams, skin tone boundary mismatch, blurry borders, oversmoothed skin, cartoonish outline, deformed facial features, mutated eyes, plastic face, asymmetrical jaw, identity drift, 3d render, illustration, distorted features, face blending, duplicated face, identical features across multiple people, swapped identities, merged facial attributes, oversized head, giant head, missing people, dropped members, fake floating cutout.`;
     } else {
       prompt = buildPrompt({
         styleId,
@@ -124,16 +129,30 @@ CRITICAL MANDATORY INSTRUCTIONS:
         customFixPrompt: rawCustomFixPrompt,
       });
 
+      // When facePreserveMode is active, append the balanced Golden-Ratio Travel Directive
+      if (facePreserveMode) {
+        prompt += ` CRITICAL 100% REAL-FACE & PROPORTIONAL HARMONY DIRECTIVE: Reconstruct the subject's authentic 1:1 real face from Image 1 (eyes, double eyelids, nose, smile, eyeglasses) with id_weight: 0.999. Maintain realistic natural head-to-body ratio (1:7 to 1:8, Waist-Up Medium Shot 45%-60% frame height, do not zoom into giant head) harmoniously integrated with the breathtaking travel landscape in the background.`;
+      }
+
       // If previousImageUrl exists, apply strict Face Identity Locking while maintaining theme
       if (rawPrevImageBase64) {
         const parsedFix = parseCustomFixPrompt(rawCustomFixPrompt || "Enhance resemblance to original selfie");
         const enrichedFixDirective = parsedFix.userRequestInstruction || parsedFix.styleModsPrompt || rawCustomFixPrompt?.trim() || "Enhance resemblance to original selfie";
 
         prompt = `CRITICAL MANDATORY INSTRUCTION FOR IMAGE MODIFICATION & REFINEMENT:
-1. THEME & ENVIRONMENT: Seamlessly place the subject(s) into the target theme: ${prompt}.
-2. STRICT 1:1 EXACT FACE ID LOCK: Preserve 100% exact facial identity, eyes, nose, lips, jawline, facial bone structure, skin tone, and authentic likeness of EVERY real person from Image 1 (ORIGINAL USER PHOTO) with id_weight: 0.99. Keep faces large, clear, and prominently framed (65%-80% frame height).
-3. USER REQUESTED MODIFICATIONS: Apply the user's specific requested changes with high precision: ${enrichedFixDirective}. ${parsedFix.soloPrompt ? `Ensure: ${parsedFix.soloPrompt}.` : ""}
-4. AUTHENTIC HIGH-END COMPOSITION: Maintain the styled travel/concept attire and scenic backdrop while perfecting each person's face to match Image 1 authentically. ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: unchanged raw room background, unstyled clothes, different faces, morphed faces, random strangers, swapped people, stock models, distorted face, changed ethnicity, tiny people.`;
+1. DETECT & RENDER ALL PERSONS (EXACT HEADCOUNT): Accurately count and include EVERY SINGLE INDIVIDUAL present in Image 1 (whether 1 person, 2 people, 4 people, or a group). Never drop, crop, or zoom into just one person unless explicitly requested. Maintain the group composition and relative positions naturally.
+2. STRICT 100% REAL FACE LOCK & EDGE INPAINTING: Preserve 100% exact authentic facial identity, eyes, nose, lips, jawline, facial bone structure, skin tone, and natural smile of EVERY real person from Image 1 with id_weight: 0.999. Apply seamless edge blending and natural directional lighting.
+3. NATURAL PROPORTIONS: Keep realistic anatomical human proportions (head-to-body ratio 1:7 to 1:8). DO NOT zoom in to oversized headshot.
+4. USER REQUESTED MODIFICATIONS: Apply the user's specific requested changes with high precision: ${enrichedFixDirective}. ${parsedFix.soloPrompt ? `Ensure: ${parsedFix.soloPrompt}.` : ""}
+5. BALANCED GROUP FRAMING & COMPOSITION: Harmoniously frame the entire subject/group within the requested theme backdrop with realistic lighting and depth of field. ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: (worst quality, low quality:1.3), halo artifact around head, hard cutout edges, mismatched lighting, unnatural seams, skin tone boundary mismatch, blurry borders, oversmoothed skin, deformed facial features, mutated eyes, plastic face, asymmetrical jaw, identity drift, face blending, duplicated face, identical features across multiple people, swapped identities, merged facial attributes, oversized head, giant head, missing people, dropped members.`;
+      }
+    }
+
+    // Append learned user preferences from memory if available
+    if (userPreferences) {
+      const personalMemoryPrompt = buildPersonalizedLearningPrompt(userPreferences);
+      if (personalMemoryPrompt) {
+        prompt += ` ${personalMemoryPrompt}`;
       }
     }
 

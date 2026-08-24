@@ -27,4 +27,8 @@
 - **Precision Code Edits**: Use targeted block edits instead of rewriting entire long files, keeping token payload small and execution ultra-fast.
 - **Single-Pass Tool Execution**: Minimize redundant tool calls and batch required file checks, accelerating turn-around time by 2x.
 
+## 4. Localhost-First Ultra-Fast Development & Explicit Deploy Rule
+- **Instant Localhost Iteration (0.1s Hot Reload)**: All code modifications, bug fixes, UI styling, and prompt engine improvements MUST be applied directly to `localhost:3001` files (`app/`, `app/api/generate/route.ts`, etc.) first. Do NOT run `firebase deploy` during regular intermediate edits.
+- **Explicit Deployment Trigger**: Only execute `npm run build` and `npx firebase-tools deploy` when the user explicitly requests deployment (e.g., "도메인에 반영해 줘", "배포해 줘", "실서버에 올려줘"). This saves enormous time and makes development lightning-fast.
+
 

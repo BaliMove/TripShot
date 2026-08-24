@@ -586,7 +586,13 @@ export const STYLES: StyleDef[] = [
 ];
 
 export const DEFAULT_IDENTITY_NOTE =
-  "STRICT 1:1 FACIAL DETAIL & GROUP IDENTITY LOCK: Detect and preserve EVERY person present in Image 1 (whether 1 person, a couple of 2, or a large group/family of 3~12+ people). Position all subjects prominently in the foreground or midground in a Medium-Full Group Shot framing (occupying 50%-75% of the vertical frame) so each face is large, well-lit, and ultra-high resolution. Preserve 100% exact real-life facial features, eyes, eyelids, nose structure, smile/teeth, cheekbones, jawline, wrinkles, age, hairstyle, hairline, skin tone, and eyeglasses of all individuals with id_weight: 0.99. Photorealistic 8k travel portrait. Strictly DO NOT replace people with random strangers, generic stock models, or an unrelated couple.";
+  "CRITICAL 1:1 REAL FACE ID LOCK & PROPORTIONAL SCENIC HARMONY: (masterpiece, best quality:1.2), RAW photo, 8k uhd, 85mm portrait capture. Reconstruct 100% exact real-life facial structure, eyes, double eyelids, nose bridge, lips, smile curvature, teeth, jawline, wrinkles, and authentic skin texture from Image 1 with id_weight: 0.999. CRITICAL GOLDEN-RATIO PROPORTION: Strictly DO NOT enlarge or zoom in on the head into an oversized ID headshot. Maintain natural realistic anatomical human proportions (head-to-body ratio 1:7 to 1:8, Medium Shot / Waist-Up occupying 45%-60% of frame height), seamlessly integrated with directional rim light and edge blending into the magnificent background.";
+
+export const EDGE_INPAINTING_POSITIVE =
+  "natural skin texture, visible pores, seamless edge blending, harmonized ambient lighting, directional rim light, sharp hair strands integration, matching color grading with background, clean contour, high fidelity";
+
+export const MASTER_NEGATIVE_PROMPT =
+  "(worst quality, low quality:1.3), halo artifact around head, hard cutout edges, mismatched lighting, unnatural seams, skin tone boundary mismatch, blurry borders, oversmoothed skin, cartoonish outline, deformed facial features, mutated eyes, plastic face, asymmetrical jaw, identity drift, 3d render, illustration, distorted features, face blending, duplicated face, identical features across multiple people, swapped identities, merged facial attributes, oversized head, giant head, missing people, dropped members";
 
 export const NO_TEXT_INSTRUCTION =
   "CRITICAL: Absolutely NO text, NO watermarks, NO fonts, NO writings, NO instagram UI, NO social media overlay, NO username, NO comments, NO logo, NO frame, NO captions, NO buttons. Pure photorealistic photo only.";
@@ -598,38 +604,38 @@ export function getStyle(id: string): StyleDef | undefined {
 /** Smart neutral travel prompt generator matching traveler(s) automatically */
 export function getTravelPrompt(destination: string): string {
   const SMART_GEAR =
-    "the traveler(s) from Image 1 prominently featured in the scenic foreground together, wearing sophisticated climate-appropriate resort/adventure travel gear matching their style";
+    "the traveler(s) from Image 1 looking naturally stunning in stylish travel attire, perfectly composed in the scenic foreground (Medium Shot, balanced with background panorama)";
 
   const BASE_PROMPTS = {
     // ⚡ 익스트림 10대 명소 (글로벌)
-    trolltunga: `A photorealistic extreme travel photo of ${SMART_GEAR}, sitting safely on the cliff edge of Trolltunga Norway, 700m abyss below, dramatic fjord view, cinematic rim light, 8k resolution.`,
-    devils_pool: `An epic travel photo of ${SMART_GEAR}, at Victoria Falls Devil's Pool Zambia, 108m waterfall cliff edge, mist and rainbow in background, 8k resolution.`,
-    kjeragbolten: `A breathtaking travel photo of ${SMART_GEAR}, standing on Kjeragbolten wedged rock in Norway, 1000m cliff gap, mountain panorama, 8k resolution.`,
-    huashan_plank: `An extreme thrill photo of ${SMART_GEAR}, walking on the narrow Huashan plank walk cliff edge in China, steep mountain cliff drop, 8k resolution.`,
-    pedra_telegrafo: `A picturesque photo of ${SMART_GEAR}, hanging from Pedra do Telégrafo rock Brazil with optical illusion cliff effect, ocean background, golden hour, 8k.`,
-    death_road: `An adventurous photo of ${SMART_GEAR}, standing with a mountain bike at Yungas Death Road Bolivia edge, misty cliff abyss, dramatic landscape, 8k.`,
-    yasur_volcano: `An epic night photo of ${SMART_GEAR}, standing safely near Mt. Yasur erupting volcano in Vanuatu, glowing red lava smoke, 8k resolution.`,
-    trift_bridge: `A majestic photo of ${SMART_GEAR}, standing on Trift suspension bridge in Swiss Alps, 100m high valley suspension bridge, snowy mountains, 8k.`,
-    rooftopping: `A thrilling urban photo of ${SMART_GEAR}, sitting on a skyscraper rooftop ledge in Dubai/NYC at night, hyper-realistic urban skyline glow below, 8k.`,
-    jacobs_well: `A surreal diving photo of ${SMART_GEAR}, diving into Jacob's Well underwater cave pool in Texas, crystal clear deep blue water, underwater rays, 8k.`,
+    trolltunga: `A breathtaking cinematic travel photo of ${SMART_GEAR}, standing safely near the iconic cliff edge of Trolltunga Norway with magnificent fjord abyss and snow peaks in the background, golden hour rim lighting, 8k resolution.`,
+    devils_pool: `An epic cinematic travel photo of ${SMART_GEAR}, at Victoria Falls Devil's Pool Zambia, with the majestic 108m waterfall plunge and misty rainbow in background, 8k resolution.`,
+    kjeragbolten: `A stunning travel photo of ${SMART_GEAR}, standing naturally on Kjeragbolten rock in Norway with vast mountain panorama and deep fjord in background, 8k resolution.`,
+    huashan_plank: `An adventurous travel photo of ${SMART_GEAR}, on the historic Huashan cliff walk in China with steep misty mountain peaks in background, 8k resolution.`,
+    pedra_telegrafo: `A picturesque travel photo of ${SMART_GEAR}, at Pedra do Telégrafo rock Brazil with sweeping Rio ocean view and golden sunset glow, 8k.`,
+    death_road: `An adventurous travel photo of ${SMART_GEAR}, at Yungas Death Road Bolivia overlooking the lush misty mountain abyss, dramatic scenic lighting, 8k.`,
+    yasur_volcano: `An epic night travel photo of ${SMART_GEAR}, safely near Mt. Yasur volcano in Vanuatu with glowing red lava fireworks in background, 8k resolution.`,
+    trift_bridge: `A majestic travel photo of ${SMART_GEAR}, on the Trift suspension bridge in Swiss Alps with turquoise glacier lake and snowy peaks in background, 8k.`,
+    rooftopping: `A glamorous urban night photo of ${SMART_GEAR}, at an open-air luxury skyscraper rooftop terrace in Dubai with glittering Burj Khalifa and skyline bokeh in background, 8k.`,
+    jacobs_well: `A magical travel photo of ${SMART_GEAR}, swimming in Jacob's Well natural cave pool in Texas with crystal clear turquoise water and sunbeams filtering down, 8k.`,
 
     // 🇮🇩 인도네시아 10대 아찔 명소
-    kelingking: `A photorealistic travel photo of ${SMART_GEAR}, standing at the iconic T-Rex shaped cliff edge at Kelingking Beach Nusa Penida, turquoise ocean and white beach below, dramatic high angle, golden hour, 8k resolution`,
-    devils_tears: `A photorealistic travel photo of ${SMART_GEAR}, standing on the rocky blowhole cliff edge at Devil's Tears Nusa Lembongan, massive ocean wave crashing dramatically into mist in background, sunset spray, cinematic lighting`,
-    bromo: `A photorealistic travel photo of ${SMART_GEAR}, standing on the volcanic rim of active Mount Bromo crater in East Java, smoking caldera and vast sea of sand below, mystical sunrise light rays, photorealistic`,
-    ijen: `A photorealistic travel photo of ${SMART_GEAR}, standing near the turquoise acidic crater lake of Kawah Ijen volcano, glowing blue sulfur flames through mystical morning fog, dramatic atmospheric lighting`,
-    tumpak_sewu: `A photorealistic travel photo of ${SMART_GEAR}, standing prominently in the scenic foreground at Tumpak Sewu waterfall canyon in East Java, surrounded by the massive 120m curtain of cascading water, dramatic mist and lush tropical canopy`,
-    jomblang: `A photorealistic travel photo of ${SMART_GEAR}, standing inside the dark cavern of Jomblang Cave Yogyakarta, magnificent beam of heavenly sunlight piercing down from the sinkhole roof, ethereal dust particles, magical atmosphere`,
-    timang: `A photorealistic travel photo of ${SMART_GEAR}, riding a wooden rope gondola over crashing ocean waves at Timang Beach Yogyakarta, jagged rock island background, thrilling action angle`,
-    rinjani: `A photorealistic travel photo of ${SMART_GEAR}, sitting at the high altitude crater rim ridge of Mount Rinjani Lombok, deep blue Segara Anak crater lake and volcano cone below, sea of clouds, epic mountain panorama`,
-    sipiso_piso: `A photorealistic travel photo of ${SMART_GEAR}, standing on a cliff edge overlooking Sipiso-piso Waterfall in North Sumatra, a 120m vertical plunge waterfall cascading down a lush green gorge, Lake Toba in distance`,
-    wanagiri: `A photorealistic travel photo of ${SMART_GEAR}, sitting on a giant woven bird nest platform protruding over Lake Buyan at Wanagiri Hidden Hills Bali, misty tropical lake panorama, romantic morning atmosphere`,
+    kelingking: `A stunning cinematic travel photo of ${SMART_GEAR}, standing at the scenic viewpoint overlooking the iconic T-Rex cliff and turquoise beach of Kelingking Beach Nusa Penida, warm tropical sunlight, 8k resolution`,
+    devils_tears: `A dynamic travel photo of ${SMART_GEAR}, on the coastal cliff of Devil's Tears Nusa Lembongan with massive ocean wave spray crashing in background, sunset spray, cinematic lighting`,
+    bromo: `A mystical sunrise travel photo of ${SMART_GEAR}, at Mount Bromo crater rim in East Java with smoking caldera, sea of sand, and golden morning sun rays in background, 8k`,
+    ijen: `A mesmerizing travel photo of ${SMART_GEAR}, near the turquoise acidic crater lake of Kawah Ijen volcano with morning mist and glowing blue sulfur smoke in background, 8k`,
+    tumpak_sewu: `A magnificent travel photo of ${SMART_GEAR}, at the base canyon of Tumpak Sewu waterfall in East Java with the 120m curtain of cascading water and lush jungle in background, 8k`,
+    jomblang: `An ethereal travel photo of ${SMART_GEAR}, inside Jomblang Cave Yogyakarta with a magnificent heavenly beam of light piercing down from the roof in background, 8k`,
+    timang: `An exhilarating travel photo of ${SMART_GEAR}, on the wooden cable gondola at Timang Beach Yogyakarta over crashing turquoise ocean waves, 8k`,
+    rinjani: `An epic mountain travel photo of ${SMART_GEAR}, at the crater rim of Mount Rinjani Lombok with deep blue Segara Anak lake and volcanic peak in background, sea of clouds, 8k`,
+    sipiso_piso: `A picturesque travel photo of ${SMART_GEAR}, overlooking Sipiso-piso Waterfall in North Sumatra with the vertical 120m plunge waterfall and Lake Toba in background, 8k`,
+    wanagiri: `A romantic travel photo of ${SMART_GEAR}, on the giant woven bird nest overlook at Wanagiri Hidden Hills Bali with misty Lake Buyan in background, 8k`,
 
     // 🌴 힐링 / 랜드마크 명소
-    bali_swing: `A photorealistic travel shot of ${SMART_GEAR}, sitting on a giant jungle swing in Bali, lush green tropical canopy background, golden hour rim lighting, 8k resolution.`,
-    borobudur: `A photorealistic travel photo of ${SMART_GEAR}, standing peacefully at Borobudur temple in Indonesia during a mystical misty sunrise, cinematic lighting, highly detailed.`,
-    paris: `A photorealistic travel photo of ${SMART_GEAR}, standing together with iconic Eiffel Tower in Paris visible in background, warm golden hour sunset glow, authentic travel vacation photography, 8k.`,
-    santorini: `A picturesque travel photo of ${SMART_GEAR}, relaxing on a white terrace in Santorini Greece, Aegean sea background, warm Mediterranean sunset.`,
+    bali_swing: `A gorgeous travel photo of ${SMART_GEAR}, soaring gracefully on the giant jungle swing in Bali with lush tropical palm canopy in background, golden hour rim lighting, 8k resolution.`,
+    borobudur: `A serene travel photo of ${SMART_GEAR}, at Borobudur temple terrace in Indonesia with ancient stone stupas and mystical sunrise in background, cinematic lighting, highly detailed.`,
+    paris: `A romantic cinematic travel photo of ${SMART_GEAR}, at an elegant Parisian terrace with the iconic Eiffel Tower and sunset glow in background, authentic vacation photography, 8k.`,
+    santorini: `A picturesque travel photo of ${SMART_GEAR}, on a white terrace in Santorini Greece with blue domes and Aegean sea sunset in background, warm Mediterranean glow, 8k.`,
 
     // 💼 비즈니스 / 🪪 증명·여권 / 🎭 컨셉·재미
     business: "A sharp professional studio headshot wearing a tailored navy business suit, clean modern office background, soft studio lighting",
@@ -654,8 +660,8 @@ export function parseCustomFixPrompt(customFixPrompt: string) {
     return {
       soloPrompt: "",
       extraNegative: "",
-      idWeight: 0.90,
-      userRequestInstruction: "Enhance photorealistic quality and resemblance to original selfie.",
+      idWeight: 0.999,
+      userRequestInstruction: "Enhance photorealistic quality and 100% exact resemblance to original selfie.",
       styleModsPrompt: "",
     };
   }
@@ -665,19 +671,33 @@ export function parseCustomFixPrompt(customFixPrompt: string) {
   const detectedDirectives: string[] = [];
   let soloPrompt = "";
   let extraNegative = "";
-  let idWeight = 0.90;
+  let idWeight = 0.999;
 
-  // 1. 얼굴 정밀 보존 & 닮음 (한국어, 영어, 일본어, 중국어, 인니어)
+  // 0. 배경만 변경 & 인물/얼굴 그대로 보존 (최우선 감지)
   if (
+    lower.includes("배경만") || lower.includes("배경 변경") || lower.includes("배경 바꿔") || 
+    lower.includes("배경 수정") || lower.includes("얼굴은 그대로") || lower.includes("얼굴 그대로") || 
+    lower.includes("인물 그대로") || lower.includes("사람 그대로") || lower.includes("only change background") || 
+    lower.includes("change background only") || lower.includes("keep face") || lower.includes("keep people") || 
+    lower.includes("背景だけ") || lower.includes("只换背景")
+  ) {
+    idWeight = 0.999;
+    detectedDirectives.push(
+      "CRITICAL DIRECTIVE - KEEP ALL PERSONS & FACES 100% UNTOUCHED, CHANGE ONLY THE BACKGROUND: Detect and preserve EVERY SINGLE PERSON from Image 1 exactly as they are. DO NOT drop, crop, or zoom in on just one person. Keep all original faces, eyes, noses, mouths, smiles, expressions, hairstyles, poses, and group arrangement 100% authentic from Image 1, and ONLY replace/render the background environment."
+    );
+    soloPrompt = ""; 
+  }
+  // 1. 얼굴 정밀 보존 & 닮음
+  else if (
     lower.includes("얼굴") || lower.includes("닮") || lower.includes("똑같이") || lower.includes("원본") || 
     lower.includes("face") || lower.includes("resemble") || lower.includes("likeness") || lower.includes("identical") ||
     lower.includes("顔") || lower.includes("似") || lower.includes("脸") || lower.includes("wajah")
   ) {
-    idWeight = 0.99;
-    detectedDirectives.push("STRICT FACE ID LOCK: Exactly preserve the facial identity, eyes, nose, lips, facial bone structure, skin tone, and authentic smile from Image 1");
+    idWeight = 0.999;
+    detectedDirectives.push("STRICT 1:1 FACE ID LOCK: Exactly preserve the authentic real facial features, eyes, double eyelids, nose, lips, jawline, skin tone, and natural smile of EVERY person from Image 1 with id_weight: 0.999.");
   }
 
-  // 2. 특정 캐릭터 추가 (스파이더맨, 히어로 등)
+  // 2. 특정 캐릭터 추가
   if (lower.includes("스파이더맨") || lower.includes("spider-man") || lower.includes("spiderman")) {
     detectedDirectives.push("ADD SPIDER-MAN: Add ONLY Spider-Man in his classic superhero suit standing naturally posing next to the main subject. Strictly do NOT add any other extra people, random women, companions, or bystanders.");
     soloPrompt = "strictly only the main subject from Image 1 and Spider-Man, no other companions or background people";
@@ -688,19 +708,20 @@ export function parseCustomFixPrompt(customFixPrompt: string) {
     extraNegative = ", extra people, extra women, random companions, bystanders";
   }
 
-  // 3. 다른 사람 제거 / 배타적 추가 (~만 / only / solo)
+  // 3. 다른 사람 제거 / 배타적 추가
   if (
-    lower.includes("혼자") || lower.includes("1명") || lower.includes("지워") || lower.includes("다른 사람") || 
-    lower.includes("solo") || lower.includes("alone") || lower.includes("remove people") || lower.includes("no bystander") ||
-    lower.includes("만 ") || lower.includes("만 추가") || lower.includes("만 해") || lower.includes("only") ||
-    lower.includes("一人") || lower.includes("其他人") || lower.includes("sendiri")
+    !lower.includes("배경만") && !lower.includes("배경 바꿔") && !lower.includes("얼굴은 그대로") && (
+      lower.includes("혼자") || lower.includes("1명만") || lower.includes("다른 사람 지워") || 
+      lower.includes("solo") || lower.includes("alone") || lower.includes("remove people") || lower.includes("no bystander") ||
+      lower.includes("1명만 남겨") || lower.includes("一人だけ") || lower.includes("其他人去掉") || lower.includes("sendiri saja")
+    )
   ) {
-    soloPrompt = "strictly only the primary foreground subject (and any explicitly requested character), completely remove and ignore all other cropped people, bystanders, and strangers";
+    soloPrompt = "strictly only the primary foreground subject, completely remove and ignore all other cropped people, bystanders, and strangers";
     extraNegative = ", crowd, extra people, bystanders, pedestrians, tourists, double people, unwanted companions";
     detectedDirectives.push("REMOVE BACKGROUND & CROPPED PEOPLE: Erase all other people or partially cropped figures from Image 1, show only the main subject");
   }
 
-  // 4. 소품 / 손 동작 (물병, 음료, 카메라, 폰, 꽃 등)
+  // 4. 소품 / 손 동작
   if (lower.includes("물병") || lower.includes("생수") || lower.includes("물") || lower.includes("bottle") || lower.includes("water bottle")) {
     detectedDirectives.push("PROP IN HAND: Hold a transparent bottled water in hand naturally with realistic fingers and grip");
   } else if (lower.includes("커피") || lower.includes("음료") || lower.includes("잔") || lower.includes("coffee") || lower.includes("drink") || lower.includes("cup") || lower.includes("mug")) {
@@ -740,7 +761,6 @@ export function parseCustomFixPrompt(customFixPrompt: string) {
   } else if (lower.includes("시크") || lower.includes("진지") || lower.includes("serious") || lower.includes("chic") || lower.includes("confident")) {
     detectedDirectives.push("EXPRESSION: Confident and chic calm expression looking at the camera");
   }
-
   if (lower.includes("전신") || lower.includes("발") || lower.includes("신발") || lower.includes("다리") || lower.includes("full body") || lower.includes("feet") || lower.includes("shoes")) {
     detectedDirectives.push("FRAMING: Full body view showing head to toe with realistic footwear firmly on the ground");
   }
@@ -748,8 +768,8 @@ export function parseCustomFixPrompt(customFixPrompt: string) {
   // 7. 조명 & 분위기 & 날씨
   if (lower.includes("노을") || lower.includes("석양") || lower.includes("황금") || lower.includes("sunset") || lower.includes("golden hour")) {
     detectedDirectives.push("LIGHTING: Warm golden hour sunset illumination with rich glowing amber rays");
-  } else if (lower.includes("밝게") || lower.includes("화사") || lower.includes("맑") || lower.includes("bright") || lower.includes("daylight") || lower.includes("sunny")) {
-    detectedDirectives.push("LIGHTING: Bright, clean, vibrant daylight lighting");
+  } else if (lower.includes("밝게") || lower.includes("bright") || lower.includes("화사") || lower.includes("sunny")) {
+    detectedDirectives.push("LIGHTING: Make overall lighting brighter, cleaner, and more vibrant with soft flattering natural illumination");
   } else if (lower.includes("야경") || lower.includes("밤") || lower.includes("night") || lower.includes("starry")) {
     detectedDirectives.push("LIGHTING: Atmospheric evening night view with ambient lights");
   } else if (lower.includes("눈") || lower.includes("snow") || lower.includes("winter")) {
@@ -758,10 +778,9 @@ export function parseCustomFixPrompt(customFixPrompt: string) {
     detectedDirectives.push("ATMOSPHERE: Romantic light rain moody atmosphere");
   }
 
-  // Combine raw request with enriched directives so 100% of user request in any language is preserved
   const fullInstruction = detectedDirectives.length > 0
-    ? `User specific request: "${rawText}". Execution directives: ${detectedDirectives.join("; ")}`
-    : `User specific request: "${rawText}"`;
+    ? detectedDirectives.join(". ")
+    : `User specific refinement request: "${rawText}". Ensure 100% exact facial preservation of all real people from Image 1.`;
 
   return {
     soloPrompt,
@@ -788,14 +807,18 @@ export function buildPrompt(opts: {
 
   let base = "";
   if ((styleId === "custom" || styleId === "custom_travel") && customPrompt) {
-    base = `A photorealistic photo naturally integrating the primary foreground person(s) from Image 1 into the scene (focus strictly on the clear primary subject, automatically ignoring and removing any cut-off bystanders or background strangers seated on the edges of Image 1): ${customPrompt.trim()}, cinematic lighting, 8k resolution, highly detailed.`;
+    base = `A photorealistic photography masterpiece creating the custom scene: "${customPrompt.trim()}".
+CRITICAL MANDATORY INSTRUCTIONS:
+1. 100% UNTOUCHED ORIGINAL REAL FACE IDENTITY: The exact real-life facial features, eyes, double eyelids, nose bridge, mouth, smile, teeth, expressions, jawline, wrinkles, and skin tone of EVERY person from Image 1 MUST be preserved 100% authentically with id_weight: 0.999. Under NO circumstances should the face be replaced with a generic model, sports stock face, or morphed face.
+2. DYNAMIC ACTION POSE & ATTIRE: Transform ONLY the body pose, action/motion (e.g. playing basketball, shooting a jump shot, active sports dynamics, dancing, or adventure poses), apparel/uniform, and surrounding environment matching "${customPrompt.trim()}" while seamlessly connecting to the real head and face from Image 1.
+3. DETECT & INCLUDE EVERY PERSON (HEADCOUNT): If multiple individuals (e.g. 2, 4, or a group) are present in Image 1, detect and include ALL of them together in the scene naturally with balanced group framing.`;
   } else if (["bali_swing", "borobudur", "paris", "santorini"].includes(styleId)) {
     base = getTravelPrompt(styleId);
   } else {
-    base = style ? `A photorealistic travel photo of the primary subject from Image 1 (focus on the main foreground subject, ignoring background bystanders): ${style.prompt}` : `Professional photorealistic photo preserving the primary subject from Image 1.`;
+    base = style
+      ? `A photorealistic travel photo naturally integrating ALL person(s) present in Image 1: ${style.prompt}. Detect and include every individual (whether solo or a group of 2~10+ people) with 100% facial preservation (id_weight: 0.999).`
+      : `Professional photorealistic photo preserving all subjects from Image 1 with 100% facial fidelity.`;
   }
-
-
 
   // Studio background color mapping
   if (bgColor) {
@@ -809,8 +832,8 @@ export function buildPrompt(opts: {
   }
 
   const identityNote = isStudioStyle
-    ? "STRICT FACE IDENTITY LOCK: Preserve the person's exact 100% facial features, eyes, nose, mouth, jawline, and skin tone with id_weight: 0.95 while completely transforming clothes, outfit, and background into the requested concept."
-    : DEFAULT_IDENTITY_NOTE;
+    ? `STRICT FACE IDENTITY LOCK & STUDIO INPAINTING: (masterpiece, best quality:1.2), 8k uhd, 85mm lens. Preserve the person's exact 100% facial features, eyes, nose, mouth, jawline, and skin tone with id_weight: 0.999 while completely transforming clothes, outfit, and background into the requested concept. ${EDGE_INPAINTING_POSITIVE}. Maintain realistic natural head-to-body proportions (do not zoom in to huge headshot).`
+    : `${DEFAULT_IDENTITY_NOTE} ${EDGE_INPAINTING_POSITIVE}.`;
 
   let finalPrompt = `${base} ${identityNote}`;
 
@@ -821,7 +844,9 @@ export function buildPrompt(opts: {
     if (parsed.userRequestInstruction) finalPrompt += ` ${parsed.userRequestInstruction}`;
   }
 
-  const negativeToUse = isStudioStyle ? STUDIO_NEGATIVE : DOUBLE_FACE_NEGATIVE;
+  const negativeToUse = isStudioStyle
+    ? `${STUDIO_NEGATIVE}, ${MASTER_NEGATIVE_PROMPT}`
+    : MASTER_NEGATIVE_PROMPT;
 
   return `${finalPrompt} ${NO_TEXT_INSTRUCTION} ${negativeToUse}`;
 }

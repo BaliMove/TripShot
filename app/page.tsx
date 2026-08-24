@@ -405,7 +405,7 @@ export default function Home() {
               </span>
               <div className="mt-4 mb-2 flex items-baseline">
                 <span className="text-4xl font-black text-slate-900">$9</span>
-                <span className="text-slate-500 text-sm font-semibold ml-1.5">/ One-time</span>
+                <span className="text-slate-500 text-sm font-semibold ml-1.5">/ 20장</span>
               </div>
               <p className="text-xs text-slate-500 mb-6 leading-relaxed keep-all break-keep">
                 {t.planStarterDesc}
@@ -441,7 +441,7 @@ export default function Home() {
               </span>
               <div className="mt-4 mb-2 flex items-baseline">
                 <span className="text-4xl font-black text-white">$19</span>
-                <span className="text-slate-400 text-sm font-semibold ml-1.5">/ mo</span>
+                <span className="text-amber-300 text-sm font-black ml-1.5">/ 60장 (30% OFF)</span>
               </div>
               <p className="text-xs text-slate-300 mb-6 leading-relaxed keep-all break-keep">
                 {t.planProDesc}
@@ -474,7 +474,7 @@ export default function Home() {
               </span>
               <div className="mt-4 mb-2 flex items-baseline">
                 <span className="text-4xl font-black text-slate-900">$39</span>
-                <span className="text-slate-500 text-sm font-semibold ml-1.5">/ mo</span>
+                <span className="text-indigo-600 text-sm font-black ml-1.5">/ 150장 (42% OFF)</span>
               </div>
 
               <p className="text-xs text-slate-500 mb-6 leading-relaxed keep-all break-keep">

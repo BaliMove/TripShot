@@ -18,19 +18,19 @@ export const PLAN_CONFIGS: Record<PlanType, PlanDetail> = {
     id: "starter",
     price: "$9",
     amount: 9.0,
-    credits: 10,
+    credits: 20,
   },
   pro: {
     id: "pro",
     price: "$19",
     amount: 19.0,
-    credits: 30,
+    credits: 60,
   },
   ultimate: {
     id: "ultimate",
     price: "$39",
     amount: 39.0,
-    credits: 100,
+    credits: 150,
   },
 };
 

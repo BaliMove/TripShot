@@ -24,6 +24,12 @@ import {
 import CompareSlider from "./CompareSlider";
 import PayPalModal, { type PlanType } from "./PayPalModal";
 import AuthModal, { UserProfileData } from "./AuthModal";
+import {
+  loadUserPreferences,
+  recordGenerationEvent,
+  learnFromUserFixPrompt,
+  type UserPreferences,
+} from "../lib/preferenceMemory";
 
 interface ModelSuccessResult {
   success: true;
@@ -295,6 +301,7 @@ export default function UploadCard({
   const [tabMode, setTabMode] = useState<"preset" | "custom_bg">("preset");
   const [customBgBase64, setCustomBgBase64] = useState<string | null>(null);
   const [customBgFileName, setCustomBgFileName] = useState<string | null>(null);
+  const [isDraggingBg, setIsDraggingBg] = useState(false);
   const [enhanceStyle, setEnhanceStyle] = useState<"subtle" | "vibrant">("vibrant");
   const bgFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -304,6 +311,18 @@ export default function UploadCard({
   const [customPrompt, setCustomPrompt] = useState("");
   const customPromptRef = useRef<HTMLTextAreaElement>(null);
 
+  // Sync external style/category selection (e.g. from Hero or Destination grid clicks)
+  useEffect(() => {
+    if (initialCategory) {
+      setCategory(initialCategory);
+      setTabMode("preset");
+    }
+    if (initialStyleId) {
+      setSelectedStyleId(initialStyleId);
+      setTabMode("preset");
+    }
+  }, [initialCategory, initialStyleId]);
+
   // Custom Fix Prompt & Target Model State
   const [customFixPrompt, setCustomFixPrompt] = useState("");
   const customFixInputRef = useRef<HTMLInputElement>(null);
@@ -312,6 +331,9 @@ export default function UploadCard({
   const [editTargetModel, setEditTargetModel] = useState<"flash_lite" | "pro">("pro");
   const [previousImageUrl, setPreviousImageUrl] = useState<string | null>(null);
   const [isFixing, setIsFixing] = useState(false);
+
+  // 🧠 AI Personal Adaptive Learning Memory State
+  const [userPrefs, setUserPrefs] = useState<UserPreferences>(loadUserPreferences());
 
   // Active Option Model State for Production (Option A: Flash Lite, Option B: Pro)
   const [activeOptionModel, setActiveOptionModel] = useState<"option_a" | "option_b">("option_a");
@@ -608,6 +630,39 @@ export default function UploadCard({
     }
   };
 
+  const triggerBgFileInput = () => {
+    bgFileInputRef.current?.click();
+  };
+
+  const handleDragOverBg = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingBg(true);
+  };
+
+  const handleDragLeaveBg = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingBg(false);
+  };
+
+  const handleDropBg = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingBg(false);
+    setError(null);
+    const files = e.dataTransfer.files;
+    if (!files || files.length === 0) return;
+    processCustomBgFile(files[0]);
+  };
+
+  const handleRemoveBg = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCustomBgBase64(null);
+    setCustomBgFileName(null);
+    setError(null);
+    if (bgFileInputRef.current) {
+      bgFileInputRef.current.value = "";
+    }
+  };
+
   const processCustomBgFile = (file: File) => {
     if (!file.type.startsWith("image/")) {
       setError("배경 이미지 파일만 업로드할 수 있습니다.");
@@ -635,34 +690,50 @@ export default function UploadCard({
     setSelectedStyleId(picked);
   };
 
-  const saveByokKey = (key: string) => {
-    setByokKey(key);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("tripshot_byok", key);
-    }
-    setShowByokModal(false);
-  };
-
   const handleSubmit = async () => {
-    let currentSelfie = selfieBase64;
-    // Guaranteed Failsafe: If user hasn't picked a selfie yet, automatically provide sample selfie to prevent payment bounces
-    if (!currentSelfie) {
-      currentSelfie = "/images/sample_selfie.png";
-      setSelfieBase64(currentSelfie);
+    // 1. Photo 1 (Selfie/Portrait) validation
+    if (!selfieBase64 || !selfieBase64.startsWith("data:")) {
+      setError(
+        lang === "ko"
+          ? "📸 내 얼굴/인물 사진을 먼저 업로드해 주세요!"
+          : "📸 Please upload your portrait / selfie photo first!"
+      );
+      const el = document.getElementById("upload-card-root");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      setTimeout(() => {
+        fileInputRef.current?.click();
+      }, 300);
+      return;
     }
 
-    if (tabMode === "custom_bg" && !customBgBase64) {
-      setError("내 배경 사진을 먼저 업로드해 주세요.");
+    // 2. Photo 2 (Custom Background) validation in dual mode
+    if (tabMode === "custom_bg" && (!customBgBase64 || !customBgBase64.startsWith("data:"))) {
+      setError(
+        lang === "ko"
+          ? "⛰️ 합성할 위험 명소나 현장 배경 사진을 업로드해 주세요!"
+          : "⛰️ Please upload the scenic / destination background photo!"
+      );
       const el = document.getElementById("upload-card-root");
       if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      setTimeout(() => {
+        bgFileInputRef.current?.click();
+      }, 300);
       return;
     }
+
     if ((selectedStyleId === "custom" || selectedStyleId === "custom_travel") && !customPrompt.trim()) {
-      setError("커스텀 명소 및 컨셉 설명을 입력해 주세요.");
+      setError(
+        lang === "ko"
+          ? "✍️ 원하시는 커스텀 명소 및 컨셉 설명을 입력해 주세요."
+          : "✍️ Please enter your custom destination / scene description."
+      );
       const el = document.getElementById("upload-card-root");
       if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      customPromptRef.current?.focus();
       return;
     }
+
+    const currentSelfie = selfieBase64;
 
     // Phase 4: Free limit check (Allow generous 999 uses during 7-day friend beta testing)
     const isDevEnv =
@@ -714,6 +785,11 @@ export default function UploadCard({
       // 2. Browser DevTools Network tab records exact 1 fetch request to /api/generate
       try {
         console.log("[Backend API Route Fetch] Sending request to Next.js server route /api/generate...");
+        
+        // Record generation event and update user preferences memory
+        const currentPrefs = recordGenerationEvent(selectedStyleId);
+        setUserPrefs(currentPrefs);
+
         const response = await fetch("/api/generate", {
           method: "POST",
           headers: {
@@ -734,6 +810,8 @@ export default function UploadCard({
               selectedStyleId === "custom" || selectedStyleId === "custom_travel"
                 ? customPrompt.trim()
                 : undefined,
+            facePreserveMode: true,
+            userPreferences: currentPrefs,
           }),
         });
 
@@ -802,6 +880,10 @@ export default function UploadCard({
     const promptToUse = fixText ?? customFixPrompt;
     if (!promptToUse.trim() || !selfieBase64) return;
 
+    // Learn from user fix prompt and update preferences memory
+    const learnedPrefs = learnFromUserFixPrompt(promptToUse.trim());
+    setUserPrefs(learnedPrefs);
+
     setIsFixing(true);
     setError(null);
 
@@ -839,6 +921,8 @@ export default function UploadCard({
             bgColor,
             customPrompt: (usedStyleId === "custom" || selectedStyleId === "custom") ? customPrompt.trim() : undefined,
             customFixPrompt: promptToUse.trim(),
+            facePreserveMode: true,
+            userPreferences: learnedPrefs,
           }),
         });
 
@@ -979,57 +1063,65 @@ export default function UploadCard({
     try {
       const now = new Date();
       const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}_${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}${String(now.getSeconds()).padStart(2, "0")}`;
-      const defaultName = `tripshot_${usedStyleId || "photo"}_${dateStr}.png`;
-      const nameToSave = fileName || defaultName;
+      let nameToSave = fileName || `tripshot_${usedStyleId || "photo"}_${dateStr}.png`;
 
-      // 🖼️ Canvas Re-Encoding Pipeline: Converts any base64/URL into 100% genuine standard PNG binary format
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        try {
-          const canvas = document.createElement("canvas");
-          const width = img.naturalWidth || img.width || 1024;
-          const height = img.naturalHeight || img.height || 1024;
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          if (ctx) {
-            ctx.drawImage(img, 0, 0, width, height);
-            canvas.toBlob((blob) => {
-              if (blob) {
-                const blobUrl = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = blobUrl;
-                a.download = nameToSave;
-                a.setAttribute("download", nameToSave);
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(() => {
-                  if (document.body.contains(a)) document.body.removeChild(a);
-                  setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
-                }, 1000);
+      // 1. Data URL (Base64) - Convert directly to Blob & Trigger Download
+      if (imageUrl.startsWith("data:")) {
+        const { blob, ext } = dataUrlToBlob(imageUrl);
+        const baseNameWithoutExt = nameToSave.replace(/\.[^/.]+$/, "");
+        nameToSave = `${baseNameWithoutExt}.${ext}`;
 
-                setDownloadNotice(
-                  lang === "ko"
-                    ? `✅ 다운로드 완료! [${nameToSave}] 사진이 저장되었습니다.`
-                    : `✅ Download Complete! Saved as [${nameToSave}].`
-                );
-                setTimeout(() => setDownloadNotice(null), 4000);
-                return;
-              }
-              directDownloadFallback(imageUrl, nameToSave);
-            }, "image/png");
-            return;
-          }
-        } catch (e) {
-          console.warn("Canvas blob conversion error, falling back:", e);
-        }
-        directDownloadFallback(imageUrl, nameToSave);
-      };
-      img.onerror = () => {
-        directDownloadFallback(imageUrl, nameToSave);
-      };
-      img.src = imageUrl;
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = blobUrl;
+        a.download = nameToSave;
+        a.setAttribute("download", nameToSave);
+        document.body.appendChild(a);
+        a.click();
+
+        setTimeout(() => {
+          if (document.body.contains(a)) document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+        }, 1000);
+
+        setDownloadNotice(
+          lang === "ko"
+            ? `✅ 다운로드 완료! [${nameToSave}] 사진이 [다운로드] 폴더에 저장되었습니다.`
+            : `✅ Download Complete! Saved as [${nameToSave}].`
+        );
+        setTimeout(() => setDownloadNotice(null), 4000);
+        return;
+      }
+
+      // 2. HTTP/HTTPS Remote URL - Fetch as Blob & Trigger Download
+      fetch(imageUrl)
+        .then((res) => res.blob())
+        .then((blob) => {
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.style.display = "none";
+          a.href = blobUrl;
+          a.download = nameToSave;
+          a.setAttribute("download", nameToSave);
+          document.body.appendChild(a);
+          a.click();
+
+          setTimeout(() => {
+            if (document.body.contains(a)) document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+          }, 1000);
+
+          setDownloadNotice(
+            lang === "ko"
+              ? `✅ 다운로드 완료! [${nameToSave}] 사진이 [다운로드] 폴더에 저장되었습니다.`
+              : `✅ Download Complete! Saved as [${nameToSave}].`
+          );
+          setTimeout(() => setDownloadNotice(null), 4000);
+        })
+        .catch(() => {
+          directDownloadFallback(imageUrl, nameToSave);
+        });
     } catch (e) {
       console.warn("Download exception fallback:", e);
       directDownloadFallback(imageUrl, fileName || `tripshot_${usedStyleId || "photo"}.png`);
@@ -1934,16 +2026,16 @@ export default function UploadCard({
           <span className="text-slate-400 text-[11px] sm:text-xs shrink-0">{lang === "ko" ? "플랜:" : "Plan:"}</span>
           <span className="bg-sky-500/20 text-sky-400 border border-sky-500/30 px-2 sm:px-2.5 py-0.5 rounded-full font-black uppercase text-[11px] sm:text-xs truncate group-hover:border-sky-300">
             {selectedPlan === "starter" && "⚡ Starter ($9)"}
-            {selectedPlan === "pro" && "⭐ Pro ($19/mo)"}
-            {selectedPlan === "ultimate" && "👑 Ultimate VIP ($39/mo)"}
+            {selectedPlan === "pro" && "⭐ Pro ($19)"}
+            {selectedPlan === "ultimate" && "👑 Ultimate VIP ($39)"}
             {selectedPlan === "free" && t.freeTrialBadge}
           </span>
         </div>
         <div className="flex items-center gap-1">
           <span className="text-[11px] sm:text-xs text-emerald-400 font-extrabold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full shrink-0">
-            {selectedPlan === "starter" && (lang === "ko" ? "잔여 10회" : "10 Credits")}
-            {selectedPlan === "pro" && (lang === "ko" ? "잔여 30회" : "30 Credits")}
-            {selectedPlan === "ultimate" && (lang === "ko" ? "잔여 100회" : "100 Credits")}
+            {selectedPlan === "starter" && (lang === "ko" ? "20장 패스" : "20 Credits")}
+            {selectedPlan === "pro" && (lang === "ko" ? "60장 패스" : "60 Credits")}
+            {selectedPlan === "ultimate" && (lang === "ko" ? "150장 패스" : "150 Credits")}
             {selectedPlan === "free" && (lang === "ko" ? "잔여 2회" : "2 Free Trials")}
           </span>
           <span className="text-[10px] font-black bg-sky-500 hover:bg-sky-400 text-slate-950 px-2 py-0.5 rounded-full shadow-sm">
@@ -1953,152 +2045,287 @@ export default function UploadCard({
       </div>
 
       {/* Mode Switcher Tabs */}
-      <div className="flex bg-slate-100 p-1.5 rounded-2xl mb-6 gap-1">
+      <div className="flex bg-slate-100/90 p-1.5 rounded-2xl mb-6 gap-1.5 border border-slate-200/80 shadow-xs">
         <button
           type="button"
           onClick={() => setTabMode("preset")}
-          className={`flex-1 py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 leading-tight cursor-pointer ${
+          className={`flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-1.5 leading-tight cursor-pointer ${
             tabMode === "preset"
-              ? "bg-white text-sky-700 shadow-md font-extrabold"
-              : "text-slate-500 hover:text-slate-700"
+              ? "bg-gradient-to-r from-sky-600 via-indigo-600 to-amber-500 text-white shadow-md font-black scale-[1.01]"
+              : "text-slate-600 hover:text-sky-700 hover:bg-white/60"
           }`}
         >
-          <span>🌴 {lang === "ko" ? "명소 템플릿 선택" : "Select Landmark Style"}</span>
+          <span>{t.tabPresetLandmark}</span>
+          <span className="text-[9px] bg-amber-300 text-slate-950 px-1.5 py-0.5 rounded-full font-black hidden sm:inline-block shadow-xs">
+            30+ 테마
+          </span>
         </button>
         <button
           type="button"
           onClick={() => setTabMode("custom_bg")}
-          className={`flex-1 py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 leading-tight cursor-pointer ${
+          className={`flex-1 py-3 px-3 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-1.5 leading-tight cursor-pointer ${
             tabMode === "custom_bg"
-              ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-md font-extrabold"
-              : "text-slate-500 hover:text-slate-700"
+              ? "bg-gradient-to-r from-sky-600 via-indigo-600 to-amber-500 text-white shadow-md font-black scale-[1.01]"
+              : "text-slate-600 hover:text-sky-700 hover:bg-white/60"
           }`}
         >
-          <span>🖼️ {lang === "ko" ? "내 배경 사진 올리기" : "Upload Custom Backdrop"}</span>
-          <span className="text-[9px] bg-amber-400 text-slate-900 px-1.5 py-0.5 rounded-full font-black hidden sm:inline-block">AI Magic</span>
+          <span>{t.tabDualUpload}</span>
+          <span className="text-[9px] bg-sky-100 text-sky-900 px-1.5 py-0.5 rounded-full font-bold hidden sm:inline-block">
+            100% 안전 합성
+          </span>
         </button>
       </div>
 
-      {/* Selfie Upload Section */}
-      <div className="mb-6">
-        <label className="block text-sm font-bold text-slate-700 mb-2">
-          {t.uploadSectionTitle}
-        </label>
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          accept="image/*"
-          className="hidden"
-        />
+      {/* Hidden File Inputs for Dual Photo Upload */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/*"
+        className="hidden"
+      />
+      <input
+        type="file"
+        ref={bgFileInputRef}
+        onChange={(e) => {
+          const files = e.target.files;
+          if (files && files.length > 0) processCustomBgFile(files[0]);
+        }}
+        accept="image/*"
+        className="hidden"
+      />
 
-        <div
-          onClick={triggerFileInput}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          className={`relative border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 min-h-[170px] ${
-            isDragging
-              ? "border-sky-600 bg-sky-50/20"
-              : selfieBase64
-              ? "border-emerald-200 bg-emerald-50/5"
-              : "border-slate-200 hover:border-sky-500 hover:bg-sky-50/5"
-          }`}
-        >
-          {selfieBase64 ? (
-            <div className="w-full flex flex-col items-center justify-center">
-              <div className="relative w-24 h-24 rounded-xl overflow-hidden shadow-md border-2 border-white ring-4 ring-emerald-500/10 mb-2 group">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={selfieBase64}
-                  alt="Selfie preview"
-                  className="w-full h-full object-cover"
-                />
-                <button
-                  onClick={handleRemove}
-                  className="absolute inset-0 bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
-                  title={t.dropzoneRemove}
-                >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-              <p className="text-xs font-semibold text-slate-500 truncate max-w-xs mb-1">{fileName}</p>
-              <button
-                onClick={handleRemove}
-                className="text-xs font-bold text-rose-500 hover:text-rose-600 underline underline-offset-2 cursor-pointer"
-              >
-                {t.dropzoneChange}
-              </button>
-            </div>
-          ) : (
-            <div className="text-center flex flex-col items-center">
-              <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 mb-2 shadow-inner">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <p className="text-sm font-bold text-slate-800 mb-1 keep-all break-keep">
-                {t.dropzoneTitle}
-              </p>
-              <p className="text-xs text-slate-400 mb-1 keep-all break-keep">
-                {t.dropzoneSub}
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Custom Background Upload Tab UI */}
+      {/* 🚀 MODE 1: DUAL PHOTO UPLOAD (Person + Extreme/Hazardous Destination Backdrop) */}
       {tabMode === "custom_bg" && (
-        <div className="mb-6 bg-slate-50/80 p-5 rounded-2xl border border-sky-100">
-          <label className="block text-sm font-bold text-slate-800 mb-2">
-            2. {t.customBgUploadLabel}
-          </label>
-          <input
-            type="file"
-            ref={bgFileInputRef}
-            onChange={(e) => {
-              const files = e.target.files;
-              if (files && files.length > 0) processCustomBgFile(files[0]);
-            }}
-            accept="image/*"
-            className="hidden"
-          />
-
-          <div
-            onClick={() => bgFileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all ${
-              customBgBase64
-                ? "border-sky-400 bg-sky-50/30"
-                : "border-slate-300 hover:border-sky-400 hover:bg-white"
-            }`}
-          >
-            {customBgBase64 ? (
-              <div className="flex flex-col items-center">
-                <div className="relative w-32 h-20 rounded-lg overflow-hidden border border-slate-200 mb-2 shadow-sm">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={customBgBase64} alt="Backdrop preview" className="w-full h-full object-cover" />
-                </div>
-                <span className="text-xs font-semibold text-slate-600">{customBgFileName}</span>
-                <span className="text-[11px] text-sky-600 font-bold underline mt-1">{t.dropzoneChange}</span>
+        <div className="space-y-5 mb-6">
+          {/* Safety Value Proposition Banner */}
+          <div className="bg-gradient-to-r from-sky-950 via-slate-900 to-indigo-950 border border-sky-500/40 rounded-2xl p-4 sm:p-5 text-white shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-sky-500/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="flex items-start gap-3 relative z-10">
+              <div className="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-xl shrink-0">
+                🛡️
               </div>
-            ) : (
-              <div className="text-center">
-                <span className="text-2xl mb-1 block">🌅</span>
-                <p className="text-xs font-bold text-slate-700 mb-0.5">{t.customBgUploadLabel}</p>
-                <p className="text-[11px] text-slate-400 keep-all break-keep">
-                  {lang === "ko"
-                    ? "AI가 배경 햇살을 5성급 리조트 화보처럼 자동 보정해드립니다."
-                    : "AI automatically color grades and matches the golden hour sunlight."}
+              <div>
+                <div className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-amber-300 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/30 mb-1">
+                  {t.dualBlendBadge}
+                </div>
+                <h3 className="text-sm sm:text-base font-extrabold text-white mb-1 keep-all break-keep">
+                  {t.dualUploadTitle}
+                </h3>
+                <p className="text-xs text-sky-200/90 leading-relaxed keep-all break-keep">
+                  {t.dualBlendDesc}
                 </p>
               </div>
-            )}
+            </div>
           </div>
 
-          {/* 🚀 Prominent Generate Button */}
-          <div className="mt-4 pt-2 hidden sm:block">
+          {/* DUAL DROPZONE: 2 PHOTO CARDS SIDE BY SIDE */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* PHOTO CARD 1: My Portrait / Selfie */}
+            <div className="bg-white rounded-2xl p-4.5 border border-slate-200 shadow-sm flex flex-col justify-between hover:border-sky-300 transition-all">
+              <div className="mb-2">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs sm:text-sm font-black text-slate-800 flex items-center gap-1.5">
+                    <span>📸</span>
+                    <span>{t.dualPersonPhotoLabel}</span>
+                  </span>
+                  {selfieBase64 && (
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-full">
+                      ✓ 완료
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-500 keep-all break-keep">
+                  {t.dualPersonPhotoSub}
+                </p>
+              </div>
+
+              <div
+                onClick={triggerFileInput}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`relative border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all min-h-[170px] ${
+                  isDragging
+                    ? "border-sky-600 bg-sky-50/40"
+                    : selfieBase64
+                    ? "border-emerald-300 bg-emerald-50/10"
+                    : "border-slate-300 hover:border-sky-500 hover:bg-sky-50/10"
+                }`}
+              >
+                {selfieBase64 ? (
+                  <div className="w-full flex flex-col items-center justify-center">
+                    <div className="relative w-24 h-24 rounded-xl overflow-hidden shadow-md border-2 border-white ring-4 ring-emerald-500/20 mb-2 group">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={selfieBase64}
+                        alt="Selfie preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={handleRemove}
+                        className="absolute inset-0 bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                        title={t.dropzoneRemove}
+                      >
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                    <p className="text-xs font-semibold text-slate-600 truncate max-w-[200px] mb-1">{fileName}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold text-sky-600 hover:text-sky-700 underline cursor-pointer">
+                        {t.dropzoneChange}
+                      </span>
+                      <button
+                        onClick={handleRemove}
+                        className="text-xs font-bold text-rose-500 hover:text-rose-600 underline cursor-pointer"
+                      >
+                        {t.dropzoneRemove}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center flex flex-col items-center">
+                    <div className="w-11 h-11 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl mb-2 shadow-inner">
+                      📸
+                    </div>
+                    <p className="text-xs sm:text-sm font-bold text-slate-800 mb-0.5 keep-all break-keep">
+                      {lang === "ko" ? "내 셀카/인물 사진 올리기" : "Upload Your Portrait Photo"}
+                    </p>
+                    <p className="text-[11px] text-slate-400 keep-all break-keep">
+                      {lang === "ko" ? "클릭하거나 사진 파일을 끌어다 놓으세요" : "Click or drag & drop image"}
+                    </p>
+                    <span className="mt-2 text-[10px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                      👤 {lang === "ko" ? "얼굴 이목구비 100% 보존" : "100% Real Face Lock"}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* PHOTO CARD 2: Extreme / Hazardous Destination Backdrop */}
+            <div className="bg-white rounded-2xl p-4.5 border border-slate-200 shadow-sm flex flex-col justify-between hover:border-sky-300 transition-all">
+              <div className="mb-2">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs sm:text-sm font-black text-slate-800 flex items-center gap-1.5">
+                    <span>⛰️</span>
+                    <span>{t.dualBgPhotoLabel}</span>
+                  </span>
+                  {customBgBase64 && (
+                    <span className="text-[10px] bg-sky-100 text-sky-800 font-extrabold px-2 py-0.5 rounded-full">
+                      ✓ 완료
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-500 keep-all break-keep">
+                  {t.dualBgPhotoSub}
+                </p>
+              </div>
+
+              <div
+                onClick={triggerBgFileInput}
+                onDragOver={handleDragOverBg}
+                onDragLeave={handleDragLeaveBg}
+                onDrop={handleDropBg}
+                className={`relative border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all min-h-[170px] ${
+                  isDraggingBg
+                    ? "border-sky-600 bg-sky-50/40"
+                    : customBgBase64
+                    ? "border-sky-300 bg-sky-50/10"
+                    : "border-slate-300 hover:border-sky-500 hover:bg-sky-50/10"
+                }`}
+              >
+                {customBgBase64 ? (
+                  <div className="w-full flex flex-col items-center justify-center">
+                    <div className="relative w-28 h-20 rounded-xl overflow-hidden shadow-md border-2 border-white ring-4 ring-sky-500/20 mb-2 group">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={customBgBase64}
+                        alt="Backdrop preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={handleRemoveBg}
+                        className="absolute inset-0 bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                        title={t.dropzoneRemove}
+                      >
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                    <p className="text-xs font-semibold text-slate-600 truncate max-w-[200px] mb-1">{customBgFileName}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold text-sky-600 hover:text-sky-700 underline cursor-pointer">
+                        {t.dropzoneChange}
+                      </span>
+                      <button
+                        onClick={handleRemoveBg}
+                        className="text-xs font-bold text-rose-500 hover:text-rose-600 underline cursor-pointer"
+                      >
+                        {t.dropzoneRemove}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center flex flex-col items-center">
+                    <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl mb-2 shadow-inner">
+                      🌅
+                    </div>
+                    <p className="text-xs sm:text-sm font-bold text-slate-800 mb-0.5 keep-all break-keep">
+                      {lang === "ko" ? "위험 명소/현장 배경 올리기" : "Upload Extreme / Scenic Backdrop"}
+                    </p>
+                    <p className="text-[11px] text-slate-400 keep-all break-keep">
+                      {lang === "ko" ? "절벽, 낭떠러지, 출입제한 구역, 멋진 풍경 사진" : "Cliffs, forbidden spots, exotic vistas"}
+                    </p>
+                    <span className="mt-2 text-[10px] font-extrabold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
+                      ✨ {lang === "ko" ? "자연스러운 햇살·그림자 자동 일치" : "Auto Lighting & Shadow Match"}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Dual Synthesis Status Guide */}
+          <div className="p-3.5 rounded-2xl border bg-slate-50 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-base">
+                {selfieBase64 && customBgBase64 ? "🎉" : "💡"}
+              </span>
+              <span className="font-bold text-slate-700 keep-all break-keep">
+                {selfieBase64 && customBgBase64
+                  ? (lang === "ko"
+                      ? "2장의 사진이 모두 준비되었습니다! '화보 생성'을 누르면 100% 안전하게 현장 화보가 완성됩니다."
+                      : "Both photos ready! Click generate to blend into the scene 100% safely.")
+                  : !selfieBase64
+                  ? (lang === "ko" ? "1번 내 인물 사진을 먼저 업로드해 주세요." : "Please upload Photo 1 (Your portrait).")
+                  : (lang === "ko" ? "2번 위험 명소/현장 배경 사진을 올려주시면 합성이 시작됩니다." : "Please upload Photo 2 (Destination backdrop).")}
+              </span>
+            </div>
+          </div>
+
+          {/* Optional Direction & Prompt Box */}
+          <div className="bg-slate-50/90 p-4 rounded-2xl border border-slate-200">
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              ✍️ {lang === "ko" ? "추가 요청사항 (선택사항)" : "Custom Scene Direction (Optional)"}
+            </label>
+            <input
+              type="text"
+              value={customPrompt}
+              onChange={(e) => setCustomPrompt(e.target.value)}
+              placeholder={
+                lang === "ko"
+                  ? "예: 절벽 끝 바위에 자연스럽게 걸터앉아 노을을 바라보는 포즈로 해줘"
+                  : "e.g. Perched naturally on the edge of the rock cliff enjoying sunset"
+              }
+              className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
+            />
+          </div>
+
+          {/* 🚀 Prominent Dual Generate Button */}
+          <div className="pt-2">
             <button
               type="button"
               onClick={handleSubmit}
@@ -2107,7 +2334,7 @@ export default function UploadCard({
             >
               <span className="relative z-10 flex items-center justify-center gap-2 text-white drop-shadow-md">
                 <span className="text-sm sm:text-base font-black">
-                  ✨ 🖼️ {t.btnGenerate}
+                  ✨ 🛡️ {lang === "ko" ? "방구석 ➔ 위험 현장 100% 안전 화보 생성하기" : "Generate 100% Safe Extreme Masterpiece"}
                 </span>
               </span>
             </button>
@@ -2115,8 +2342,74 @@ export default function UploadCard({
         </div>
       )}
 
-      {/* Preset Mode Selection */}
+      {/* 🌴 MODE 2: PRESET LANDMARK TEMPLATES (1 Photo + 30+ Global Spots) */}
       {tabMode === "preset" && (
+        <div className="space-y-6 mb-6">
+          {/* Selfie Upload Section */}
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">
+              1. {t.uploadSectionTitle}
+            </label>
+
+            <div
+              onClick={triggerFileInput}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`relative border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 min-h-[170px] ${
+                isDragging
+                  ? "border-sky-600 bg-sky-50/20"
+                  : selfieBase64
+                  ? "border-emerald-200 bg-emerald-50/5"
+                  : "border-slate-200 hover:border-sky-500 hover:bg-sky-50/5"
+              }`}
+            >
+              {selfieBase64 ? (
+                <div className="w-full flex flex-col items-center justify-center">
+                  <div className="relative w-24 h-24 rounded-xl overflow-hidden shadow-md border-2 border-white ring-4 ring-emerald-500/10 mb-2 group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={selfieBase64}
+                      alt="Selfie preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      onClick={handleRemove}
+                      className="absolute inset-0 bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                      title={t.dropzoneRemove}
+                    >
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-500 truncate max-w-xs mb-1">{fileName}</p>
+                  <button
+                    onClick={handleRemove}
+                    className="text-xs font-bold text-rose-500 hover:text-rose-600 underline underline-offset-2 cursor-pointer"
+                  >
+                    {t.dropzoneChange}
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center flex flex-col items-center">
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 mb-2 shadow-inner">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <p className="text-sm font-bold text-slate-800 mb-1 keep-all break-keep">
+                    {t.dropzoneTitle}
+                  </p>
+                  <p className="text-xs text-slate-400 mb-1 keep-all break-keep">
+                    {t.dropzoneSub}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Section 2: Landmark & Studio Style Selector */}
         <div className="space-y-5 mb-4">
           {/* Section 2: Travel Destinations */}
           <div>
@@ -2196,12 +2489,9 @@ export default function UploadCard({
               })}
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Style Picker or Custom Prompt */}
-      {tabMode === "preset" && (
-        <div id="style-picker-grid" className="mb-6 scroll-mt-20">
+          {/* Style Picker or Custom Prompt */}
+          <div id="style-picker-grid" className="mb-6 scroll-mt-20">
           {category === "custom" || category === "custom_travel" ? (
             <div>
               <textarea
@@ -2280,6 +2570,8 @@ export default function UploadCard({
               })}
             </div>
           )}
+          </div>
+        </div>
 
           {/* 🚀 Instant Generate Button (Desktop) */}
           <div className="mt-4 pt-3 hidden sm:block">

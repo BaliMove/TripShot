@@ -585,14 +585,17 @@ export const STYLES: StyleDef[] = [
   },
 ];
 
+export const ULTRA_REALISM_POSITIVE =
+  "Shot on Canon EOS R5, 85mm prime lens at f/2.2, shallow depth of field, sharp focus on the near eye, realistic catchlights in detailed irises. Extreme microscopic skin texture with non-repeating visible pores and fine vellus peach fuzz, subtle uneven skin tone with natural minor blemishes, organic skin moisture sheen, subtle flyaway hair strands breaking the contour, authentic sub-surface scattering (SSS), soft directional Rembrandt lighting with deep natural shadow falloff, Kodak Portra 400 film aesthetic with organic fine sensor grain, raw unretouched capture, seamless edge blending.";
+
 export const DEFAULT_IDENTITY_NOTE =
-  "CRITICAL 1:1 REAL FACE ID LOCK & PROPORTIONAL SCENIC HARMONY: (masterpiece, best quality:1.2), RAW photo, 8k uhd, 85mm portrait capture. Reconstruct 100% exact real-life facial structure, eyes, double eyelids, nose bridge, lips, smile curvature, teeth, jawline, wrinkles, and authentic skin texture from Image 1 with id_weight: 0.999. CRITICAL GOLDEN-RATIO PROPORTION: Strictly DO NOT enlarge or zoom in on the head into an oversized ID headshot. Maintain natural realistic anatomical human proportions (head-to-body ratio 1:7 to 1:8, Medium Shot / Waist-Up occupying 45%-60% of frame height), seamlessly integrated with directional rim light and edge blending into the magnificent background.";
+  `CRITICAL 1:1 REAL FACE ID LOCK & ULTRA-REALISTIC OPTICS: (masterpiece, best quality:1.2), RAW unretouched photo, 8k uhd. ${ULTRA_REALISM_POSITIVE} Reconstruct 100% exact real-life facial structure, eyes, double eyelids, nose bridge, lips, smile curvature, teeth, jawline, wrinkles, and authentic skin texture from Image 1 with id_weight: 0.999. CRITICAL GOLDEN-RATIO PROPORTION: Strictly DO NOT enlarge or zoom in on the head into an oversized ID headshot. Maintain natural realistic anatomical human proportions (head-to-body ratio 1:7 to 1:8, Medium Shot / Waist-Up occupying 45%-60% of frame height), seamlessly integrated with directional rim light and edge blending into the magnificent background.`;
 
 export const EDGE_INPAINTING_POSITIVE =
-  "natural skin texture, visible pores, seamless edge blending, harmonized ambient lighting, directional rim light, sharp hair strands integration, matching color grading with background, clean contour, high fidelity";
+  "extreme microscopic skin texture with visible pores and fine vellus peach fuzz, seamless edge blending, harmonized ambient lighting, directional rim light, sharp hair strands integration, matching color grading with background, clean contour, high fidelity sub-surface scattering";
 
 export const MASTER_NEGATIVE_PROMPT =
-  "(worst quality, low quality:1.3), halo artifact around head, hard cutout edges, mismatched lighting, unnatural seams, skin tone boundary mismatch, blurry borders, oversmoothed skin, cartoonish outline, deformed facial features, mutated eyes, plastic face, asymmetrical jaw, identity drift, 3d render, illustration, distorted features, face blending, duplicated face, identical features across multiple people, swapped identities, merged facial attributes, oversized head, giant head, missing people, dropped members";
+  "(plastic skin, waxy skin, airbrushed, smooth skin, poreless skin:1.4), (matte skin, powdery skin, flawless skin:1.3), beauty filter, glam, cgi, 3d render, cartoon, painting, illustration, drawing, unreal engine, ring-light flat lighting, front flash, overexposed highlights, dead eyes, bad anatomy, deformed hands, lowres, watermark, (worst quality, low quality:1.3), halo artifact around head, hard cutout edges, mismatched lighting, unnatural seams, skin tone boundary mismatch, blurry borders, oversmoothed skin, cartoonish outline, deformed facial features, mutated eyes, asymmetrical jaw, identity drift, face blending, duplicated face, identical features across multiple people, swapped identities, merged facial attributes, oversized head, giant head, missing people, dropped members";
 
 export const NO_TEXT_INSTRUCTION =
   "CRITICAL: Absolutely NO text, NO watermarks, NO fonts, NO writings, NO instagram UI, NO social media overlay, NO username, NO comments, NO logo, NO frame, NO captions, NO buttons. Pure photorealistic photo only.";
@@ -807,11 +810,12 @@ export function buildPrompt(opts: {
 
   let base = "";
   if ((styleId === "custom" || styleId === "custom_travel") && customPrompt) {
-    base = `A photorealistic photography masterpiece creating the custom scene: "${customPrompt.trim()}".
+    base = `(masterpiece, best quality:1.2), RAW unretouched photo, 8k uhd, shot on Canon EOS R5 (85mm f/2.2), creating the custom scene: "${customPrompt.trim()}".
 CRITICAL MANDATORY INSTRUCTIONS:
-1. 100% UNTOUCHED ORIGINAL REAL FACE IDENTITY: The exact real-life facial features, eyes, double eyelids, nose bridge, mouth, smile, teeth, expressions, jawline, wrinkles, and skin tone of EVERY person from Image 1 MUST be preserved 100% authentically with id_weight: 0.999. Under NO circumstances should the face be replaced with a generic model, sports stock face, or morphed face.
+1. 100% UNTOUCHED ORIGINAL REAL FACE IDENTITY (IP-Adapter FaceID Fidelity, id_weight: 0.999): The exact real-life facial features, eyes, double eyelids, nose bridge, mouth, smile, teeth, expressions, jawline, wrinkles, and authentic skin texture with microscopic visible pores, fine vellus peach fuzz, and natural sub-surface scattering (SSS) of EVERY person from Image 1 MUST be preserved 100% authentically with zero hallucination. Under NO circumstances should the face be replaced with a generic model, plastic skin, or morphed face.
 2. DYNAMIC ACTION POSE & ATTIRE: Transform ONLY the body pose, action/motion (e.g. playing basketball, shooting a jump shot, active sports dynamics, dancing, or adventure poses), apparel/uniform, and surrounding environment matching "${customPrompt.trim()}" while seamlessly connecting to the real head and face from Image 1.
-3. DETECT & INCLUDE EVERY PERSON (HEADCOUNT): If multiple individuals (e.g. 2, 4, or a group) are present in Image 1, detect and include ALL of them together in the scene naturally with balanced group framing.`;
+3. NATURAL PROPORTIONS & SCENIC HARMONY: Strictly DO NOT zoom in to an oversized headshot. Maintain natural anatomical human proportions (head-to-body ratio 1:7 to 1:8, Medium Shot / Waist-Up occupying 45%-60% of frame height) with soft directional Rembrandt lighting and deep shadow falloff.
+4. MULTI-PERSON REGIONAL SPLIT [SEP]: If multiple individuals (e.g. 2, 4, or a group) are present in Image 1, detect and include ALL of them together [Person 1] [SEP] [Person 2] naturally with balanced group framing.`;
   } else if (["bali_swing", "borobudur", "paris", "santorini"].includes(styleId)) {
     base = getTravelPrompt(styleId);
   } else {

@@ -101,6 +101,72 @@ const preloadImage = (src?: string | null): Promise<boolean> => {
   });
 };
 
+/**
+ * Smart Canvas Image Compression Helper
+ * Resizes huge smartphone photos (e.g. 4000x3000, 10MB) to optimal 1600px resolution
+ * Compresses to crisp JPEG 0.90 to keep payload under ~500KB while preserving 100% facial pores and details
+ * Prevents "Failed to fetch" network errors caused by oversized Base64 JSON payloads
+ */
+async function compressImageFile(file: File, maxDimension = 1600, quality = 0.90): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("파일을 읽는 도중 오류가 발생했습니다."));
+    reader.onload = (e) => {
+      const src = e.target?.result;
+      if (typeof src !== "string") return reject(new Error("이미지 데이터 변환 실패"));
+
+      const img = new Image();
+      img.onerror = () => reject(new Error("이미지를 불러올 수 없습니다."));
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          return resolve(src);
+        }
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedDataUrl = canvas.toDataURL("image/jpeg", quality);
+        resolve(compressedDataUrl);
+      };
+      img.src = src;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Robust fetch wrapper with automatic retry on temporary network dropouts
+ */
+async function fetchWithRetry(url: string, options: RequestInit, retries = 2, delayMs = 1500): Promise<Response> {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const res = await fetch(url, options);
+      return res;
+    } catch (err) {
+      if (i === retries) throw err;
+      console.warn(`[Network Retry ${i + 1}/${retries}] Fetch failed, retrying in ${delayMs}ms...`, err);
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
+  throw new Error("Network request failed after retries");
+}
+
 async function createCompositedPhoto(
   selfieBase64: string,
   bgUrl: string,
@@ -585,7 +651,7 @@ export default function UploadCard({
     processFile(files[0]);
   };
 
-  const processFile = (file: File) => {
+  const processFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {
       setError("이미지 파일(PNG, JPG 등)만 업로드할 수 있습니다.");
       setSelfieBase64(null);
@@ -593,9 +659,9 @@ export default function UploadCard({
       return;
     }
 
-    const maxSize = 10 * 1024 * 1024;
+    const maxSize = 20 * 1024 * 1024;
     if (file.size > maxSize) {
-      setError("파일 크기가 10MB를 초과했습니다. 더 작은 이미지를 업로드해 주세요.");
+      setError("파일 크기가 20MB를 초과했습니다. 더 작은 이미지를 업로드해 주세요.");
       setSelfieBase64(null);
       setFileName(null);
       return;
@@ -603,18 +669,22 @@ export default function UploadCard({
 
     setFileName(file.name);
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === "string") {
-        setSelfieBase64(reader.result);
-      } else {
-        setError("파일을 읽는 도중 오류가 발생했습니다.");
-      }
-    };
-    reader.onerror = () => {
-      setError("파일을 읽는 도중 오류가 발생했습니다.");
-    };
-    reader.readAsDataURL(file);
+    try {
+      // Smart canvas compression to 1600px / JPEG 0.90 to prevent payload timeout and Failed to fetch errors
+      const compressedDataUrl = await compressImageFile(file, 1600, 0.90);
+      setSelfieBase64(compressedDataUrl);
+    } catch (err: unknown) {
+      console.warn("Client compression fallback:", err);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === "string") {
+          setSelfieBase64(reader.result);
+        } else {
+          setError("파일을 읽는 도중 오류가 발생했습니다.");
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const triggerFileInput = () => {
@@ -683,23 +753,29 @@ export default function UploadCard({
     }
   };
 
-  const processCustomBgFile = (file: File) => {
+  const processCustomBgFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {
       setError("배경 이미지 파일만 업로드할 수 있습니다.");
       return;
     }
-    if (file.size > 10 * 1024 * 1024) {
-      setError("배경 이미지 크기가 10MB를 초과했습니다.");
+    if (file.size > 20 * 1024 * 1024) {
+      setError("배경 이미지 크기가 20MB를 초과했습니다.");
       return;
     }
     setCustomBgFileName(file.name);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === "string") {
-        setCustomBgBase64(reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      const compressedDataUrl = await compressImageFile(file, 1600, 0.90);
+      setCustomBgBase64(compressedDataUrl);
+    } catch (err: unknown) {
+      console.warn("Background compression fallback:", err);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === "string") {
+          setCustomBgBase64(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
 
@@ -810,7 +886,7 @@ export default function UploadCard({
         const currentPrefs = recordGenerationEvent(selectedStyleId);
         setUserPrefs(currentPrefs);
 
-        const response = await fetch("/api/generate", {
+        const response = await fetchWithRetry("/api/generate", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -833,7 +909,7 @@ export default function UploadCard({
             facePreserveMode: true,
             userPreferences: currentPrefs,
           }),
-        });
+        }, 2, 1500);
 
         if (response.ok) {
           const resJson = await response.json();
@@ -848,7 +924,8 @@ export default function UploadCard({
         }
       } catch (backendErr: any) {
         console.error("[Backend API Route Fetch Error]:", backendErr);
-        setError(`AI 생성 실패: ${backendErr.message || "백엔드 통신 오류"}`);
+        const errMsg = backendErr.message || "네트워크 연결이 불안정합니다. 잠시 후 다시 시도해 주세요.";
+        setError(errMsg.includes("fetch") ? "일시적인 네트워크 지연이 발생했습니다. 다시 생성을 눌러주세요." : `AI 생성 실패: ${errMsg}`);
         setIsLoading(false);
         return;
       }
@@ -935,7 +1012,7 @@ export default function UploadCard({
 
       let data: any = null;
       try {
-        const response = await fetch("/api/generate", {
+        const response = await fetchWithRetry("/api/generate", {
           method: "POST",
           headers,
           body: JSON.stringify({
@@ -952,7 +1029,7 @@ export default function UploadCard({
             facePreserveMode: true,
             userPreferences: learnedPrefs,
           }),
-        });
+        }, 2, 1500);
 
         const contentType = response.headers.get("content-type");
         if (response.ok && contentType && contentType.includes("application/json")) {

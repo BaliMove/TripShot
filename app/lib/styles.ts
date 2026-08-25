@@ -586,16 +586,19 @@ export const STYLES: StyleDef[] = [
 ];
 
 export const ULTRA_REALISM_POSITIVE =
-  "Shot on Canon EOS R5, 85mm prime lens at f/2.2, shallow depth of field, sharp focus on the near eye, realistic catchlights in detailed irises. Extreme microscopic skin texture with non-repeating visible pores and fine vellus peach fuzz, subtle uneven skin tone with natural minor blemishes, organic skin moisture sheen, subtle flyaway hair strands breaking the contour, authentic sub-surface scattering (SSS), soft directional Rembrandt lighting with deep natural shadow falloff, Kodak Portra 400 film aesthetic with organic fine sensor grain, raw unretouched capture, seamless edge blending.";
+  "Shot on Canon EOS R5, 35mm to 50mm environmental prime lens at f/2.8, shallow to medium depth of field, sharp focus on the near eye, realistic catchlights in detailed irises. Extreme microscopic skin texture with non-repeating visible pores and fine vellus peach fuzz, subtle uneven skin tone with natural minor blemishes, organic skin moisture sheen, subtle flyaway hair strands breaking the contour, authentic sub-surface scattering (SSS), soft directional Rembrandt lighting with deep natural shadow falloff, Kodak Portra 400 film aesthetic with organic fine sensor grain, raw unretouched capture, seamless edge blending.";
+
+export const GOLDEN_RATIO_TRAVEL_DIRECTIVE =
+  "CRITICAL GOLDEN-RATIO TRAVEL COMPOSITION & HARMONIOUS PROPORTIONS: Environmental cinematic travel masterpiece. The subject(s) MUST be framed in a natural Medium-to-Full or Waist-to-Knee shot occupying approximately 35% to 45% of the vertical frame height in the foreground/midground, gracefully standing or posing. The majestic background landmark and scenic panorama (e.g. the full Eiffel Tower from spire to base, dramatic cliff, or vast horizon) MUST occupy the remaining 55% to 65% of the frame with breathtaking grand perspective depth. DO NOT zoom in to a giant headshot or tight chest-up close-up that blocks the scenery. Reconstruct 100% exact real-life facial structure, eyes, double eyelids, nose bridge, lips, smile curvature, teeth, jawline, wrinkles, and authentic skin texture from Image 1 with id_weight: 0.999.";
 
 export const DEFAULT_IDENTITY_NOTE =
-  `CRITICAL 1:1 REAL FACE ID LOCK & ULTRA-REALISTIC OPTICS: (masterpiece, best quality:1.2), RAW unretouched photo, 8k uhd. ${ULTRA_REALISM_POSITIVE} Reconstruct 100% exact real-life facial structure, eyes, double eyelids, nose bridge, lips, smile curvature, teeth, jawline, wrinkles, and authentic skin texture from Image 1 with id_weight: 0.999. CRITICAL GOLDEN-RATIO PROPORTION: Strictly DO NOT enlarge or zoom in on the head into an oversized ID headshot. Maintain natural realistic anatomical human proportions (head-to-body ratio 1:7 to 1:8, Medium Shot / Waist-Up occupying 45%-60% of frame height), seamlessly integrated with directional rim light and edge blending into the magnificent background.`;
+  `CRITICAL 1:1 REAL FACE ID LOCK & ULTRA-REALISTIC TRAVEL OPTICS: (masterpiece, best quality:1.2), RAW unretouched photo, 8k uhd. ${ULTRA_REALISM_POSITIVE} ${GOLDEN_RATIO_TRAVEL_DIRECTIVE} Seamlessly integrated with directional rim light, ground contact shadows, and edge blending into the magnificent background.`;
 
 export const EDGE_INPAINTING_POSITIVE =
   "extreme microscopic skin texture with visible pores and fine vellus peach fuzz, seamless edge blending, harmonized ambient lighting, directional rim light, sharp hair strands integration, matching color grading with background, clean contour, high fidelity sub-surface scattering";
 
 export const MASTER_NEGATIVE_PROMPT =
-  "(plastic skin, waxy skin, airbrushed, smooth skin, poreless skin:1.4), (matte skin, powdery skin, flawless skin:1.3), beauty filter, glam, cgi, 3d render, cartoon, painting, illustration, drawing, unreal engine, ring-light flat lighting, front flash, overexposed highlights, dead eyes, bad anatomy, deformed hands, lowres, watermark, (worst quality, low quality:1.3), halo artifact around head, hard cutout edges, mismatched lighting, unnatural seams, skin tone boundary mismatch, blurry borders, oversmoothed skin, cartoonish outline, deformed facial features, mutated eyes, asymmetrical jaw, identity drift, face blending, duplicated face, identical features across multiple people, swapped identities, merged facial attributes, oversized head, giant head, missing people, dropped members";
+  "(plastic skin, waxy skin, airbrushed, smooth skin, poreless skin:1.4), (matte skin, powdery skin, flawless skin:1.3), tight close-up, cropped landmark, oversized head, gigantic face filling the entire screen, chest-up bust shot blocking the view, cut off Eiffel tower, obstructed scenery, zoomed-in headshot, beauty filter, glam, cgi, 3d render, cartoon, painting, illustration, drawing, unreal engine, ring-light flat lighting, front flash, overexposed highlights, dead eyes, bad anatomy, deformed hands, lowres, watermark, (worst quality, low quality:1.3), halo artifact around head, hard cutout edges, mismatched lighting, unnatural seams, skin tone boundary mismatch, blurry borders, oversmoothed skin, cartoonish outline, deformed facial features, mutated eyes, asymmetrical jaw, identity drift, face blending, duplicated face, identical features across multiple people, swapped identities, merged facial attributes, missing people, dropped members";
 
 export const NO_TEXT_INSTRUCTION =
   "CRITICAL: Absolutely NO text, NO watermarks, NO fonts, NO writings, NO instagram UI, NO social media overlay, NO username, NO comments, NO logo, NO frame, NO captions, NO buttons. Pure photorealistic photo only.";
@@ -607,7 +610,7 @@ export function getStyle(id: string): StyleDef | undefined {
 /** Smart neutral travel prompt generator matching traveler(s) automatically */
 export function getTravelPrompt(destination: string): string {
   const SMART_GEAR =
-    "the traveler(s) from Image 1 looking naturally stunning in stylish travel attire, perfectly composed in the scenic foreground (Medium Shot, balanced with background panorama)";
+    "the traveler(s) from Image 1 looking naturally stunning in stylish travel attire, posed in an environmental Medium-Full view (occupying 35%-45% of the frame) beautifully harmonized with the expansive landmark panorama in background";
 
   const BASE_PROMPTS = {
     // ⚡ 익스트림 10대 명소 (글로벌)
@@ -637,7 +640,7 @@ export function getTravelPrompt(destination: string): string {
     // 🌴 힐링 / 랜드마크 명소
     bali_swing: `A gorgeous travel photo of ${SMART_GEAR}, soaring gracefully on the giant jungle swing in Bali with lush tropical palm canopy in background, golden hour rim lighting, 8k resolution.`,
     borobudur: `A serene travel photo of ${SMART_GEAR}, at Borobudur temple terrace in Indonesia with ancient stone stupas and mystical sunrise in background, cinematic lighting, highly detailed.`,
-    paris: `A romantic cinematic travel photo of ${SMART_GEAR}, at an elegant Parisian terrace with the iconic Eiffel Tower and sunset glow in background, authentic vacation photography, 8k.`,
+    paris: `A romantic cinematic travel photo of ${SMART_GEAR}, standing gracefully on the Trocadéro terrace overlooking the entire majestic Eiffel Tower from base to spire against the golden sunset sky, perfect environmental portrait composition where the Eiffel Tower is fully visible in background, authentic vacation photography, 8k.`,
     santorini: `A picturesque travel photo of ${SMART_GEAR}, on a white terrace in Santorini Greece with blue domes and Aegean sea sunset in background, warm Mediterranean glow, 8k.`,
 
     // 💼 비즈니스 / 🪪 증명·여권 / 🎭 컨셉·재미

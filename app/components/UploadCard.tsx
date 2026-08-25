@@ -80,7 +80,26 @@ const getLoadingMessage = (
 
 const FUN_STYLE_IDS = STYLES.filter((s) => s.category === "fun" || s.category === "travel").map((s) => s.id);
 
-
+/**
+ * Preload and decode image in offscreen browser memory to guarantee 0s render delay
+ * Ensures the loading spinner/modal stays active until the image is 100% visible on screen
+ */
+const preloadImage = (src?: string | null): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (!src) return resolve(false);
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      if ("decode" in img && typeof img.decode === "function") {
+        img.decode().then(() => resolve(true)).catch(() => resolve(true));
+      } else {
+        resolve(true);
+      }
+    };
+    img.onerror = () => resolve(false);
+    img.src = src;
+  });
+};
 
 async function createCompositedPhoto(
   selfieBase64: string,
@@ -331,6 +350,7 @@ export default function UploadCard({
   const [editTargetModel, setEditTargetModel] = useState<"flash_lite" | "pro">("pro");
   const [previousImageUrl, setPreviousImageUrl] = useState<string | null>(null);
   const [isFixing, setIsFixing] = useState(false);
+  const [isImageReady, setIsImageReady] = useState(false);
 
   // 🧠 AI Personal Adaptive Learning Memory State
   const [userPrefs, setUserPrefs] = useState<UserPreferences>(loadUserPreferences());
@@ -840,6 +860,14 @@ export default function UploadCard({
       setProgress(100);
       setFreeFixCount(1);
       
+      // Preload the target generated image in offscreen browser memory to guarantee instant 0s display
+      const targetImgUrl = (data.pro?.success && data.pro?.imageUrl) || (data.lite?.success && data.lite?.imageUrl);
+      if (targetImgUrl) {
+        await preloadImage(targetImgUrl);
+      }
+
+      setIsImageReady(true);
+
       // Instantly switch to result view and scroll smoothly
       setResult({
         lite: data.lite,
@@ -959,11 +987,14 @@ export default function UploadCard({
           pro: nextPro,
         });
 
-        // Update previousImageUrl to the newly refined image
+        // Update previousImageUrl to the newly refined image and preload in memory
         const newUrl = editTargetModel === "flash_lite" ? nextLite?.imageUrl : nextPro?.imageUrl;
         if (newUrl) {
+          await preloadImage(newUrl);
           setPreviousImageUrl(newUrl);
         }
+
+        setIsImageReady(true);
 
         // 🎁 1회 생성당 1회 무료 A/S 마법 보정 혜택 (무료 보정 남아있으면 크레딧 차감 0개!)
         if (!byokKey) {
@@ -983,7 +1014,6 @@ export default function UploadCard({
       setError(msg || "수정 적용 중 오류가 발생했습니다.");
     } finally {
       setIsFixing(false);
-
     }
   };
 
@@ -1470,13 +1500,21 @@ export default function UploadCard({
 
                 {card.data.success ? (
                   <>
-                    <div className="relative w-full aspect-[3/4] max-w-[260px] rounded-2xl overflow-hidden shadow-xl border-4 border-white ring-4 ring-slate-200/60 mb-5 group">
+                    <div className="relative w-full aspect-[3/4] max-w-[260px] rounded-2xl overflow-hidden shadow-xl border-4 border-white ring-4 ring-slate-200/60 mb-5 group bg-slate-900">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={card.data.imageUrl}
                         alt={`${card.name} 결과`}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 animate-fadeIn"
                       />
+
+                      {/* 🪄 Realtime Custom Fix Refinement Loading Overlay (Admin) */}
+                      {isFixing && editTargetModel === (card.key === "lite" ? "flash_lite" : "pro") && (
+                        <div className="absolute inset-0 z-20 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center animate-fadeIn">
+                          <div className="w-8 h-8 rounded-full border-2 border-sky-400/30 border-t-sky-400 animate-spin mb-2" />
+                          <p className="text-[11px] font-black text-white">🪄 AI 수정 반영 중...</p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="w-full grid grid-cols-2 gap-2.5 text-center mb-5">
@@ -1625,16 +1663,6 @@ export default function UploadCard({
                 >
                   <span>👟 신발까지 보이게</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCustomFixPrompt("배경에서 불필요한 개체와 잡동사니를 깔끔하게 삭제해줘");
-                    handleCustomFix("배경에서 불필요한 개체와 잡동사니를 깔끔하게 삭제해줘");
-                  }}
-                  className="text-xs bg-slate-800/90 hover:bg-sky-600 text-slate-200 hover:text-white border border-slate-700/80 px-3.5 py-2 rounded-xl font-extrabold transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm"
-                >
-                  <span>🧹 불필요한 개체 삭제</span>
-                </button>
               </div>
 
 
@@ -1741,13 +1769,31 @@ export default function UploadCard({
 
         {activeResult && activeResult.success ? (
           <div className="bg-slate-50/70 rounded-3xl border border-slate-200/80 p-6 flex flex-col items-center shadow-md mb-8">
-            <div className="relative w-full aspect-[3/4] max-w-[320px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white ring-8 ring-slate-100/80 mb-6 group">
+            <div className="relative w-full aspect-[3/4] max-w-[320px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white ring-8 ring-slate-100/80 mb-6 group bg-slate-900">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={activeResult.imageUrl}
                 alt={`${displayLabel} result`}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 animate-fadeIn"
               />
+
+              {/* 🪄 Realtime Custom Fix Refinement Loading Overlay */}
+              {isFixing && (
+                <div className="absolute inset-0 z-20 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-5 text-center animate-fadeIn">
+                  <div className="relative w-12 h-12 mb-3 flex items-center justify-center">
+                    <div className="absolute inset-0 rounded-full border-3 border-sky-400/30 border-t-sky-400 animate-spin" />
+                    <span className="text-xl animate-bounce">🪄</span>
+                  </div>
+                  <p className="text-xs font-black text-white">
+                    {lang === "ko" ? "🪄 AI 마법 수정 렌더링 중..." : "🪄 Rendering AI Refinement..."}
+                  </p>
+                  <p className="text-[10px] text-sky-200 mt-1 font-medium keep-all break-keep max-w-[200px]">
+                    {lang === "ko"
+                      ? "얼굴을 완벽 보존하며 요청사항을 반영하고 있습니다"
+                      : "Preserving your authentic face while applying modifications"}
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="w-full max-w-md flex flex-wrap sm:flex-nowrap gap-2.5 mb-2">
@@ -1851,16 +1897,6 @@ export default function UploadCard({
                 className="text-xs bg-slate-800/90 hover:bg-sky-600 text-slate-200 hover:text-white border border-slate-700/80 px-3 py-1.5 rounded-xl font-extrabold transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm cursor-pointer"
               >
                 <span>🌅 {t.chipSunsetText}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setCustomFixPrompt(t.chipRemoveObjectsText || "Remove unwanted background objects and clutter");
-                  setTimeout(() => customFixInputRef.current?.focus(), 50);
-                }}
-                className="text-xs bg-slate-800/90 hover:bg-sky-600 text-slate-200 hover:text-white border border-slate-700/80 px-3 py-1.5 rounded-xl font-extrabold transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm cursor-pointer"
-              >
-                <span>🧹 {t.chipRemoveObjectsText}</span>
               </button>
             </div>
 

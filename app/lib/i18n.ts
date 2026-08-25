@@ -111,7 +111,6 @@ export interface Translation {
   chipSoloText: string;
   chipResemblanceText: string;
   chipSunsetText: string;
-  chipRemoveObjectsText: string;
   btnGenerate: string;
   btnGenerating: string;
   deviceMobile: string;
@@ -272,7 +271,6 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     chipSoloText: "다른 사람 없이 혼자만 나오게 해줘",
     chipResemblanceText: "내 원본 얼굴과 더 똑같이 해줘",
     chipSunsetText: "배경을 따뜻한 노을빛으로 바꿔줘",
-    chipRemoveObjectsText: "불필요한 개체/사물 삭제",
     btnGenerate: "인생샷 생성하러 가기 ➔",
     btnGenerating: "AI 화보 생성 중... ⏳",
     deviceMobile: "📱 모바일 접속",
@@ -428,7 +426,6 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     chipSoloText: "Remove other people, show only me solo",
     chipResemblanceText: "Make it resemble my original selfie face more closely",
     chipSunsetText: "Change the background lighting to warm sunset golden hour",
-    chipRemoveObjectsText: "Remove unwanted objects and clutter",
     btnGenerate: "Generate AI Shot Now ➔",
     btnGenerating: "Generating AI Masterpiece... ⏳",
     deviceMobile: "📱 Mobile Device",
@@ -584,7 +581,6 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     chipSoloText: "他の人を消して、一人だけ映るようにして",
     chipResemblanceText: "私の元の顔にもっと似せて修正して",
     chipSunsetText: "背景を温かい夕焼けの光に変更して",
-    chipRemoveObjectsText: "不要なオブジェクト/物を削除",
     btnGenerate: "AI写真を作成する ➔",
     btnGenerating: "AI写真を生成中... ⏳",
     deviceMobile: "📱 スマホ接続",
@@ -740,7 +736,6 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     chipSoloText: "移除其他人，只保留我单人",
     chipResemblanceText: "修改得更像我原图自拍的面部特征",
     chipSunsetText: "将背景光线调整为温暖的夕阳晚霞",
-    chipRemoveObjectsText: "消除不需要的物体/杂物",
     btnGenerate: "生成AI写真 ➔",
     btnGenerating: "正在生成AI大片... ⏳",
     deviceMobile: "📱 移动端连接",
@@ -896,7 +891,6 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     chipSoloText: "Hapus orang lain, tampilkan hanya saya sendiri",
     chipResemblanceText: "Buat lebih mirip dengan wajah foto asli saya",
     chipSunsetText: "Ubah latar belakang menjadi nuansa matahari terbenam yang hangat",
-    chipRemoveObjectsText: "Hapus objek & benda tidak perlu",
     btnGenerate: "Hasilkan Foto AI ➔",
     btnGenerating: "Sedang Membuat Foto AI... ⏳",
     deviceMobile: "📱 Perangkat Seluler",

@@ -464,18 +464,19 @@ export const STYLES: StyleDef[] = [
     supportsBgColor: true,
     printable: true,
     prompt:
-      "Official standard ID photo (resident card / driver's license specification). CRITICAL FRAMING & COMPOSITION: Perfectly centered head-and-shoulders bust shot. MANDATORY HEADROOM: Leave 12% to 15% clear background space above the top of the hair (crown of head must NOT touch the top edge). The face occupies 50% to 58% of the vertical frame height, with visible neck, collarbones, and neat symmetrical shoulders occupying the bottom third. Completely replacing clothes with a clean tailored dark business suit and white shirt, straight front-facing posture, natural calm professional expression, sharp focus on eyes, crisp symmetrical studio lighting, strictly DO NOT crop head or hair, id_weight: 0.999",
+      "Official standard ID photo (resident card / driver's license specification). CRITICAL FRAMING & COMPOSITION: Perfectly centered head-and-shoulders bust shot. MANDATORY HEADROOM: Leave 15% to 20% clear background space above the top of the hair (crown of head must NOT touch the top edge). The face occupies 48% to 54% of the vertical frame height, with visible neck, collarbones, and neat symmetrical shoulders occupying the bottom third. Completely replacing clothes with a clean tailored dark business suit and white shirt, straight front-facing posture, natural calm professional expression, sharp focus on eyes, crisp symmetrical studio lighting, strictly DO NOT crop head or hair, id_weight: 0.999",
   },
   {
     id: "passport",
     category: "id_photo",
     label: "여권·비자 규격 사진",
-    description: "ICAO 국제 공식 여권 규격 (머리 위 흰 여백 확보 & 어깨선 안정)",
+    description: "ICAO 국제 공식 여권 규격 (머리 위 여백 확보 & 어깨선 안정)",
     emoji: "🛂",
     imageUrl: STYLE_PREVIEWS.passport,
+    supportsBgColor: true,
     printable: true,
     prompt:
-      "Official ICAO compliant international passport photo specification. CRITICAL FRAMING & HEADROOM: Centered front-facing official passport portrait. MANDATORY TOP MARGIN: Leave 10% to 14% of pure solid white background (#FFFFFF) space above the crown of the hair (hair must NOT touch top border, strictly NO cropped hair or head). The face from top of hair to bottom of chin occupies 60% to 68% of the total vertical frame height (balanced official passport proportions). Visible neck, collarbones, and neat symmetrical shoulders visible in lower frame. Both ears and eyebrows completely visible, neutral expression with mouth gently closed, sharp focus on eyes, dark formal attire contrasting against white background, id_weight: 0.999",
+      "Official ICAO compliant international passport photo specification. CRITICAL FRAMING & HEADROOM: Centered front-facing official passport portrait. MANDATORY TOP MARGIN: Leave 15% to 20% of clear solid background space above the crown of the hair (hair must NOT touch top border, strictly NO cropped hair or head). The face from top of hair to bottom of chin occupies 48% to 54% of the total vertical frame height (balanced natural official passport proportions). Visible neck, collarbones, and neat symmetrical shoulders visible in lower frame. Both ears and eyebrows completely visible, neutral expression with mouth gently closed, sharp focus on eyes, dark formal attire, id_weight: 0.999",
   },
   {
     id: "student",
@@ -487,7 +488,7 @@ export const STYLES: StyleDef[] = [
     supportsBgColor: true,
     printable: true,
     prompt:
-      "Clean smart casual student ID and young professional profile portrait. CRITICAL FRAMING & HEADROOM: Leave 12% to 16% headroom above hair. Face occupies 48% to 55% of vertical frame height (neat upper-chest portrait). Dressed in a neat crisp button-down oxford shirt or stylish knit (NOT a heavy dark executive suit), friendly warm confident smile, bright flattering studio lighting, strictly NO cropped hair, id_weight: 0.999",
+      "Clean smart casual student ID and young professional profile portrait. CRITICAL FRAMING & HEADROOM: Leave 15% to 20% headroom above hair. Face occupies 46% to 52% of vertical frame height (neat upper-chest portrait). Dressed in a neat crisp button-down oxford shirt or stylish knit (NOT a heavy dark executive suit), friendly warm confident smile, bright flattering studio lighting, strictly NO cropped hair, id_weight: 0.999",
   },
 
   // ───────── 🎭 컨셉·재미 (concept) ─────────
@@ -842,30 +843,33 @@ CRITICAL MANDATORY INSTRUCTIONS:
       : `Professional photorealistic photo preserving all subjects from Image 1 with 100% facial fidelity.`;
   }
 
-  // Studio background color mapping
-  if (bgColor) {
-    let bgPrompt = "clean solid white studio background";
-    if (bgColor === "blue") bgPrompt = "clean solid light blue passport ID background";
-    if (bgColor === "gray") bgPrompt = "clean solid light gray professional studio background";
-
-    if (style?.supportsBgColor || isStudioStyle) {
-      base += ` Background: ${bgPrompt}.`;
-    }
-  }
+  // Studio background color mapping & 100% clean background purge
+  let bgName = "solid clean pure white (#FFFFFF)";
+  if (bgColor === "blue") bgName = "solid uniform clean light pastel blue (#EBF3FC, clean cyan blue)";
+  if (bgColor === "gray") bgName = "solid uniform clean light neutral studio gray (#F2F4F8)";
 
   const isPassport = styleId === "passport";
   const isStandardId = styleId === "id_photo";
   const isStudentId = styleId === "student";
+  const isIdPhotoCard = isPassport || isStandardId || isStudentId;
+
+  if (isIdPhotoCard || style?.supportsBgColor || isStudioStyle) {
+    base += ` Background: ${bgName}.`;
+  }
+
+  const bgPurgeDirective = (isIdPhotoCard || isStudioStyle)
+    ? `CRITICAL 100% BACKGROUND PURGE & ERASURE: Completely delete, wipe out, and erase ALL original room elements from Image 1 (indoor room walls, wallpaper, pictures, paintings on wall, furniture, bookshelves, curtains, door, and clutter). The entire backdrop behind the person MUST be 100% seamless, flat, uniform solid ${bgName} with zero patterns and zero objects.`
+    : "";
 
   let identityNote = "";
   if (isPassport) {
-    identityNote = `STRICT ICAO PASSPORT SPECIFICATION: (masterpiece, best quality:1.2), 8k uhd. Preserve the person's exact 100% facial features, eyes, nose, mouth, and skin tone with id_weight: 0.999. MANDATORY PASSPORT FRAMING & HEADROOM: Leave 10% to 14% pure solid white background (#FFFFFF) space above the crown of hair. Face occupies 60% to 68% of vertical frame height. Visible neck, collarbones, and neat symmetrical shoulders visible in lower frame. Centered front-facing, ears visible, strictly DO NOT crop head or hair. ${EDGE_INPAINTING_POSITIVE}.`;
+    identityNote = `STRICT ICAO PASSPORT SPECIFICATION: (masterpiece, best quality:1.2), 8k uhd. Preserve the person's exact 100% facial features, eyes, nose, mouth, and skin tone with id_weight: 0.999. MANDATORY PASSPORT FRAMING & HEADROOM: Leave 15% to 20% clear solid ${bgName} space above the crown of hair. Face from hair crown to chin occupies 48% to 54% of vertical frame height (balanced official bust framing). Visible neck, collarbones, and neat symmetrical shoulders visible in lower frame. Centered front-facing, ears visible, strictly DO NOT crop head or hair. ${bgPurgeDirective} ${EDGE_INPAINTING_POSITIVE}.`;
   } else if (isStandardId) {
-    identityNote = `STRICT STANDARD ID SPECIFICATION: (masterpiece, best quality:1.2), 8k uhd. Preserve the person's exact 100% facial features, eyes, nose, mouth, and skin tone with id_weight: 0.999. MANDATORY ID RATIO: Head-and-shoulders bust shot with 12%-15% headroom above hair. Face occupies 50% to 58% of vertical frame height. Clean tailored dark business suit, symmetrical shoulders, strictly DO NOT crop head or hair. ${EDGE_INPAINTING_POSITIVE}.`;
+    identityNote = `STRICT STANDARD ID SPECIFICATION: (masterpiece, best quality:1.2), 8k uhd. Preserve the person's exact 100% facial features, eyes, nose, mouth, and skin tone with id_weight: 0.999. MANDATORY ID RATIO: Head-and-shoulders bust shot with 15%-20% headroom above hair. Face occupies 48% to 54% of vertical frame height. Clean tailored dark business suit, symmetrical shoulders, strictly DO NOT crop head or hair. ${bgPurgeDirective} ${EDGE_INPAINTING_POSITIVE}.`;
   } else if (isStudentId) {
-    identityNote = `STRICT STUDENT ID & PROFILE SPECIFICATION: (masterpiece, best quality:1.2), 8k uhd. Preserve the person's exact 100% facial features, eyes, nose, mouth, and skin tone with id_weight: 0.999. MANDATORY PROFILE RATIO: Upper-chest portrait with 12%-16% headroom above hair. Face occupies 48% to 55% of vertical frame height. Neat button-down collar shirt (no heavy dark suits), warm friendly smile. ${EDGE_INPAINTING_POSITIVE}.`;
+    identityNote = `STRICT STUDENT ID & PROFILE SPECIFICATION: (masterpiece, best quality:1.2), 8k uhd. Preserve the person's exact 100% facial features, eyes, nose, mouth, and skin tone with id_weight: 0.999. MANDATORY PROFILE RATIO: Upper-chest portrait with 15%-20% headroom above hair. Face occupies 46% to 52% of vertical frame height. Neat button-down collar shirt (no heavy dark suits), warm friendly smile. ${bgPurgeDirective} ${EDGE_INPAINTING_POSITIVE}.`;
   } else if (isStudioStyle) {
-    identityNote = `STRICT FACE IDENTITY LOCK & STUDIO INPAINTING: (masterpiece, best quality:1.2), 8k uhd, 85mm lens. Preserve the person's exact 100% facial features, eyes, nose, mouth, jawline, and skin tone with id_weight: 0.999 while completely transforming clothes, outfit, and background into the requested concept. ${EDGE_INPAINTING_POSITIVE}. Professional corporate headshot ratio (face occupies 42%-50% of vertical frame height).`;
+    identityNote = `STRICT FACE IDENTITY LOCK & STUDIO INPAINTING: (masterpiece, best quality:1.2), 8k uhd, 85mm lens. Preserve the person's exact 100% facial features, eyes, nose, mouth, jawline, and skin tone with id_weight: 0.999 while completely transforming clothes, outfit, and background into the requested concept. ${bgPurgeDirective} ${EDGE_INPAINTING_POSITIVE}. Professional corporate headshot ratio (face occupies 42%-50% of vertical frame height).`;
   } else {
     identityNote = `${DEFAULT_IDENTITY_NOTE} ${EDGE_INPAINTING_POSITIVE}.`;
   }
@@ -879,8 +883,8 @@ CRITICAL MANDATORY INSTRUCTIONS:
     if (parsed.userRequestInstruction) finalPrompt += ` ${parsed.userRequestInstruction}`;
   }
 
-  const idNegative = (isPassport || isStandardId || isStudentId)
-    ? "cropped head, cropped hair, cropped ears, cropped chin, head touching top edge, tight face crop, oversized giant face, "
+  const idNegative = isIdPhotoCard
+    ? "room, interior, walls, wallpaper patterns, furniture, painting on wall, picture frames, bookshelf, curtains, windows, clutter in background, room shadows, cropped head, cropped hair, cropped ears, cropped chin, head touching top edge, tight face crop, oversized giant face, "
     : "";
 
   const negativeToUse = isStudioStyle

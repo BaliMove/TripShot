@@ -187,8 +187,8 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     heroHeadlineLine2: "10초 만에 안전한 인생샷",
     heroSub: "위험한 절벽이나 통제 구역에 들어갈 필요 없이, 방구석에서 100% 안전하게 고화질 화보를 완성하세요. ⚡📸",
 
-    uploadSectionTitle: "1. 사진 업로드 (혼자 / 커플 / 단체 사진 모두 가능 📸)",
-    facePreserveBadge: "🛡️ 100% 실물 얼굴 고정 모드 (1인부터 30인 단체까지 완벽 보존)",
+    uploadSectionTitle: "1. 인물 사진 업로드 📸",
+    facePreserveBadge: "🛡️ 100% 실물 얼굴 고정 모드 (1:1 원본 완벽 보존)",
     facePreserveDesc: "AI 변형 없이 모든 인물의 실제 눈, 코, 미소, 안경, 고유 특징을 100% 온전히 유지합니다.",
     selectTravelCategoryTitle: "2. 명소 배경 선택 (여행 스팟 카테고리)",
     selectStudioCategoryTitle: "3. 스튜디오 & 컨셉 촬영 선택",
@@ -249,7 +249,7 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     btnSelectPlan: "이 플랜 시작하기",
 
     dropzoneTitle: "클릭하여 사진 업로드 또는 파일 드래그",
-    dropzoneSub: "정면 셀카, 커플 사진, 단체 사진 모두 지원 (최대 10MB)",
+    dropzoneSub: "얼굴이 선명한 정면 인물 사진일수록 최상의 화보가 완성됩니다 (최대 10MB)",
     dropzoneChange: "사진 변경하기",
     dropzoneRemove: "삭제",
     bgSelectTitle: "🎨 스튜디오 단색 배경색 선택",
@@ -342,8 +342,8 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     heroHeadlineLine2: "Stunning AI Photos in 10 Seconds",
     heroSub: "No dangerous cliff posing or restricted zones needed. Create 100% safe, high-quality travel & profile shots from home! ⚡📸",
 
-    uploadSectionTitle: "1. Upload Photo (Solo, Couple & Group Photos 📸)",
-    facePreserveBadge: "🛡️ 100% Original Face Preservation (1 to 30+ Persons Face-Locked)",
+    uploadSectionTitle: "1. Upload Portrait Photo 📸",
+    facePreserveBadge: "🛡️ 100% Original Face ID Preservation (1:1 Exact Facial Lock)",
     facePreserveDesc: "Preserves 100% exact real-life eyes, nose, teeth smile, expressions, and glasses for every individual without AI distortion.",
     selectTravelCategoryTitle: "2. Select Travel Destination Spot",
     selectStudioCategoryTitle: "3. Select Studio & Concept Shoot",
@@ -404,7 +404,7 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     btnSelectPlan: "Get This Plan",
 
     dropzoneTitle: "Click to upload or drag & drop photo",
-    dropzoneSub: "Supports solo selfies, couples, and group photos (Max 10MB)",
+    dropzoneSub: "Clear front-facing portrait yields the most stunning, true-to-life results (Max 10MB)",
     dropzoneChange: "Change Photo",
     dropzoneRemove: "Remove",
     bgSelectTitle: "🎨 Select Studio Backdrop Color",
@@ -497,8 +497,8 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     heroHeadlineLine2: "10秒で完成する感動のAIショット",
     heroSub: "危険な崖や立ち入り禁止区域に行く必要はありません。自宅で100% safeに高品質な写真集を完成させましょう！⚡📸",
 
-    uploadSectionTitle: "1. 写真をアップロード（1人・カップル・団体対応 📸）",
-    facePreserveBadge: "🛡️ 100% 元の顔を完全保存（1人〜30人全員の顔立ちを完全固定）",
+    uploadSectionTitle: "1. 人物写真をアップロード 📸",
+    facePreserveBadge: "🛡️ 100% 本人の顔立ちを完全保存（1:1 原本完全固定）",
     facePreserveDesc: "自撮りから12人の大家族まで、目・鼻・口・笑顔・メガネを100%忠実に保ちながら合成します。",
     selectTravelCategoryTitle: "2. 観光スポット背景を選択",
     selectStudioCategoryTitle: "3. スタジオ＆コンセプト撮影を選択",
@@ -559,7 +559,7 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     btnSelectPlan: "このプランを選択",
 
     dropzoneTitle: "クリックしてアップロード、またはファイルをドラッグ",
-    dropzoneSub: "自撮り、カップル、グループ写真対応（最大10MB）",
+    dropzoneSub: "顔が鮮明に写った正面の写真ほど、最も完成度の高いグラビアが仕上がります（最大10MB）",
     dropzoneChange: "写真を変更",
     dropzoneRemove: "削除",
     bgSelectTitle: "🎨 スタジオ単色背景色の選択",
@@ -652,8 +652,8 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     heroHeadlineLine2: "10秒生成高品质AI人生大片",
     heroSub: "无需冒着危险前往悬崖或禁区，在室内即可100%安全生成超清环球旅行与商务写真！⚡📸",
 
-    uploadSectionTitle: "1. 上传照片 (支持单人 / 情侣 / 合照 📸)",
-    facePreserveBadge: "🛡️ 100% 真实面容锁定模式（1人至30人全员面部完全保真）",
+    uploadSectionTitle: "1. 上传人物照片 📸",
+    facePreserveBadge: "🛡️ 100% 真实面容锁定模式（1:1 完美保留真实五官）",
     facePreserveDesc: "100%完整保留原图五官、眼睛、鼻梁、笑容与眼镜，告别AI虚假换脸与畸变。",
     selectTravelCategoryTitle: "2. 选择旅行名胜背景",
     selectStudioCategoryTitle: "3. 选择商务与创意写真",
@@ -714,7 +714,7 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     btnSelectPlan: "选择此方案",
 
     dropzoneTitle: "点击上传或直接拖拽图片到此处",
-    dropzoneSub: "支持单人自拍、情侣合照与多人照片（最大10MB）",
+    dropzoneSub: "面部清晰的正面人物照片能呈现出最完美逼真的大片效果（最大10MB）",
     dropzoneChange: "更换照片",
     dropzoneRemove: "移除",
     bgSelectTitle: "🎨 选择影棚纯色背景",
@@ -807,8 +807,8 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     heroHeadlineLine2: "Foto AI Spektakuler dalam 10 Detik",
     heroSub: "Tidak perlu mengambil risiko di tebing berbahaya. Buat foto perjalanan & pasfoto profesional 100% aman dari rumah! ⚡📸",
 
-    uploadSectionTitle: "1. Unggah Foto (Sendiri, Pasangan & Grup 📸)",
-    facePreserveBadge: "🛡️ Mode Kunci Wajah 100% Asli (1 s/d 30+ Orang Terkunci Sempurna)",
+    uploadSectionTitle: "1. Unggah Foto Wajah / Diri 📸",
+    facePreserveBadge: "🛡️ Mode Kunci Wajah 100% Asli (Kunci Presisi 1:1 Sesuai Foto Asli)",
     facePreserveDesc: "Mempertahankan 100% mata, hidung, senyum, kacamata, dan ekspresi asli setiap individu tanpa distorsi AI.",
     selectTravelCategoryTitle: "2. Pilih Destinasi Wisata",
     selectStudioCategoryTitle: "3. Pilih Studio & Foto Konsep",
@@ -869,7 +869,7 @@ export const TRANSLATIONS: Record<Language, Translation> = {
     btnSelectPlan: "Pilih Paket Ini",
 
     dropzoneTitle: "Klik untuk unggah atau seret & lepas foto",
-    dropzoneSub: "Mendukung selfie, pasangan, dan foto grup (Maks 10MB)",
+    dropzoneSub: "Foto wajah tampak depan yang jelas akan menghasilkan foto paling sempurna (Maks 10MB)",
     dropzoneChange: "Ganti Foto",
     dropzoneRemove: "Hapus",
     bgSelectTitle: "🎨 Pilih Warna Latar Studio",

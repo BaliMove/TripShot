@@ -221,6 +221,33 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Main Upload Studio Section (Workstation-First: Zero-Scroll to Action) */}
+      <section id="upload-section" className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
+        <UploadCard initialCategory={selectedCategory} initialStyleId={selectedStyleId} />
+      </section>
+
+      {/* How It Works Section - Ultra-Compact Mobile 1-Line Flow */}
+      <section id="how-it-works" className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+        <div className="bg-white/90 backdrop-blur-md rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs">
+          <div className="flex items-center justify-between gap-1 sm:gap-3 text-center">
+            <div className="flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
+              <span className="w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-sky-100 text-sky-600 font-black text-[11px] sm:text-xs flex items-center justify-center">1</span>
+              <span className="font-extrabold text-[11px] sm:text-sm text-slate-800 leading-tight">{t.step1Title}</span>
+            </div>
+            <span className="text-slate-300 font-bold text-xs sm:text-base">➔</span>
+            <div className="flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
+              <span className="w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-indigo-100 text-indigo-600 font-black text-[11px] sm:text-xs flex items-center justify-center">2</span>
+              <span className="font-extrabold text-[11px] sm:text-sm text-slate-800 leading-tight">{t.step2Title}</span>
+            </div>
+            <span className="text-slate-300 font-bold text-xs sm:text-base">➔</span>
+            <div className="flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
+              <span className="w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-amber-100 text-amber-600 font-black text-[11px] sm:text-xs flex items-center justify-center">3</span>
+              <span className="font-extrabold text-[11px] sm:text-sm text-slate-800 leading-tight">{t.step3Title}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Featured Destination Cards Grid */}
       <section id="destinations" className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="text-center mb-8 sm:mb-10">
@@ -334,54 +361,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section id="how-it-works" className="max-w-7xl mx-auto px-6 py-12">
-        <div className="text-center max-w-3xl mx-auto mb-10">
-          <span className="inline-block text-xs font-extrabold uppercase tracking-widest text-sky-600 bg-sky-50 border border-sky-200 px-3.5 py-1 rounded-full mb-3">
-            {t.howBadge}
-          </span>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2 keep-all break-keep">
-            {t.howTitle}
-          </h2>
-          <p className="text-slate-600 text-xs sm:text-sm keep-all break-keep">{t.howSub}</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm text-center">
-            <div className="w-12 h-12 rounded-2xl bg-sky-100 text-sky-600 font-black text-xl flex items-center justify-center mx-auto mb-4">
-              1
-            </div>
-            <h3 className="font-bold text-slate-900 text-base mb-1">{t.step1Title}</h3>
-            <p className="text-xs text-slate-500 leading-relaxed keep-all break-keep">
-              {t.step1Desc}
-            </p>
-          </div>
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm text-center">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 font-black text-xl flex items-center justify-center mx-auto mb-4">
-              2
-            </div>
-            <h3 className="font-bold text-slate-900 text-base mb-1">{t.step2Title}</h3>
-            <p className="text-xs text-slate-500 leading-relaxed keep-all break-keep">
-              {t.step2Desc}
-            </p>
-          </div>
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm text-center">
-            <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 font-black text-xl flex items-center justify-center mx-auto mb-4">
-              3
-            </div>
-            <h3 className="font-bold text-slate-900 text-base mb-1">{t.step3Title}</h3>
-            <p className="text-xs text-slate-500 leading-relaxed keep-all break-keep">
-              {t.step3Desc}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Main Upload Section */}
-      <section id="upload-section" className="max-w-5xl mx-auto px-6 py-12">
-        <UploadCard initialCategory={selectedCategory} initialStyleId={selectedStyleId} />
       </section>
 
       {/* Pricing Comparison Section */}

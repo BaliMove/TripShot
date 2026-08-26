@@ -1,10 +1,50 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
+import zlib from "zlib";
 import { buildPrompt, getStyle, parseCustomFixPrompt, NO_TEXT_INSTRUCTION, type BgColor, type Gender } from "../../lib/styles";
 import { buildPersonalizedLearningPrompt, type UserPreferences } from "../../lib/preferenceMemory";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
+
+function createSolidPng(width: number, height: number, r: number, g: number, b: number): string {
+  const rowSize = 1 + width * 3;
+  const rawData = Buffer.alloc(rowSize * height);
+  for (let y = 0; y < height; y++) {
+    const rowOffset = y * rowSize;
+    rawData[rowOffset] = 0;
+    for (let x = 0; x < width; x++) {
+      const pxOffset = rowOffset + 1 + x * 3;
+      rawData[pxOffset] = r;
+      rawData[pxOffset + 1] = g;
+      rawData[pxOffset + 2] = b;
+    }
+  }
+  const compressed = zlib.deflateSync(rawData);
+
+  function chunk(type: string, data: Buffer): Buffer {
+    const len = Buffer.alloc(4);
+    len.writeUInt32BE(data.length, 0);
+    const t = Buffer.from(type, "ascii");
+    const crc = Buffer.alloc(4);
+    const c = zlib.crc32(Buffer.concat([t, data]));
+    crc.writeUInt32BE(c, 0);
+    return Buffer.concat([len, t, data, crc]);
+  }
+
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(width, 0);
+  ihdr.writeUInt32BE(height, 4);
+  ihdr[8] = 8;
+  ihdr[9] = 2;
+  ihdr[10] = 0;
+  ihdr[11] = 0;
+  ihdr[12] = 0;
+
+  const sig = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  const png = Buffer.concat([sig, chunk("IHDR", ihdr), chunk("IDAT", compressed), chunk("IEND", Buffer.alloc(0))]);
+  return png.toString("base64");
+}
 
 interface ModelSuccessResult {
   success: true;
@@ -110,6 +150,20 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const isIdStyle = ["id_photo", "passport", "student"].includes(styleId);
+
+    // CRITICAL: For ID Photo styles, inject an authentic pristine solid color studio backdrop image as Image 2
+    if (isIdStyle && !rawBgBase64) {
+      if (bgColor === "blue") {
+        rawBgBase64 = createSolidPng(600, 800, 235, 243, 252); // #EBF3FC (Light pastel cyan blue)
+      } else if (bgColor === "gray") {
+        rawBgBase64 = createSolidPng(600, 800, 242, 244, 248); // #F2F4F8 (Light neutral studio gray)
+      } else {
+        rawBgBase64 = createSolidPng(600, 800, 255, 255, 255); // #FFFFFF (Pure solid white)
+      }
+      bgMime = "image/png";
+    }
+
     let prompt = "";
     if (customBgBase64) {
       const fixAddon = rawCustomFixPrompt ? ` User modification instruction: ${rawCustomFixPrompt.trim()}.` : "";
@@ -139,7 +193,7 @@ export async function POST(req: NextRequest) {
    - Ground contact shadows: The subject must stand firmly on the ground surface with natural contact and ambient occlusion shadows (no floating sticker look).
    - Directional lighting harmonization: Match the lighting direction, color temperature, and rim highlights on the subject's face, hair, and body seamlessly with the ambient light source of Image 2.
    - Attire adaptation: Elegantly adapt the subject's clothing to match the travel/sports venue (e.g. athletic sports polo/t-shirt, shorts, sneakers) while keeping 100% original head and face.
-   - Realistic texture: Microscopic pores, fine vellus peach fuzz, natural sub-surface scattering (SSS), and organic fine sensor grain on Kodak Portra 400 film aesthetic.${customPromptAddon}${fixAddon} ${NO_TEXT_INSTRUCTION}
+   - Realistic texture: Microscopic pores, fine vellus peach fuzz, natural sub-surface scattering (SSS), and organic fine sensor grain on Kodak Portra 400 film aesthetic.${customPromptAddon}${fixAddon} Do not render any visible text, watermark, logos, or letters.
 CRITICAL NEGATIVE: (plastic skin, waxy skin, airbrushed, smooth skin, poreless skin:1.4), (matte skin, powdery skin, flawless skin:1.3), ball stuck to racket, ball glued to paddle, frozen ball on strings, ball attached to racket face, fake ball, elongated face, pointy nose, narrowed eyes, distorted facial bone structure, stranger face, different face, morphed face, altered identity, cross-contaminated features, generic young model, wrong face, face drift, tiny distant figure, distant person, blurry face, unrecognizable face, tight close-up, cropped landmark, oversized head, gigantic face filling the entire screen, fake floating cutout, sticker cutout, missing ground shadow, beauty filter, glam, cgi, 3d render, cartoon, painting, illustration, drawing, unreal engine, ring-light flat lighting, front flash, overexposed highlights, dead eyes, bad anatomy, deformed hands, lowres, watermark, halo artifact around head, hard cutout edges, mismatched lighting, unnatural seams, skin tone boundary mismatch, blurry borders, oversmoothed skin, deformed facial features, mutated eyes, plastic face, asymmetrical jaw, identity drift, duplicated face, identical features across multiple people, swapped identities, merged facial attributes, missing people, dropped members.`;
     } else {
       prompt = buildPrompt({
@@ -150,11 +204,18 @@ CRITICAL NEGATIVE: (plastic skin, waxy skin, airbrushed, smooth skin, poreless s
       });
 
       // When facePreserveMode is active, append appropriate Face & Ratio Directive
-      const isIdStyle = ["id_photo", "passport", "student"].includes(styleId);
       if (facePreserveMode) {
         if (isIdStyle) {
-          const bgText = bgColor === "blue" ? "solid uniform light pastel blue" : (bgColor === "gray" ? "solid uniform light neutral gray" : "solid uniform pure white");
-          prompt += ` CRITICAL 100% REAL-FACE & HAIRSTYLE LOCK, BACKGROUND PURGE & BALANCED RATIO: Reconstruct 100% exact authentic facial features from Image 1 (eyes, eyelids, nose, mouth, jawline, ears) with id_weight: 0.999. PRESERVE ORIGINAL HAIRSTYLE & NATURAL HAIR VOLUME: Exactly retain the subject's authentic hairstyle, bangs, natural volume, and hair color from Image 1 without forcibly flattening, slicking back, or tying into a bun. NATURAL HAIR COVERAGE & NO FAKE EARS: If ears are covered or partially covered by hair in Image 1, keep the hair naturally draping over the ears. Strictly DO NOT hallucinate, generate, or force deformed, weird, or artificial ears protruding through the hair. MANDATORY 100% BACKGROUND PURGE: Completely erase ALL room interior, walls, wallpaper patterns, furniture, curtains, and clutter from Image 1. The background MUST be a 100% clean, seamless, flat ${bgText} backdrop with zero objects. MANDATORY FRAMING: Leave 15% to 20% clear headroom above the top of the hair. Face occupies 48% to 54% of frame height (natural official bust shot). Visible neck, collarbones, and neat symmetrical shoulders occupying lower frame. Strictly DO NOT crop head, DO NOT crop hair, DO NOT crop chin or ears.`;
+          const fixAddon = rawCustomFixPrompt ? ` User refinement request: ${rawCustomFixPrompt.trim()}.` : "";
+          prompt = `[MANDATORY MULTI-IMAGE COMPOSITING SPECIFICATION FOR OFFICIAL ID & PASSPORT]:
+- Image 1: PRIMARY & EXCLUSIVE REAL FACE IDENTITY SOURCE (id_weight: 1.0).
+  Extract ONLY the person's authentic face, eyes, nose, mouth, skin tone, and natural hairstyle from Image 1. Reconstruct 100% exact authentic facial structure and natural hair volume. If ears are covered by hair in Image 1, keep the hair naturally draping over the ears with ZERO fake or deformed ears.
+- Image 2: 100% VACANT PURE SOLID STUDIO BACKDROP.
+  Image 2 provides strictly the pure solid background canvas.
+  CRITICAL MANDATORY INSTRUCTION: COMPLETELY PURGE, DISCARD, AND ERASE 100% OF THE ORIGINAL BACKGROUND, ROOM, WALLS, WALLPAPER, FURNITURE, PAINTINGS, SHELVES, AND CLUTTER FROM IMAGE 1. Place the subject from Image 1 seamlessly and cleanly directly in front of Image 2's flat, seamless solid backdrop. There must be ZERO objects, ZERO furniture, ZERO wall decor, and ZERO room shadows behind the person.
+- ATTIRE & FRAMING:
+  Replace clothing with a clean tailored dark business suit and white shirt. Perfectly centered front-facing bust shot. Headroom 15% to 20% clear solid space above top of hair. Face occupies 48% to 54% of vertical frame height. Visible neck, collarbones, and neat symmetrical shoulders. Flattering symmetrical studio lighting.${fixAddon}
+CRITICAL NEGATIVE: (room, interior, wall, wallpaper pattern, furniture, painting on wall, picture frame, shelf, curtain, window, clutter in background:1.8), (deformed ears, mutated ears, unnatural ears, weird ears, fake ears sticking out of hair:1.5), (slicked back hair, unnaturally flattened hair, bald appearance, tight hair bun:1.3), cropped head, cropped hair, cropped ears, cropped chin, head touching top border, tight face crop, oversized giant face, plastic skin, 3d render, cartoon, blurry, lowres.`;
         } else {
           prompt += ` CRITICAL 100% REAL-FACE & GOLDEN-RATIO TRAVEL DIRECTIVE: Reconstruct the subject's authentic 1:1 real face from Image 1 (eyes, double eyelids, nose, smile, eyeglasses) with id_weight: 0.999. Environmental Medium-Full Shot occupying 35%-45% of vertical frame height, allowing the grand landmark panorama behind to occupy 55%-65% of the frame without obstruction. Do NOT zoom into giant headshot.`;
         }

@@ -1,12 +1,53 @@
 const functions = require("firebase-functions");
 const express = require("express");
 const cors = require("cors");
+const zlib = require("zlib");
 
 const app = express();
 
 // 1. Allow CORS for tripshot.world
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: "30mb" }));
+
+// Helper to generate an authentic, pristine solid color PNG image buffer in memory
+function createSolidPng(width, height, r, g, b) {
+  const rowSize = 1 + width * 3;
+  const rawData = Buffer.alloc(rowSize * height);
+  for (let y = 0; y < height; y++) {
+    const rowOffset = y * rowSize;
+    rawData[rowOffset] = 0;
+    for (let x = 0; x < width; x++) {
+      const pxOffset = rowOffset + 1 + x * 3;
+      rawData[pxOffset] = r;
+      rawData[pxOffset + 1] = g;
+      rawData[pxOffset + 2] = b;
+    }
+  }
+  const compressed = zlib.deflateSync(rawData);
+
+  function chunk(type, data) {
+    const len = Buffer.alloc(4);
+    len.writeUInt32BE(data.length, 0);
+    const t = Buffer.from(type, "ascii");
+    const crc = Buffer.alloc(4);
+    const c = zlib.crc32(Buffer.concat([t, data]));
+    crc.writeUInt32BE(c, 0);
+    return Buffer.concat([len, t, data, crc]);
+  }
+
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(width, 0);
+  ihdr.writeUInt32BE(height, 4);
+  ihdr[8] = 8;
+  ihdr[9] = 2;
+  ihdr[10] = 0;
+  ihdr[11] = 0;
+  ihdr[12] = 0;
+
+  const sig = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  const png = Buffer.concat([sig, chunk("IHDR", ihdr), chunk("IDAT", compressed), chunk("IEND", Buffer.alloc(0))]);
+  return png.toString("base64");
+}
 
 // 100% Synced Master Style Prompt Dictionary (Identical to app/lib/styles.ts)
 const MASTER_STYLE_PROMPT_MAP = {
@@ -294,6 +335,19 @@ app.post("/api/generate", async (req, res) => {
     }
 
     const rawKey = (styleId || destination || "corporate").toLowerCase().trim().replace(/[-\s]/g, "_");
+    const isIdPhotoStyle = ["id_photo", "passport", "student"].includes(rawKey);
+
+    // CRITICAL: For ID Photo styles, inject an authentic pristine solid color studio backdrop image as Image 2
+    if (isIdPhotoStyle && !rawBgBase64) {
+      if (bgColor === "blue") {
+        rawBgBase64 = createSolidPng(600, 800, 235, 243, 252); // #EBF3FC (Light pastel cyan blue)
+      } else if (bgColor === "gray") {
+        rawBgBase64 = createSolidPng(600, 800, 242, 244, 248); // #F2F4F8 (Light neutral studio gray)
+      } else {
+        rawBgBase64 = createSolidPng(600, 800, 255, 255, 255); // #FFFFFF (Pure solid white)
+      }
+      bgMime = "image/png";
+    }
 
     let finalPrompt = "";
     if (customBgBase64) {
@@ -355,14 +409,15 @@ CRITICAL MANDATORY INSTRUCTIONS:
       const fixAddon = effectiveFixPrompt ? ` User refinement request: ${effectiveFixPrompt}.` : "";
 
       if (isIdPhotoStyle) {
-        finalPrompt = `CRITICAL MANDATORY INSTRUCTION FOR OFFICIAL ID & PASSPORT PHOTO:
-You are an expert master studio portrait photographer creating an official certified ID photo.
-1. ISOLATE SUBJECT ONLY & COMPLETELY DISCARD ORIGINAL BACKGROUND: Only extract the person's face, head, and natural hair from Image 1. THROW AWAY, IGNORE, AND COMPLETELY ERASE the entire background of Image 1 (paintings on wall, picture frames, furniture, shelves, curtains, wallpaper, and room clutter). Replace the entire backdrop behind the person with a 100% pure, seamless, flat, uniform ${bgStr} studio backdrop with zero objects and zero patterns.
-2. 100% REAL FACE RECONSTRUCTION: Reconstruct the subject's authentic 1:1 real face from Image 1 (exact eyes, eyelids, nose, lips, jawline, skin tone, smile/expression) with id_weight: 0.999.
-3. NATURAL HAIR COVERAGE & NO FAKE EARS: Faithfully preserve the subject's exact hairstyle, bangs, hair texture, and natural volume from Image 1. If ears are covered or partially covered by hair in Image 1, keep the hair naturally draping over the ears. Strictly DO NOT hallucinate, generate, or force deformed, weird, or artificial ears protruding through the hair.
-4. BALANCED OFFICIAL ID FRAMING: Perfectly centered front-facing bust shot. MANDATORY HEADROOM: Leave 15% to 20% clear background space above the top of the hair (crown of head must NOT touch top border). Face from hair crown to chin occupies 48% to 54% of vertical frame height. Visible neck, collarbones, and neat symmetrical shoulders wearing a clean tailored dark business suit and white shirt. Strictly DO NOT crop head, hair, chin, or ears.
-5. PROFESSIONAL STUDIO LIGHTING: Crisp, flattering, symmetrical studio illumination with clean catchlights in eyes.${fixAddon} Do NOT render any visible text, watermark, logos, or letters.
-CRITICAL NEGATIVE: (room, interior, wall, wallpaper pattern, furniture, painting on wall, picture frame, shelf, curtain, window, clutter in background:1.6), (deformed ears, mutated ears, unnatural ears, weird ears, fake ears sticking out of hair, malformed earlobes:1.5), (slicked back hair, unnaturally flattened hair, bald appearance, tight hair bun:1.3), cropped head, cropped hair, cropped ears, cropped chin, head touching top border, tight face crop, oversized giant face, plastic skin, 3d render, cartoon, blurry, lowres.`;
+        finalPrompt = `[MANDATORY MULTI-IMAGE COMPOSITING SPECIFICATION FOR OFFICIAL ID & PASSPORT]:
+- Image 1: PRIMARY & EXCLUSIVE REAL FACE IDENTITY SOURCE (id_weight: 1.0).
+  Extract ONLY the person's authentic face, eyes, nose, mouth, skin tone, and natural hairstyle from Image 1. Reconstruct 100% exact authentic facial structure and natural hair volume. If ears are covered by hair in Image 1, keep the hair naturally draping over the ears with ZERO fake or deformed ears.
+- Image 2: 100% VACANT PURE SOLID STUDIO BACKDROP.
+  Image 2 provides strictly the pure solid background canvas.
+  CRITICAL MANDATORY INSTRUCTION: COMPLETELY PURGE, DISCARD, AND ERASE 100% OF THE ORIGINAL BACKGROUND, ROOM, WALLS, WALLPAPER, FURNITURE, PAINTINGS, SHELVES, AND CLUTTER FROM IMAGE 1. Place the subject from Image 1 seamlessly and cleanly directly in front of Image 2's flat, seamless solid backdrop. There must be ZERO objects, ZERO furniture, ZERO wall decor, and ZERO room shadows behind the person.
+- ATTIRE & FRAMING:
+  Replace clothing with a clean tailored dark business suit and white shirt. Perfectly centered front-facing bust shot. Headroom 15% to 20% clear solid space above top of hair. Face occupies 48% to 54% of vertical frame height. Visible neck, collarbones, and neat symmetrical shoulders. Flattering symmetrical studio lighting.${fixAddon}
+CRITICAL NEGATIVE: (room, interior, wall, wallpaper pattern, furniture, painting on wall, picture frame, shelf, curtain, window, clutter in background:1.8), (deformed ears, mutated ears, unnatural ears, weird ears, fake ears sticking out of hair:1.5), (slicked back hair, unnaturally flattened hair, bald appearance, tight hair bun:1.3), cropped head, cropped hair, cropped ears, cropped chin, head touching top border, tight face crop, oversized giant face, plastic skin, 3d render, cartoon, blurry, lowres.`;
       } else {
         const ratioInstruction = "2. GOLDEN-RATIO TRAVEL COMPOSITION & 100% COMPLETE BACKGROUND REPLACEMENT: Seamlessly replace 100% of the original background environment from Image 1 with the grand new destination scenery. Zero original room, wallpaper, or indoor clutter. Maintain environmental proportions where the subject(s) occupy approximately 35% to 45% of vertical frame height, allowing the grand landmark and scenic background to occupy 55% to 65% of the frame with full majestic grandeur.";
         finalPrompt = `(masterpiece, best quality:1.2), RAW unretouched photo, 8k uhd, professional photography seamlessly integrating ALL person(s) present in Image 1 into the scene: ${basePrompt}.

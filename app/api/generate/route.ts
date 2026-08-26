@@ -153,7 +153,7 @@ CRITICAL NEGATIVE: (plastic skin, waxy skin, airbrushed, smooth skin, poreless s
       const isIdStyle = ["id_photo", "passport", "student"].includes(styleId);
       if (facePreserveMode) {
         if (isIdStyle) {
-          prompt += ` CRITICAL 100% REAL-FACE LOCK: Reconstruct 100% exact authentic facial features from Image 1 (eyes, eyelids, nose, mouth, jawline, ears) with id_weight: 0.999. Strictly adhere to the requested official ID / passport face-to-frame size ratio and framing.`;
+          prompt += ` CRITICAL 100% REAL-FACE LOCK & MANDATORY HEADROOM: Reconstruct 100% exact authentic facial features from Image 1 (eyes, eyelids, nose, mouth, jawline, ears) with id_weight: 0.999. MANDATORY TOP MARGIN: Leave 12% to 15% of clean background space above the top of the hair. Face occupies 58% to 66% of frame height with visible neck, collarbones, and neat shoulders. Strictly DO NOT crop head, DO NOT crop hair, DO NOT crop chin or ears.`;
         } else {
           prompt += ` CRITICAL 100% REAL-FACE & GOLDEN-RATIO TRAVEL DIRECTIVE: Reconstruct the subject's authentic 1:1 real face from Image 1 (eyes, double eyelids, nose, smile, eyeglasses) with id_weight: 0.999. Environmental Medium-Full Shot occupying 35%-45% of vertical frame height, allowing the grand landmark panorama behind to occupy 55%-65% of the frame without obstruction. Do NOT zoom into giant headshot.`;
         }

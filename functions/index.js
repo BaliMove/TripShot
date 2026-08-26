@@ -354,10 +354,12 @@ CRITICAL MANDATORY INSTRUCTIONS:
       const isIdPhotoStyle = ["id_photo", "passport", "student"].includes(rawKey);
       const fixAddon = effectiveFixPrompt ? ` User refinement request: ${effectiveFixPrompt}.` : "";
       const ratioInstruction = isIdPhotoStyle
-        ? "2. OFFICIAL ID & PASSPORT SPECIFICATION FRAMING: Strictly adhere to official ID card / passport framing specifications. For passport: tight headshot where face occupies 70% to 80% of vertical frame height (only upper collarbones visible). For standard ID photo: bust shot where face occupies 55% to 65% of vertical frame height. For student ID: clean upper-chest portrait where face occupies 50% to 60% of vertical frame height. Centered, front-facing, sharp focus on eyes."
+        ? "2. OFFICIAL ID & PASSPORT SPECIFICATION FRAMING: Strictly adhere to official ID card / passport framing specifications. MANDATORY HEADROOM: Leave 12% to 15% clear background space above the top of the hair (crown of head must NOT touch top border). For passport: face occupies 60% to 68% of vertical frame height with visible neck, collarbones, and neat shoulders in lower frame. For standard ID photo: bust shot where face occupies 50% to 58% of vertical frame height. For student ID: clean upper-chest portrait where face occupies 48% to 55% of vertical frame height. Centered front-facing, sharp focus on eyes, strictly DO NOT crop head, hair, chin, or ears."
         : "2. GOLDEN-RATIO TRAVEL COMPOSITION: Strictly DO NOT enlarge or zoom in on the head into an oversized face headshot. Maintain environmental proportions where the subject(s) occupy approximately 35% to 45% of vertical frame height, allowing the grand landmark and scenic background to occupy 55% to 65% of the frame with full majestic grandeur.";
 
-      const idNegativeExtra = isIdPhotoStyle ? "" : "tight close-up, cropped landmark, zoomed-in headshot, ";
+      const idNegativeExtra = isIdPhotoStyle
+        ? "cropped head, cropped hair, cropped ears, cropped chin, head touching top border, tight face crop, oversized giant face, "
+        : "tight close-up, cropped landmark, zoomed-in headshot, ";
 
       finalPrompt = `(masterpiece, best quality:1.2), RAW unretouched photo, 8k uhd, professional photography seamlessly integrating ALL person(s) present in Image 1 into the scene: ${basePrompt}.
 CRITICAL MANDATORY INSTRUCTIONS:

@@ -458,36 +458,36 @@ export const STYLES: StyleDef[] = [
     id: "id_photo",
     category: "id_photo",
     label: "표준 증명사진 (주민증·면허)",
-    description: "대한민국·국제 표준 신분증 규격 (얼굴 55~65% 바스트 샷)",
+    description: "대한민국·국제 표준 신분증 규격 (머리 여백 확보 & 단정한 바스트 샷)",
     emoji: "🪪",
     imageUrl: STYLE_PREVIEWS.id_photo,
     supportsBgColor: true,
     printable: true,
     prompt:
-      "Official standard ID photo (resident card / driver's license specification). CRITICAL FRAMING: Head-and-shoulders bust shot where the face (top of head to chin) occupies EXACTLY 55% to 65% of vertical frame height. Completely replacing clothes with a clean tailored dark business suit and white shirt, perfectly centered front-facing posture, natural calm professional expression, sharp focus on eyes, crisp symmetrical studio lighting, id_weight: 0.999",
+      "Official standard ID photo (resident card / driver's license specification). CRITICAL FRAMING & COMPOSITION: Perfectly centered head-and-shoulders bust shot. MANDATORY HEADROOM: Leave 12% to 15% clear background space above the top of the hair (crown of head must NOT touch the top edge). The face occupies 50% to 58% of the vertical frame height, with visible neck, collarbones, and neat symmetrical shoulders occupying the bottom third. Completely replacing clothes with a clean tailored dark business suit and white shirt, straight front-facing posture, natural calm professional expression, sharp focus on eyes, crisp symmetrical studio lighting, strictly DO NOT crop head or hair, id_weight: 0.999",
   },
   {
     id: "passport",
     category: "id_photo",
     label: "여권·비자 규격 사진",
-    description: "ICAO 국제 공식 여권 규격 (얼굴 70~80% 타이트 헤드샷)",
+    description: "ICAO 국제 공식 여권 규격 (머리 위 흰 여백 확보 & 어깨선 안정)",
     emoji: "🛂",
     imageUrl: STYLE_PREVIEWS.passport,
     printable: true,
     prompt:
-      "Official ICAO compliant international passport photo specification. CRITICAL MANDATORY FACE SIZE RATIO: The face from crown of head to chin MUST occupy 70% to 80% of the vertical frame height (tight official passport crop, only upper collarbones and neck visible). Centered front-facing, both ears and eyebrows completely visible, neutral expression with mouth gently closed, sharp focus, strict pure solid white background (#FFFFFF) with zero shadows, dark formal attire contrasting against white background, id_weight: 0.999",
+      "Official ICAO compliant international passport photo specification. CRITICAL FRAMING & HEADROOM: Centered front-facing official passport portrait. MANDATORY TOP MARGIN: Leave 10% to 14% of pure solid white background (#FFFFFF) space above the crown of the hair (hair must NOT touch top border, strictly NO cropped hair or head). The face from top of hair to bottom of chin occupies 60% to 68% of the total vertical frame height (balanced official passport proportions). Visible neck, collarbones, and neat symmetrical shoulders visible in lower frame. Both ears and eyebrows completely visible, neutral expression with mouth gently closed, sharp focus on eyes, dark formal attire contrasting against white background, id_weight: 0.999",
   },
   {
     id: "student",
     category: "id_photo",
     label: "학생증·단정 프로필",
-    description: "산뜻한 셔츠 차림 스마트 캐주얼 (얼굴 50~60% 상반신)",
+    description: "산뜻한 셔츠 차림 스마트 캐주얼 (머리 여백 확보 & 상반신)",
     emoji: "🎓",
     imageUrl: STYLE_PREVIEWS.student,
     supportsBgColor: true,
     printable: true,
     prompt:
-      "Clean smart casual student ID and young professional profile portrait. CRITICAL FRAMING: Face occupies 50% to 60% of vertical frame height (upper-chest portrait). Dressed in a neat crisp button-down oxford shirt or stylish knit (NOT a heavy dark executive suit), friendly warm confident smile, bright flattering studio lighting, id_weight: 0.999",
+      "Clean smart casual student ID and young professional profile portrait. CRITICAL FRAMING & HEADROOM: Leave 12% to 16% headroom above hair. Face occupies 48% to 55% of vertical frame height (neat upper-chest portrait). Dressed in a neat crisp button-down oxford shirt or stylish knit (NOT a heavy dark executive suit), friendly warm confident smile, bright flattering studio lighting, strictly NO cropped hair, id_weight: 0.999",
   },
 
   // ───────── 🎭 컨셉·재미 (concept) ─────────
@@ -859,11 +859,11 @@ CRITICAL MANDATORY INSTRUCTIONS:
 
   let identityNote = "";
   if (isPassport) {
-    identityNote = `STRICT ICAO PASSPORT SPECIFICATION: (masterpiece, best quality:1.2), 8k uhd. Preserve the person's exact 100% facial features, eyes, nose, mouth, and skin tone with id_weight: 0.999. MANDATORY PASSPORT RATIO: Tight headshot where the face (top of hair to chin) occupies 70% to 80% of vertical frame height. Shoulders tightly cropped below collarbones. Front facing, ears visible, pure solid white background (#FFFFFF). ${EDGE_INPAINTING_POSITIVE}.`;
+    identityNote = `STRICT ICAO PASSPORT SPECIFICATION: (masterpiece, best quality:1.2), 8k uhd. Preserve the person's exact 100% facial features, eyes, nose, mouth, and skin tone with id_weight: 0.999. MANDATORY PASSPORT FRAMING & HEADROOM: Leave 10% to 14% pure solid white background (#FFFFFF) space above the crown of hair. Face occupies 60% to 68% of vertical frame height. Visible neck, collarbones, and neat symmetrical shoulders visible in lower frame. Centered front-facing, ears visible, strictly DO NOT crop head or hair. ${EDGE_INPAINTING_POSITIVE}.`;
   } else if (isStandardId) {
-    identityNote = `STRICT STANDARD ID SPECIFICATION: (masterpiece, best quality:1.2), 8k uhd. Preserve the person's exact 100% facial features, eyes, nose, mouth, and skin tone with id_weight: 0.999. MANDATORY ID RATIO: Head-and-shoulders bust shot where the face occupies 55% to 65% of vertical frame height. Clean tailored dark business suit, symmetrical shoulders. ${EDGE_INPAINTING_POSITIVE}.`;
+    identityNote = `STRICT STANDARD ID SPECIFICATION: (masterpiece, best quality:1.2), 8k uhd. Preserve the person's exact 100% facial features, eyes, nose, mouth, and skin tone with id_weight: 0.999. MANDATORY ID RATIO: Head-and-shoulders bust shot with 12%-15% headroom above hair. Face occupies 50% to 58% of vertical frame height. Clean tailored dark business suit, symmetrical shoulders, strictly DO NOT crop head or hair. ${EDGE_INPAINTING_POSITIVE}.`;
   } else if (isStudentId) {
-    identityNote = `STRICT STUDENT ID & PROFILE SPECIFICATION: (masterpiece, best quality:1.2), 8k uhd. Preserve the person's exact 100% facial features, eyes, nose, mouth, and skin tone with id_weight: 0.999. MANDATORY PROFILE RATIO: Upper-chest portrait where face occupies 50% to 60% of vertical frame height. Neat button-down collar shirt (no heavy dark suits), warm friendly smile. ${EDGE_INPAINTING_POSITIVE}.`;
+    identityNote = `STRICT STUDENT ID & PROFILE SPECIFICATION: (masterpiece, best quality:1.2), 8k uhd. Preserve the person's exact 100% facial features, eyes, nose, mouth, and skin tone with id_weight: 0.999. MANDATORY PROFILE RATIO: Upper-chest portrait with 12%-16% headroom above hair. Face occupies 48% to 55% of vertical frame height. Neat button-down collar shirt (no heavy dark suits), warm friendly smile. ${EDGE_INPAINTING_POSITIVE}.`;
   } else if (isStudioStyle) {
     identityNote = `STRICT FACE IDENTITY LOCK & STUDIO INPAINTING: (masterpiece, best quality:1.2), 8k uhd, 85mm lens. Preserve the person's exact 100% facial features, eyes, nose, mouth, jawline, and skin tone with id_weight: 0.999 while completely transforming clothes, outfit, and background into the requested concept. ${EDGE_INPAINTING_POSITIVE}. Professional corporate headshot ratio (face occupies 42%-50% of vertical frame height).`;
   } else {
@@ -879,8 +879,12 @@ CRITICAL MANDATORY INSTRUCTIONS:
     if (parsed.userRequestInstruction) finalPrompt += ` ${parsed.userRequestInstruction}`;
   }
 
+  const idNegative = (isPassport || isStandardId || isStudentId)
+    ? "cropped head, cropped hair, cropped ears, cropped chin, head touching top edge, tight face crop, oversized giant face, "
+    : "";
+
   const negativeToUse = isStudioStyle
-    ? `${STUDIO_NEGATIVE}, ${MASTER_NEGATIVE_PROMPT}`
+    ? `${idNegative}${STUDIO_NEGATIVE}, ${MASTER_NEGATIVE_PROMPT}`
     : MASTER_NEGATIVE_PROMPT;
 
   return `${finalPrompt} ${NO_TEXT_INSTRUCTION} ${negativeToUse}`;

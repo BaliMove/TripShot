@@ -1846,12 +1846,12 @@ export default function UploadCard({
 
         {activeResult && activeResult.success ? (
           <div className="bg-slate-50/70 rounded-3xl border border-slate-200/80 p-6 flex flex-col items-center shadow-md mb-8">
-            <div className="relative w-full aspect-[3/4] max-w-[320px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white ring-8 ring-slate-100/80 mb-6 group bg-slate-900">
+            <div className={`relative w-full aspect-[3/4] max-w-[320px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white ring-8 ring-slate-100/80 mb-6 group ${["id_photo", "passport", "student"].includes(usedStyleId) ? "bg-white" : "bg-slate-900"}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={activeResult.imageUrl}
                 alt={`${displayLabel} result`}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 animate-fadeIn"
+                className={`w-full h-full ${["id_photo", "passport", "student"].includes(usedStyleId) ? "object-contain" : "object-cover"} group-hover:scale-105 transition-transform duration-300 animate-fadeIn`}
               />
 
               {/* 🪄 Realtime Custom Fix Refinement Loading Overlay */}

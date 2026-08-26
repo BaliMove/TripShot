@@ -701,7 +701,7 @@ export function parseCustomFixPrompt(customFixPrompt: string) {
     lower.includes("顔") || lower.includes("似") || lower.includes("脸") || lower.includes("wajah")
   ) {
     idWeight = 0.999;
-    detectedDirectives.push("STRICT 1:1 FACE ID LOCK: Exactly preserve the authentic real facial features, eyes, double eyelids, nose, lips, jawline, skin tone, and natural smile of EVERY person from Image 1 with id_weight: 0.999.");
+    detectedDirectives.push("CRITICAL 1:1 REAL FACE FIDELITY (id_weight: 1.0): Reconstruct the exact authentic facial features of the real person in Image 1 (identical eye shape, authentic eye size, authentic nose bridge width and tip, natural mouth, teeth, smile, authentic cheekbones and jawline, authentic skin tone, bangs, and natural hair texture). Under NO circumstances should the face be replaced with a different person or generic model.");
   }
 
   // 2. 특정 캐릭터 추가

@@ -117,7 +117,7 @@ function parseCustomFixPrompt(customFixPrompt) {
     lower.includes("face") || lower.includes("resemble") || lower.includes("likeness") || lower.includes("identical") ||
     lower.includes("顔") || lower.includes("似") || lower.includes("脸") || lower.includes("wajah")
   ) {
-    directives.push("STRICT 1:1 FACE ID LOCK: Exactly preserve the authentic real facial features, eyes, double eyelids, nose, lips, facial bone structure, skin tone, and natural smile of EVERY person from Image 1 with id_weight: 0.999");
+    directives.push("CRITICAL 1:1 REAL FACE FIDELITY (id_weight: 1.0): Reconstruct the exact authentic facial features of the real person in Image 1 (identical eye shape, authentic eye size, authentic nose bridge width and tip, natural mouth, teeth, smile, authentic cheekbones and jawline, authentic skin tone, bangs, and natural hair texture). Under NO circumstances should the face be replaced with a different person or generic model.");
   }
 
   // 2. Character Addition (Spiderman, Superhero, Mascot, etc.)
@@ -431,12 +431,16 @@ CRITICAL NEGATIVE: (plastic skin, waxy skin, airbrushed, smooth skin, poreless s
 
       if (rawPrevImageBase64) {
         const { enrichedDirective, soloPrompt } = parseCustomFixPrompt(effectiveFixPrompt);
-        finalPrompt = `CRITICAL MANDATORY INSTRUCTION FOR IMAGE MODIFICATION & REFINEMENT:
+        if (isIdPhotoStyle) {
+          finalPrompt += ` CRITICAL USER REFINEMENT: ${enrichedDirective}. MANDATORY: Retain 100% pure solid studio backdrop and neat formal/student attire with zero room clutter.`;
+        } else {
+          finalPrompt = `CRITICAL MANDATORY INSTRUCTION FOR IMAGE MODIFICATION & REFINEMENT:
 1. DETECT & RENDER ALL PERSONS (EXACT HEADCOUNT): Accurately count and include EVERY SINGLE INDIVIDUAL present in Image 1 (whether 1 person, 2 people, 4 people, or a group). Never drop, crop, or zoom into just one person unless explicitly requested. Maintain the group composition and relative positions naturally with [SEP] token partitioning.
 2. STRICT 100% REAL FACE LOCK & EDGE INPAINTING: Preserve 100% exact authentic facial identity, eyes, nose, lips, jawline, facial bone structure, skin tone, and natural smile of EVERY real person from Image 1 with id_weight: 0.999. Apply microscopic visible pores, fine vellus peach fuzz, sub-surface scattering, seamless edge blending, and natural directional Rembrandt lighting.
-3. GOLDEN-RATIO PROPORTIONS: Keep realistic environmental proportions (subject occupies 35%-45% of frame height, landmark occupies 55%-65%). DO NOT zoom in to oversized headshot.
+3. THEME & PROPORTIONS: Harmoniously maintain the original scene theme: "${basePrompt}". Keep realistic environmental proportions (subject occupies 25%-32% of frame height, landmark occupies 68%-75%). DO NOT zoom in to oversized headshot.
 4. USER REQUESTED MODIFICATIONS: Apply the user's specific requested changes with high precision: ${enrichedDirective}. ${soloPrompt ? `Ensure: ${soloPrompt}.` : ""}
-5. BALANCED GROUP FRAMING & COMPOSITION: Harmoniously frame the entire subject/group within the requested theme backdrop with realistic lighting and depth of field. Do not render any visible text, watermark, logos, or letters. CRITICAL NEGATIVE: (plastic skin, waxy skin, airbrushed, smooth skin, poreless skin:1.4), (matte skin, powdery skin, flawless skin:1.3), tight close-up, cropped landmark, oversized head, gigantic face filling the entire screen, chest-up bust shot blocking the view, beauty filter, glam, cgi, 3d render, cartoon, painting, illustration, drawing, unreal engine, ring-light flat lighting, front flash, overexposed highlights, dead eyes, bad anatomy, deformed hands, lowres, watermark, halo artifact around head, hard cutout edges, mismatched lighting, unnatural seams, skin tone boundary mismatch, blurry borders, oversmoothed skin, deformed facial features, mutated eyes, plastic face, asymmetrical jaw, identity drift, face blending, duplicated face, identical features across multiple people, swapped identities, merged facial attributes, missing people, dropped members.`;
+5. ATTIRE & COMPOSITION: Stylish travel attire. Do not render any visible text, watermark, logos, or letters. CRITICAL NEGATIVE: (plastic skin, waxy skin, airbrushed, smooth skin, poreless skin:1.4), (matte skin, powdery skin, flawless skin:1.3), (giant close-up headshot, oversized face filling the screen, selfie pose, stiff passport posture, indoor t-shirt, casual striped shirt, chest-up bust shot blocking the view, camera staring:1.5), cropped landmark, oversized head, gigantic face filling the entire screen, cut off Eiffel tower, obstructed scenery, beauty filter, glam, cgi, 3d render, cartoon, painting, illustration, drawing, unreal engine, ring-light flat lighting, front flash, overexposed highlights, dead eyes, bad anatomy, deformed hands, lowres, watermark, halo artifact around head, hard cutout edges, mismatched lighting, unnatural seams, skin tone boundary mismatch, blurry borders, oversmoothed skin, deformed facial features, mutated eyes, plastic face, asymmetrical jaw, identity drift, face blending, duplicated face, identical features across multiple people, swapped identities, merged facial attributes, missing people, dropped members.`;
+        }
       }
     }
 
@@ -454,7 +458,10 @@ CRITICAL NEGATIVE: (plastic skin, waxy skin, airbrushed, smooth skin, poreless s
 
     const inputs = [{ type: "text", text: finalPrompt }];
     inputs.push({ type: "image", data: rawSelfieBase64, mime_type: selfieMime });
-    if (rawPrevImageBase64) {
+    if (isIdPhotoStyle && rawBgBase64) {
+      // For ID/Passport/Student photo, ALWAYS supply the pure solid background canvas as Image 2
+      inputs.push({ type: "image", data: rawBgBase64, mime_type: bgMime });
+    } else if (rawPrevImageBase64) {
       inputs.push({ type: "image", data: rawPrevImageBase64, mime_type: prevMime });
     } else if (rawBgBase64) {
       inputs.push({ type: "image", data: rawBgBase64, mime_type: bgMime });

@@ -226,12 +226,16 @@ CRITICAL NEGATIVE: (room, interior, wall, wallpaper pattern, furniture, painting
         const parsedFix = parseCustomFixPrompt(rawCustomFixPrompt || "Enhance resemblance to original selfie");
         const enrichedFixDirective = parsedFix.userRequestInstruction || parsedFix.styleModsPrompt || rawCustomFixPrompt?.trim() || "Enhance resemblance to original selfie";
 
-        prompt = `CRITICAL MANDATORY INSTRUCTION FOR IMAGE MODIFICATION & REFINEMENT:
+        if (isIdStyle) {
+          prompt += ` CRITICAL USER REFINEMENT: ${enrichedFixDirective}. MANDATORY: Retain 100% pure solid studio backdrop and neat formal/student attire with zero room clutter.`;
+        } else {
+          prompt = `CRITICAL MANDATORY INSTRUCTION FOR IMAGE MODIFICATION & REFINEMENT:
 1. DETECT & RENDER ALL PERSONS (EXACT HEADCOUNT): Accurately count and include EVERY SINGLE INDIVIDUAL present in Image 1 (whether 1 person, 2 people, 4 people, or a group). Never drop, crop, or zoom into just one person unless explicitly requested. Maintain the group composition and relative positions naturally with [SEP] token partitioning.
 2. STRICT 100% REAL FACE LOCK & EDGE INPAINTING: Preserve 100% exact authentic facial identity, eyes, nose, lips, jawline, facial bone structure, skin tone, and natural smile of EVERY real person from Image 1 with id_weight: 0.999. Apply microscopic visible pores, fine vellus peach fuzz, sub-surface scattering, seamless edge blending, and natural directional Rembrandt lighting.
-3. GOLDEN-RATIO PROPORTIONS: Keep realistic environmental proportions (subject occupies 35%-45% of frame height, landmark occupies 55%-65%). DO NOT zoom in to oversized headshot.
+3. THEME & PROPORTIONS: Harmoniously maintain the original scene theme for "${styleId}". Keep realistic environmental proportions (subject occupies 25%-32% of frame height, landmark occupies 68%-75%). DO NOT zoom in to oversized headshot.
 4. USER REQUESTED MODIFICATIONS: Apply the user's specific requested changes with high precision: ${enrichedFixDirective}. ${parsedFix.soloPrompt ? `Ensure: ${parsedFix.soloPrompt}.` : ""}
-5. BALANCED GROUP FRAMING & COMPOSITION: Harmoniously frame the entire subject/group within the requested theme backdrop with realistic lighting and depth of field. ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: (plastic skin, waxy skin, airbrushed, smooth skin, poreless skin:1.4), (matte skin, powdery skin, flawless skin:1.3), tight close-up, cropped landmark, oversized head, gigantic face filling the entire screen, chest-up bust shot blocking the view, beauty filter, glam, cgi, 3d render, cartoon, painting, illustration, drawing, unreal engine, ring-light flat lighting, front flash, overexposed highlights, dead eyes, bad anatomy, deformed hands, lowres, watermark, halo artifact around head, hard cutout edges, mismatched lighting, unnatural seams, skin tone boundary mismatch, blurry borders, oversmoothed skin, deformed facial features, mutated eyes, plastic face, asymmetrical jaw, identity drift, face blending, duplicated face, identical features across multiple people, swapped identities, merged facial attributes, missing people, dropped members.`;
+5. ATTIRE & COMPOSITION: Stylish travel attire. ${NO_TEXT_INSTRUCTION} CRITICAL NEGATIVE: (plastic skin, waxy skin, airbrushed, smooth skin, poreless skin:1.4), (matte skin, powdery skin, flawless skin:1.3), (giant close-up headshot, oversized face filling the screen, selfie pose, stiff passport posture, indoor t-shirt, casual striped shirt, chest-up bust shot blocking the view, camera staring:1.5), cropped landmark, oversized head, gigantic face filling the entire screen, cut off Eiffel tower, obstructed scenery, beauty filter, glam, cgi, 3d render, cartoon, painting, illustration, drawing, unreal engine, ring-light flat lighting, front flash, overexposed highlights, dead eyes, bad anatomy, deformed hands, lowres, watermark, halo artifact around head, hard cutout edges, mismatched lighting, unnatural seams, skin tone boundary mismatch, blurry borders, oversmoothed skin, deformed facial features, mutated eyes, plastic face, asymmetrical jaw, identity drift, face blending, duplicated face, identical features across multiple people, swapped identities, merged facial attributes, missing people, dropped members.`;
+        }
       }
     }
 
@@ -251,7 +255,9 @@ CRITICAL NEGATIVE: (room, interior, wall, wallpaper pattern, furniture, painting
       
       const inputs: any[] = [{ type: "text", text: prompt }];
       inputs.push({ type: "image", data: rawSelfieBase64, mime_type: selfieMime });
-      if (rawPrevImageBase64) {
+      if (isIdStyle && rawBgBase64) {
+        inputs.push({ type: "image", data: rawBgBase64, mime_type: bgMime });
+      } else if (rawPrevImageBase64) {
         inputs.push({ type: "image", data: rawPrevImageBase64, mime_type: prevMime });
       } else if (rawBgBase64) {
         inputs.push({ type: "image", data: rawBgBase64, mime_type: bgMime });

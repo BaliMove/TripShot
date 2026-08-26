@@ -14,6 +14,9 @@ export interface UserPreferences {
   preferredFraming?: string[];
   preferredAccessories?: string[];
   preferredAttire?: string[];
+  preferredFidelity?: string[];
+  preferredProportions?: string[];
+  preferredRealism?: string[];
   learnedKeywords: Record<string, number>; // keyword -> frequency
   lastUpdated: string;
 }
@@ -21,7 +24,7 @@ export interface UserPreferences {
 const STORAGE_KEY = "tripshot_user_ai_memory";
 
 const DEFAULT_PREFERENCES: UserPreferences = {
-  version: 1,
+  version: 2,
   totalGenerations: 0,
   totalRefinements: 0,
   learningLevel: 1,
@@ -30,6 +33,9 @@ const DEFAULT_PREFERENCES: UserPreferences = {
   preferredFraming: [],
   preferredAccessories: [],
   preferredAttire: [],
+  preferredFidelity: [],
+  preferredProportions: [],
+  preferredRealism: [],
   learnedKeywords: {},
   lastUpdated: new Date().toISOString(),
 };
@@ -142,6 +148,24 @@ export function learnFromUserFixPrompt(rawFixText: string): UserPreferences {
     prefs.learnedKeywords["outdoor"] = (prefs.learnedKeywords["outdoor"] || 0) + 1;
   }
 
+  // 6. Learn Facial Fidelity Preference (얼굴 100% 일치, 원본과 똑같이, 닮음)
+  if (text.includes("얼굴") || text.includes("닮") || text.includes("똑같이") || text.includes("원본") || text.includes("face") || text.includes("resemble") || text.includes("identical")) {
+    prefs.preferredFidelity = addPref(prefs.preferredFidelity, "strict 1:1 real facial fidelity locking exact eyes, nose, lips, jawline and natural skin texture without any morphing");
+    prefs.learnedKeywords["face_fidelity"] = (prefs.learnedKeywords["face_fidelity"] || 0) + 1;
+  }
+
+  // 7. Learn Framing & Golden Ratio Proportions (황금 비율, 얼굴 크게 하지마, 배경에 맞는 비율)
+  if (text.includes("비율") || text.includes("배경에 맞") || text.includes("크게 하지") || text.includes("얼굴 크게") || text.includes("구도") || text.includes("ratio") || text.includes("proportion")) {
+    prefs.preferredProportions = addPref(prefs.preferredProportions, "golden-ratio environmental composition with 40% subject presence and 60% sweeping background landscape");
+    prefs.learnedKeywords["golden_ratio"] = (prefs.learnedKeywords["golden_ratio"] || 0) + 1;
+  }
+
+  // 8. Learn Physical Realism & Natural Action (공 붙음 방지, 어색함 제거, 자연스러운 액션)
+  if (text.includes("공") || text.includes("라켓") || text.includes("패들") || text.includes("테니스") || text.includes("어색") || text.includes("자연스럽") || text.includes("physics") || text.includes("realistic")) {
+    prefs.preferredRealism = addPref(prefs.preferredRealism, "ultra-realistic physical dynamics with natural bodily posture, strictly zero glued balls or floating artifacts");
+    prefs.learnedKeywords["physics_realism"] = (prefs.learnedKeywords["physics_realism"] || 0) + 1;
+  }
+
   // Calculate new learning level
   const totalActivity = prefs.totalGenerations + prefs.totalRefinements * 2;
   if (totalActivity >= 15) prefs.learningLevel = 5;
@@ -157,12 +181,21 @@ export function learnFromUserFixPrompt(rawFixText: string): UserPreferences {
 
 /** Build a personalized prompt enhancement snippet from learned memory */
 export function buildPersonalizedLearningPrompt(prefs: UserPreferences): string {
-  if (!prefs || (prefs.learningLevel <= 1 && (!prefs.preferredExpressions?.length && !prefs.preferredLighting?.length))) {
+  if (!prefs || (prefs.learningLevel <= 1 && (!prefs.preferredExpressions?.length && !prefs.preferredLighting?.length && !prefs.preferredFidelity?.length && !prefs.preferredProportions?.length))) {
     return "";
   }
 
   const directives: string[] = [];
 
+  if (prefs.preferredFidelity && prefs.preferredFidelity.length > 0) {
+    directives.push(`FACE FIDELITY LOCK: ${prefs.preferredFidelity.slice(-1).join(", ")}`);
+  }
+  if (prefs.preferredProportions && prefs.preferredProportions.length > 0) {
+    directives.push(`PROPORTION RULE: ${prefs.preferredProportions.slice(-1).join(", ")}`);
+  }
+  if (prefs.preferredRealism && prefs.preferredRealism.length > 0) {
+    directives.push(`PHYSICAL REALISM: ${prefs.preferredRealism.slice(-1).join(", ")}`);
+  }
   if (prefs.preferredExpressions && prefs.preferredExpressions.length > 0) {
     directives.push(`EXPRESSION PREFERENCE: ${prefs.preferredExpressions.slice(-2).join(", ")}`);
   }

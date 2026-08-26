@@ -173,10 +173,19 @@ function parseCustomFixPrompt(customFixPrompt) {
 }
 
 function buildPersonalizedLearningPrompt(prefs) {
-  if (!prefs || (prefs.learningLevel <= 1 && (!prefs.preferredExpressions?.length && !prefs.preferredLighting?.length))) {
+  if (!prefs || (prefs.learningLevel <= 1 && (!prefs.preferredExpressions?.length && !prefs.preferredLighting?.length && !prefs.preferredFidelity?.length && !prefs.preferredProportions?.length))) {
     return "";
   }
   const directives = [];
+  if (prefs.preferredFidelity && prefs.preferredFidelity.length > 0) {
+    directives.push(`FACE FIDELITY LOCK: ${prefs.preferredFidelity.slice(-1).join(", ")}`);
+  }
+  if (prefs.preferredProportions && prefs.preferredProportions.length > 0) {
+    directives.push(`PROPORTION RULE: ${prefs.preferredProportions.slice(-1).join(", ")}`);
+  }
+  if (prefs.preferredRealism && prefs.preferredRealism.length > 0) {
+    directives.push(`PHYSICAL REALISM: ${prefs.preferredRealism.slice(-1).join(", ")}`);
+  }
   if (prefs.preferredExpressions && prefs.preferredExpressions.length > 0) {
     directives.push(`EXPRESSION PREFERENCE: ${prefs.preferredExpressions.slice(-2).join(", ")}`);
   }

@@ -115,30 +115,32 @@ export async function POST(req: NextRequest) {
       const fixAddon = rawCustomFixPrompt ? ` User modification instruction: ${rawCustomFixPrompt.trim()}.` : "";
       const customPromptAddon = rawCustomPrompt ? ` Custom style/scene direction: ${rawCustomPrompt.trim()}.` : "";
       prompt = `[MANDATORY MULTI-IMAGE ROLE SPECIFICATION]:
-- Image 1: PRIMARY & EXCLUSIVE REAL FACE IDENTITY SOURCE (id_weight: 0.999).
-  The person in Image 1 is the ONLY subject who must appear in the final photo. Reconstruct 100% exact authentic facial structure: eyes, double eyelids, shape of eyebrows, nose bridge, lips, smile curvature, teeth, jawline, wrinkles, authentic age, skin tone, gender, and facial bone structure from Image 1. Strictly DO NOT de-age, do not morph into a generic youth or stranger model, and do not hallucinate a different face. Zero plastic or waxy skin.
-- Image 2: BACKGROUND ENVIRONMENT & SCENIC LOCATION ONLY.
-  Image 2 provides strictly the physical venue/location reference (e.g. dramatic cliff edge, suspension bridge, volcano crater, waterfall overlook, rooftop edge, sports arena/court, or scenic landmark).
-  CRITICAL: PURGE & OVERWRITE ANY PRE-EXISTING PEOPLE, PLAYERS, ATHLETES, OR BYSTANDERS originally visible in Image 2. Under NO circumstances should you adopt the face, age, or features of anyone originally in Image 2!
+- Image 1: PRIMARY & EXCLUSIVE REAL FACE IDENTITY SOURCE (id_weight: 1.0).
+  The person in Image 1 is the ONLY subject who must appear in the final photo. Reconstruct 100% EXACT authentic facial structure: exact eye shape, natural eyelid fold, exact eye size and distance, authentic nose contour (maintain exact nose tip width and bridge curve, DO NOT sharpen or elongate), natural lip shape and smile lines, authentic cheekbone and jawline curvature (maintain exact natural face shape from Image 1, DO NOT elongate or reshape the jaw), authentic age, skin tone, and facial bone structure. ZERO hallucination, ZERO feature morphing. Every single facial proportion from Image 1 MUST be 100% identical.
+- Image 2: VACANT LOCATION & ARCHITECTURAL BACKGROUND ONLY.
+  Image 2 provides strictly the physical venue/location reference (e.g. padel tennis court, stadium lights, glass walls, cliff edge, suspension bridge).
+  CRITICAL: COMPLETELY PURGE & ERASE ANY PRE-EXISTING PLAYERS, ATHLETES, OR BYSTANDERS originally visible in Image 2. Treat Image 2 as a completely empty stage. DO NOT borrow, blend, or cross-contaminate any facial features, body shape, or hair from anyone originally in Image 2!
+
+[REALISTIC SPORTS & PHYSICAL REALISM]:
+- CRITICAL BALL PHYSICS & REALISM: Strictly DO NOT glue or stick a ball to the racket face! In authentic professional sports photography, players either hold their racket naturally in a confident athletic ready stance (NO ball touching the racket strings at all), OR the ball is captured in realistic mid-air motion with natural motion blur away from the racket. A ball glued or frozen onto the racket strings looks completely fake and AI-generated. NEVER render a ball attached or stuck to the racket!
 
 [CONTEXT-AWARE OPTIMAL HERO PLACEMENT & GOLDEN-RATIO FRAMING]:
 (masterpiece, best quality:1.2), RAW unretouched travel photo, 8k uhd, shot on Canon EOS R5 with 35mm-50mm environmental prime lens at f/2.8.
-1. CONTEXT-AWARE HERO POSITIONING: Intelligently analyze the physical terrain of Image 2 and place the person from Image 1 at the MOST DRAMATIC & OPTIMAL HERO SPOT:
-   - If Image 2 is a cliff, rock ledge, or mountain overlook: Position the subject securely in the foreground/midground standing or posing naturally on the rock overlook, with the breathtaking abyss and landscape sweeping out behind.
-   - If Image 2 is a bridge, walkway, or rooftop terrace: Position the subject leaning or standing proudly at the railing or deck in the foreground/midground.
-   - If Image 2 is a sports court, gym, or activity venue (e.g. padel tennis, court): Position the subject in the foreground/midground ready for action, holding the appropriate gear/racket in athletic attire.
-   - If Image 2 is a natural or urban landmark: Position the subject naturally in the foreground vantage point so the entire landmark rises majestically behind them.
+1. CONTEXT-AWARE HERO POSITIONING: Intelligently analyze the physical terrain of Image 2 and place the person from Image 1 at the MOST DRAMATIC & NATURAL HERO SPOT:
+   - If Image 2 is a sports court (e.g. padel tennis, court): Position the subject in the foreground/midground in a natural athletic ready stance, holding the paddle racket naturally by the grip, ready for action.
+   - If Image 2 is a cliff, rock ledge, or mountain overlook: Position the subject securely in the foreground/midground standing naturally on the rock overlook.
+   - If Image 2 is a bridge, walkway, or rooftop terrace: Position the subject standing proudly at the railing or deck in the foreground/midground.
 2. GOLDEN-RATIO PROPORTION LOCK:
    - Frame the subject in an environmental Medium-to-Full or Waist-to-Knee shot occupying EXACTLY 38% to 48% of the vertical frame height.
-   - The face must be CRISP, SHARP, AND PROMINENT ENOUGH so that all fine facial features, eyes, expressions, and identity from Image 1 are 100% instantly recognizable.
-   - The dramatic background environment and panoramic landscape of Image 2 MUST occupy the remaining 52% to 62% of the frame with full majestic perspective and grand depth.
-   - STRICTLY AVOID: DO NOT place the subject as a tiny blurry figure in the distant background (no ant-sized people), and DO NOT zoom into an oversized ID headshot that crops out the scenery.
+   - The face must be CRISP, SHARP, AND PROMINENT ENOUGH so that all fine facial features, eyes, expressions, and 100% identical face identity from Image 1 are instantly recognizable.
+   - The background environment and panoramic venue of Image 2 MUST occupy the remaining 52% to 62% of the frame with full majestic perspective and grand depth.
+   - STRICTLY AVOID: DO NOT place the subject as a tiny blurry figure in the far background, and DO NOT zoom into an oversized ID headshot that crops out the scenery.
 3. PHYSICAL & OPTICAL INTEGRATION:
    - Ground contact shadows: The subject must stand firmly on the ground surface with natural contact and ambient occlusion shadows (no floating sticker look).
    - Directional lighting harmonization: Match the lighting direction, color temperature, and rim highlights on the subject's face, hair, and body seamlessly with the ambient light source of Image 2.
-   - Attire adaptation: Elegantly adapt the subject's clothing to match the travel/adventure/sports context of Image 2 while keeping 100% authentic personal identity.
+   - Attire adaptation: Elegantly adapt the subject's clothing to match the travel/sports venue (e.g. athletic sports polo/t-shirt, shorts, sneakers) while keeping 100% original head and face.
    - Realistic texture: Microscopic pores, fine vellus peach fuzz, natural sub-surface scattering (SSS), and organic fine sensor grain on Kodak Portra 400 film aesthetic.${customPromptAddon}${fixAddon} ${NO_TEXT_INSTRUCTION}
-CRITICAL NEGATIVE: (plastic skin, waxy skin, airbrushed, smooth skin, poreless skin:1.4), (matte skin, powdery skin, flawless skin:1.3), generic young face, de-aged face, baby face, Asian youth model, wrong face, face drift, stranger face, replaced face, tiny distant figure, distant person, blurry face, unrecognizable face, tight close-up, cropped landmark, oversized head, gigantic face filling the entire screen, fake floating cutout, sticker cutout, missing ground shadow, beauty filter, glam, cgi, 3d render, cartoon, painting, illustration, drawing, unreal engine, ring-light flat lighting, front flash, overexposed highlights, dead eyes, bad anatomy, deformed hands, lowres, watermark, halo artifact around head, hard cutout edges, mismatched lighting, unnatural seams, skin tone boundary mismatch, blurry borders, oversmoothed skin, deformed facial features, mutated eyes, plastic face, asymmetrical jaw, identity drift, duplicated face, identical features across multiple people, swapped identities, merged facial attributes, missing people, dropped members.`;
+CRITICAL NEGATIVE: (plastic skin, waxy skin, airbrushed, smooth skin, poreless skin:1.4), (matte skin, powdery skin, flawless skin:1.3), ball stuck to racket, ball glued to paddle, frozen ball on strings, ball attached to racket face, fake ball, elongated face, pointy nose, narrowed eyes, distorted facial bone structure, stranger face, different face, morphed face, altered identity, cross-contaminated features, generic young model, wrong face, face drift, tiny distant figure, distant person, blurry face, unrecognizable face, tight close-up, cropped landmark, oversized head, gigantic face filling the entire screen, fake floating cutout, sticker cutout, missing ground shadow, beauty filter, glam, cgi, 3d render, cartoon, painting, illustration, drawing, unreal engine, ring-light flat lighting, front flash, overexposed highlights, dead eyes, bad anatomy, deformed hands, lowres, watermark, halo artifact around head, hard cutout edges, mismatched lighting, unnatural seams, skin tone boundary mismatch, blurry borders, oversmoothed skin, deformed facial features, mutated eyes, plastic face, asymmetrical jaw, identity drift, duplicated face, identical features across multiple people, swapped identities, merged facial attributes, missing people, dropped members.`;
     } else {
       prompt = buildPrompt({
         styleId,

@@ -884,10 +884,10 @@ CRITICAL MANDATORY INSTRUCTIONS:
   }
 
   const idNegative = isIdPhotoCard
-    ? "room, interior, walls, wallpaper patterns, furniture, painting on wall, picture frames, bookshelf, curtains, windows, clutter in background, room shadows, cropped head, cropped hair, cropped ears, cropped chin, head touching top edge, tight face crop, oversized giant face, slicked back hair, unnaturally flattened hair, bald appearance, tight hair bun, artificial hair, "
+    ? "room, interior, walls, wallpaper patterns, furniture, painting on wall, picture frames, bookshelf, curtains, windows, clutter in background, room shadows, cropped head, cropped hair, cropped ears, cropped chin, head touching top edge, tight face crop, oversized giant face, slicked back hair, unnaturally flattened hair, bald appearance, tight hair bun, artificial hair, deformed ears, mutated ears, unnatural ears, weird ears, fake ears sticking out of hair, malformed earlobes, "
     : "";
 
-  const negativeToUse = isStudioStyle
+  const negativeToUse = isStudioStyle || isIdPhotoCard
     ? `${idNegative}${STUDIO_NEGATIVE}, ${MASTER_NEGATIVE_PROMPT}`
     : MASTER_NEGATIVE_PROMPT;
 

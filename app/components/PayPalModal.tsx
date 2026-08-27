@@ -50,7 +50,7 @@ export default function PayPalModal({
   lang = "en",
 }: PayPalModalProps) {
   const [activePlanId, setActivePlanId] = useState<PlanType>(selectedPlan || "pro");
-  const [clientId, setClientId] = useState<string>("test");
+  const [clientId, setClientId] = useState<string>("BAAVC61J6p-md2v0ElszUbjgrht0I_PYG7g1VrTdOluuFE5T6IWv1wElF3fNSGUWfsh-5fSJ9LcNRzSjTk");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -88,7 +88,7 @@ export default function PayPalModal({
     if (envClientId && envClientId.trim() !== "") {
       setClientId(envClientId.trim());
     } else {
-      setClientId("BAAr--XBdO4SPPkUXFsYm1Ju6TNQytwLlgHwdDd_r17OCZxc9L1Xqob1YiYfhC3Ibq7Ua2Qf8PXVkKsD4s");
+      setClientId("BAAVC61J6p-md2v0ElszUbjgrht0I_PYG7g1VrTdOluuFE5T6IWv1wElF3fNSGUWfsh-5fSJ9LcNRzSjTk");
     }
   }, []);
 
@@ -106,7 +106,7 @@ export default function PayPalModal({
   if (!isOpen) return null;
 
   return (
-    <PayPalScriptProvider options={{ clientId: clientId, currency: "USD" }}>
+    <PayPalScriptProvider options={{ clientId: clientId, currency: "USD", intent: "capture" }}>
       <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-hidden min-h-full w-full">
         <div className="relative w-full max-w-sm sm:max-w-md bg-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-100 text-slate-900 max-h-[92vh] overflow-y-auto">
           {/* Close Button */}

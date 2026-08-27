@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { TRANSLATIONS, type Language } from "../lib/i18n";
 
@@ -44,17 +45,22 @@ interface PayPalModalProps {
 
 export default function PayPalModal({
   isOpen,
-  selectedPlan,
+  selectedPlan = "pro",
   onClose,
   onSuccess,
   lang = "en",
 }: PayPalModalProps) {
+  const [mounted, setMounted] = useState(false);
   const [activePlanId, setActivePlanId] = useState<PlanType>(selectedPlan || "pro");
   const [clientId, setClientId] = useState<string>("BAAVC61J6p-md2v0ElszUbjgrht0I_PYG7g1VrTdOluuFE5T6IWv1wElF3fNSGUWfsh-5fSJ9LcNRzSjTk");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setActivePlanId(selectedPlan || "pro");
@@ -103,12 +109,18 @@ export default function PayPalModal({
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  const modalContent = (
     <PayPalScriptProvider options={{ clientId: clientId, currency: "USD", intent: "capture" }}>
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-hidden min-h-full w-full">
-        <div className="relative w-full max-w-sm sm:max-w-md bg-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-100 text-slate-900 max-h-[92vh] overflow-y-auto">
+      <div 
+        onClick={onClose}
+        className="fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto w-full h-full animate-fadeIn"
+      >
+        <div 
+          onClick={(e) => e.stopPropagation()}
+          className="relative w-full max-w-sm sm:max-w-md bg-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-100 text-slate-900 my-auto max-h-[92vh] overflow-y-auto"
+        >
           {/* Close Button */}
           <button
             onClick={onClose}
@@ -265,4 +277,6 @@ export default function PayPalModal({
       </div>
     </PayPalScriptProvider>
   );
+
+  return createPortal(modalContent, document.body);
 }

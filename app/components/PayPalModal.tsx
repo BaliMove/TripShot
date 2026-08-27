@@ -109,10 +109,18 @@ export default function PayPalModal({
     };
   }, [isOpen]);
 
-  if (!isOpen || !mounted) return null;
+  const paypalLocaleMap: Record<Language, string> = {
+    ko: "ko_KR",
+    en: "en_US",
+    ja: "ja_JP",
+    zh: "zh_CN",
+    id: "id_ID",
+  };
+
+  const currentPaypalLocale = paypalLocaleMap[lang] || "en_US";
 
   const modalContent = (
-    <PayPalScriptProvider options={{ clientId: clientId, currency: "USD", intent: "capture" }}>
+    <PayPalScriptProvider options={{ clientId: clientId, currency: "USD", intent: "capture", locale: currentPaypalLocale }}>
       <div 
         onClick={onClose}
         className="fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto w-full h-full animate-fadeIn"
@@ -283,5 +291,6 @@ export default function PayPalModal({
     </PayPalScriptProvider>
   );
 
+  if (typeof window === "undefined" || typeof document === "undefined" || !document.body) return null;
   return createPortal(modalContent, document.body);
 }

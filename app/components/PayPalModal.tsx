@@ -226,6 +226,11 @@ export default function PayPalModal({
                 setLoading(true);
                 return actions.order.create({
                   intent: "CAPTURE",
+                  application_context: {
+                    shipping_preference: "NO_SHIPPING",
+                    user_action: "PAY_NOW",
+                    brand_name: "TripShot.world",
+                  },
                   purchase_units: [
                     {
                       description: `TripShot.world ${planName} (${plan.credits} credits)`,

@@ -296,9 +296,8 @@ CRITICAL NEGATIVE: (room, interior, wall, wallpaper pattern, furniture, painting
     // Option A: Gemini 3.1 Flash Lite Single Engine Pipeline
     const runOptionAModel = async (): Promise<ModelResult> => {
       const modelsToTry = [
-        "gemini-3.1-flash-lite-image",
         "gemini-3.1-flash-image",
-        "gemini-2.5-flash",
+        "gemini-3.1-flash-lite-image",
         "imagen-3.0-generate-002",
       ];
 

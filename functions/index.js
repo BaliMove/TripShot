@@ -503,9 +503,8 @@ CRITICAL NEGATIVE: (narrowed eyes, squinting eyes, slits eyes, small eyes, alter
     };
 
     const modelsToTry = [
-      "gemini-3.1-flash-lite-image",
       "gemini-3.1-flash-image",
-      "gemini-2.5-flash",
+      "gemini-3.1-flash-lite-image",
       "imagen-3.0-generate-002"
     ];
 

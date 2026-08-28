@@ -143,19 +143,18 @@ export default function PayPalModal({
 
   const modalContent = (
     <PayPalScriptProvider options={{ clientId: clientId, currency: "USD", intent: "capture", locale: currentPaypalLocale }}>
+      {/* 💎 Ultra-Premium Transparent Glassmorphism Overlay (Background clicks disabled to prevent accidental payment drop-offs) */}
       <div 
-        onClick={handleClose}
-        className="fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto w-full h-full animate-fadeIn cursor-pointer"
+        className="fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/35 backdrop-blur-xl overflow-y-auto w-full h-full animate-fadeIn"
       >
         <div 
-          onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-sm sm:max-w-md bg-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-100 text-slate-900 my-auto max-h-[92vh] overflow-y-auto cursor-default pointer-events-auto"
+          className="relative w-full max-w-sm sm:max-w-md bg-white/98 backdrop-blur-2xl rounded-[32px] p-6 sm:p-8 shadow-[0_25px_70px_-15px_rgba(0,0,0,0.35)] border border-white/80 ring-1 ring-slate-900/5 text-slate-900 my-auto max-h-[92vh] overflow-y-auto cursor-default pointer-events-auto"
         >
-          {/* Mobile-First Enhanced Close Button (min 44px touch target) */}
+          {/* Mobile-First Enhanced Close Button (Explicit Button Click Only) */}
           <button
             type="button"
             onClick={handleClose}
-            className="absolute top-3 right-3 sm:top-4 sm:right-4 z-50 text-slate-500 hover:text-slate-900 active:scale-90 w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-slate-100/90 hover:bg-slate-200 shadow-sm flex items-center justify-center font-black text-lg transition-all cursor-pointer pointer-events-auto select-none"
+            className="absolute top-4 right-4 z-50 text-slate-400 hover:text-slate-800 active:scale-90 w-10 h-10 min-w-[40px] min-h-[40px] rounded-full bg-slate-100/80 hover:bg-slate-200/90 border border-slate-200/50 shadow-xs flex items-center justify-center font-black text-base transition-all cursor-pointer pointer-events-auto select-none"
             aria-label={lang === "ko" ? "결제창 닫기" : "Close Payment Modal"}
           >
             ✕

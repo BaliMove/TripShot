@@ -2768,12 +2768,11 @@ export default function UploadCard({
 
       {/* PayPal Payment Modal Integration */}
       <PayPalModal
-        isOpen={showPayPalModal || isPayModalOpen}
+        isOpen={showPayPalModal}
         selectedPlan={selectedPlan === "free" ? "pro" : (selectedPlan as PlanType)}
         lang={lang}
         onClose={() => {
           setShowPayPalModal(false);
-          setIsPayModalOpen(false);
         }}
         onSuccess={handlePayPalSuccess}
       />

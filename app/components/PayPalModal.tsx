@@ -101,13 +101,20 @@ export default function PayPalModal({
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          onClose();
+        }
+      };
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.body.style.overflow = "";
+        window.removeEventListener("keydown", handleKeyDown);
+      };
     } else {
       document.body.style.overflow = "";
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   const paypalLocaleMap: Record<Language, string> = {
     ko: "ko_KR",
@@ -129,16 +136,27 @@ export default function PayPalModal({
           onClick={(e) => e.stopPropagation()}
           className="relative w-full max-w-sm sm:max-w-md bg-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-100 text-slate-900 my-auto max-h-[92vh] overflow-y-auto"
         >
-          {/* Close Button */}
+          {/* Mobile-First Enhanced Close Button (min 44px touch target) */}
           <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-sm transition-colors cursor-pointer"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClose();
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClose();
+            }}
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 z-50 text-slate-500 hover:text-slate-900 active:scale-90 w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-slate-100/90 hover:bg-slate-200 shadow-sm flex items-center justify-center font-black text-base transition-all cursor-pointer touch-manipulation"
+            aria-label={lang === "ko" ? "결제창 닫기" : "Close Payment Modal"}
           >
             ✕
           </button>
 
-          {/* Title Header */}
-          <div className="text-center mb-4">
+          {/* Title Header with Safe Right Padding */}
+          <div className="text-center mb-4 pr-10 pl-2">
             <span className="inline-block text-[10px] font-black uppercase tracking-widest text-sky-700 bg-sky-50 border border-sky-200 px-3 py-1 rounded-full mb-1.5">
               💳 {t.paySecureNotice}
             </span>
@@ -285,6 +303,27 @@ export default function PayPalModal({
                 {lang === "ko" ? "결제 승인 처리 중입니다..." : "Processing payment..."}
               </p>
             )}
+          </div>
+
+          {/* Bottom Direct Close & Continue Creating Action */}
+          <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col items-center">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onClose();
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onClose();
+              }}
+              className="w-full py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-extrabold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation min-h-[44px]"
+            >
+              <span>✕</span>
+              <span>{lang === "ko" ? "닫기 (사진 생성하러 가기)" : "Close & Continue Creating Photos"}</span>
+            </button>
           </div>
         </div>
       </div>

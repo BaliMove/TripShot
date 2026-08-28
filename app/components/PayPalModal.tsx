@@ -51,6 +51,7 @@ export default function PayPalModal({
   lang = "en",
 }: PayPalModalProps) {
   const [mounted, setMounted] = useState(false);
+  const [isVisible, setIsVisible] = useState(isOpen);
   const [activePlanId, setActivePlanId] = useState<PlanType>(selectedPlan || "pro");
   const [clientId, setClientId] = useState<string>("BAAVC61J6p-md2v0ElszUbjgrht0I_PYG7g1VrTdOluuFE5T6IWv1wElF3fNSGUWfsh-5fSJ9LcNRzSjTk");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -61,6 +62,18 @@ export default function PayPalModal({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    setIsVisible(isOpen);
+  }, [isOpen]);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    if (typeof window !== "undefined") {
+      document.body.style.overflow = "";
+    }
+    onClose();
+  };
 
   useEffect(() => {
     setActivePlanId(selectedPlan || "pro");
@@ -99,11 +112,11 @@ export default function PayPalModal({
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isVisible) {
       document.body.style.overflow = "hidden";
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === "Escape") {
-          onClose();
+          handleClose();
         }
       };
       window.addEventListener("keydown", handleKeyDown);
@@ -114,7 +127,7 @@ export default function PayPalModal({
     } else {
       document.body.style.overflow = "";
     }
-  }, [isOpen, onClose]);
+  }, [isOpen, isVisible]);
 
   const paypalLocaleMap: Record<Language, string> = {
     ko: "ko_KR",
@@ -126,30 +139,23 @@ export default function PayPalModal({
 
   const currentPaypalLocale = paypalLocaleMap[lang] || "en_US";
 
+  if (!isOpen || !isVisible || !mounted) return null;
+
   const modalContent = (
     <PayPalScriptProvider options={{ clientId: clientId, currency: "USD", intent: "capture", locale: currentPaypalLocale }}>
       <div 
-        onClick={onClose}
-        className="fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto w-full h-full animate-fadeIn"
+        onClick={handleClose}
+        className="fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto w-full h-full animate-fadeIn cursor-pointer"
       >
         <div 
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-sm sm:max-w-md bg-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-100 text-slate-900 my-auto max-h-[92vh] overflow-y-auto"
+          className="relative w-full max-w-sm sm:max-w-md bg-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-100 text-slate-900 my-auto max-h-[92vh] overflow-y-auto cursor-default pointer-events-auto"
         >
           {/* Mobile-First Enhanced Close Button (min 44px touch target) */}
           <button
             type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onClose();
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onClose();
-            }}
-            className="absolute top-3 right-3 sm:top-4 sm:right-4 z-50 text-slate-500 hover:text-slate-900 active:scale-90 w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-slate-100/90 hover:bg-slate-200 shadow-sm flex items-center justify-center font-black text-base transition-all cursor-pointer touch-manipulation"
+            onClick={handleClose}
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 z-50 text-slate-500 hover:text-slate-900 active:scale-90 w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-slate-100/90 hover:bg-slate-200 shadow-sm flex items-center justify-center font-black text-lg transition-all cursor-pointer pointer-events-auto select-none"
             aria-label={lang === "ko" ? "결제창 닫기" : "Close Payment Modal"}
           >
             ✕
@@ -309,17 +315,8 @@ export default function PayPalModal({
           <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col items-center">
             <button
               type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onClose();
-              }}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onClose();
-              }}
-              className="w-full py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-extrabold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation min-h-[44px]"
+              onClick={handleClose}
+              className="w-full py-3.5 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer pointer-events-auto min-h-[48px] shadow-sm select-none"
             >
               <span>✕</span>
               <span>{lang === "ko" ? "닫기 (사진 생성하러 가기)" : "Close & Continue Creating Photos"}</span>

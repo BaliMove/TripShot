@@ -643,6 +643,9 @@ export default function UploadCard({
 
   const selectedStyle = getStyle(selectedStyleId);
   const usedStyle = getStyle(usedStyleId);
+  const selectedTransInfo = selectedStyle
+    ? getTranslatedStyleInfo(selectedStyle.id, selectedStyle.label, selectedStyle.description, lang)
+    : { label: lang === "ko" ? "커스텀 명소" : "Custom Spot", description: "" };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     setError(null);
@@ -2623,6 +2626,38 @@ export default function UploadCard({
             </div>
           </div>
 
+          {/* ⚡ Top Instant Action Bar - Zero-Scroll Immediate Generation */}
+          <div className="bg-gradient-to-r from-sky-500/10 via-indigo-500/10 to-amber-500/10 p-3 sm:p-4 rounded-2xl border-2 border-sky-300/80 shadow-md mb-4 flex flex-col sm:flex-row items-center justify-between gap-3 animate-fadeIn backdrop-blur-xs">
+            <div className="flex items-center gap-3 w-full sm:w-auto min-w-0">
+              <div className="w-11 h-11 rounded-xl overflow-hidden bg-gradient-to-tr from-sky-600 to-indigo-600 text-white shrink-0 flex items-center justify-center font-black shadow-md text-xl">
+                {selectedStyle?.emoji || "✨"}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-[10px] font-black uppercase text-sky-800 bg-sky-100 px-2 py-0.5 rounded-md border border-sky-200">
+                    {lang === "ko" ? "선택된 스타일" : "Selected Style"}
+                  </span>
+                  <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200">
+                    100% Safe
+                  </span>
+                </div>
+                <p className="text-sm font-black text-slate-900 truncate">
+                  {selectedTransInfo.label}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isLoading}
+              className="w-full sm:w-auto shrink-0 bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 hover:brightness-110 active:scale-95 text-white font-black text-xs sm:text-base py-3 px-5 rounded-xl shadow-lg shadow-sky-500/25 flex items-center justify-center gap-2 cursor-pointer transition-all min-h-[44px]"
+            >
+              <span>✨ 📸 {t.btnGenerate}</span>
+              <span className="bg-white/20 px-1.5 py-0.5 rounded-full text-[10px] font-black">➔</span>
+            </button>
+          </div>
+
           {/* Style Picker or Custom Prompt */}
           <div id="style-picker-grid" className="mb-6 scroll-mt-20">
           {category === "custom" || category === "custom_travel" ? (
@@ -2784,20 +2819,29 @@ export default function UploadCard({
         onSuccess={handleAuthSuccess}
       />
 
-      {/* Sticky Mobile Bottom CTA Bar */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 p-2 shadow-[0_-8px_25px_rgba(0,0,0,0.15)] animate-fadeIn">
+      {/* 🚀 Global Smart Floating Bottom Action Bar (Mobile & Desktop) */}
+      <div className="fixed bottom-3 inset-x-3 sm:bottom-6 sm:right-6 sm:left-auto sm:max-w-md z-40 bg-slate-950/90 backdrop-blur-xl border border-white/20 p-2.5 sm:p-3 rounded-2xl shadow-[0_12px_35px_rgba(0,0,0,0.35)] animate-fadeIn text-white flex items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2 min-w-0 flex-1 pl-1">
+          <span className="text-xl shrink-0">{selectedStyle?.emoji || "✨"}</span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9px] font-black uppercase text-sky-400">
+                {selfieBase64 ? (lang === "ko" ? "인물 준비완료" : "Selfie Ready") : (lang === "ko" ? "사진 업로드 필요" : "Upload Selfie")}
+              </span>
+            </div>
+            <p className="text-xs font-black text-white truncate leading-tight">
+              {selectedTransInfo.label}
+            </p>
+          </div>
+        </div>
         <button
           type="button"
           onClick={handleSubmit}
           disabled={isLoading}
-          className="w-full bg-gradient-to-r from-sky-500 via-indigo-600 to-amber-500 hover:brightness-110 active:scale-95 text-white font-black text-xs sm:text-sm py-3.5 px-4 rounded-xl shadow-lg shadow-sky-500/30 flex items-center justify-center gap-1.5 cursor-pointer"
+          className="bg-gradient-to-r from-sky-400 via-indigo-500 to-amber-400 hover:brightness-110 active:scale-95 text-slate-950 font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer shrink-0 min-h-[42px] transition-all"
         >
-          <span className="truncate">
-            ✨ 📸 {t.btnGenerate}
-          </span>
-          <span className="bg-white/20 text-amber-200 px-2 py-0.5 rounded-full text-[10px] font-black shrink-0">
-            ➔
-          </span>
+          <span>✨ 📸 {lang === "ko" ? "인생샷 생성" : "Generate"}</span>
+          <span className="text-xs font-black">➔</span>
         </button>
       </div>
     </div>
